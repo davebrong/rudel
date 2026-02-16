@@ -2,12 +2,14 @@
 	"name": "melbourne",
 	"private": true,
 	"scripts": {
-		"build": "turbo run build --filter='*'",
-		"dev": "turbo run dev --filter='*'",
+		"build": "turbo run build",
+		"dev": "turbo run dev",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
-		"check-types": "turbo run check-types --filter='*'"
+		"check-types": "turbo run check-types",
+		"test": "turbo run test",
+		"verify": "turbo run lint check-types test build"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.0",
