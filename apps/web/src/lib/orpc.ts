@@ -6,6 +6,7 @@ import type { contract } from "@repo/api-routes";
 
 const link = new RPCLink({
 	url: "http://localhost:4010/rpc",
+	fetch: (input, init) => fetch(input, { ...init, credentials: "include" }),
 });
 
 export const client: ContractRouterClient<typeof contract> =
