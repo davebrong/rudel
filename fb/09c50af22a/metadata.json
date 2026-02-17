@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "fb09c50af22a",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/rename-gazed-to-rudel",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/middleware.ts",
+    "apps/api/tsconfig.json",
+    "apps/cli/package.json",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "apps/cli/src/app.ts",
+    "apps/cli/tsconfig.json",
+    "apps/web/package.json",
+    "apps/web/src/lib/orpc.ts",
+    "packages/api-routes/package.json",
+    "packages/api-routes/tsconfig.json",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/tsconfig.json",
+    "packages/typescript-config/package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fb/09c50af22a/0/metadata.json",
+      "transcript": "/fb/09c50af22a/0/full.jsonl",
+      "context": "/fb/09c50af22a/0/context.md",
+      "content_hash": "/fb/09c50af22a/0/content_hash.txt",
+      "prompt": "/fb/09c50af22a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 28034,
+    "cache_read_tokens": 388863,
+    "output_tokens": 69,
+    "api_call_count": 12
+  }
+}
