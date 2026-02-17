@@ -3,15 +3,31 @@
   "checkpoint_id": "c2b02a63aad8",
   "strategy": "manual-commit",
   "branch": "KeKs0r/session-ingest-endpoint",
-  "checkpoints_count": 1,
+  "checkpoints_count": 5,
   "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/auth.ts",
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/ingest.ts",
+    "apps/api/src/router.ts",
+    "apps/api/turbo.json",
+    "apps/cli/package.json",
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "apps/cli/src/lib/types.ts",
+    "apps/cli/src/lib/uploader.ts",
+    "apps/cli/turbo.json",
+    "packages/api-routes/src/index.ts",
     "packages/ch-schema/chx/meta/snapshot.json",
     "packages/ch-schema/chx/migrations/20260213092427_auto.sql",
     "packages/ch-schema/src/__tests__/ingest.test.ts",
     "packages/ch-schema/src/__tests__/schemas.test.ts",
     "packages/ch-schema/src/db/schema/flick.ts",
     "packages/ch-schema/src/generated/chkit-ingest.ts",
-    "packages/ch-schema/src/generated/chkit-types.ts"
+    "packages/ch-schema/src/generated/chkit-types.ts",
+    "packages/ch-schema/src/index.ts",
+    "packages/ch-schema/turbo.json"
   ],
   "sessions": [
     {
@@ -20,13 +36,20 @@
       "context": "/c2/b02a63aad8/0/context.md",
       "content_hash": "/c2/b02a63aad8/0/content_hash.txt",
       "prompt": "/c2/b02a63aad8/0/prompt.txt"
+    },
+    {
+      "metadata": "/c2/b02a63aad8/1/metadata.json",
+      "transcript": "/c2/b02a63aad8/1/full.jsonl",
+      "context": "/c2/b02a63aad8/1/context.md",
+      "content_hash": "/c2/b02a63aad8/1/content_hash.txt",
+      "prompt": "/c2/b02a63aad8/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 24,
-    "cache_creation_tokens": 45502,
-    "cache_read_tokens": 1036109,
-    "output_tokens": 138,
-    "api_call_count": 22
+    "input_tokens": 2936,
+    "cache_creation_tokens": 1025338,
+    "cache_read_tokens": 38522346,
+    "output_tokens": 8850,
+    "api_call_count": 422
   }
 }
