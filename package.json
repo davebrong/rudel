@@ -23,5 +23,9 @@
 	"workspaces": [
 		"apps/*",
 		"packages/*"
-	]
+	],
+	"overrides": {
+		"@chkit/core": "0.1.0-beta.2",
+		"@chkit/clickhouse": "0.1.0-beta.2"
+	}
 }

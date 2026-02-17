@@ -1,0 +1,9 @@
+{
+	"extends": "@gazed/typescript-config/base.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"types": ["bun-types"]
+	},
+	"include": ["src"],
+	"exclude": ["src/generated"]
+}
