@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "028de9ae056b",
+  "session_id": "6b08e4dc-c046-4db8-8563-ad7f1ea70355",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T09:08:47.852497Z",
+  "branch": "marc/num-6488-authenticate-cli-and-ingest-endpoint",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/index.ts",
+    "apps/cli/src/__tests__/auth.e2e.test.ts",
+    "apps/cli/src/app.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/commands/logout.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/commands/whoami.ts",
+    "apps/cli/src/lib/credentials.ts",
+    "apps/cli/src/lib/uploader.ts",
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/auth/login-form.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 120,
+    "cache_creation_tokens": 124491,
+    "cache_read_tokens": 9354454,
+    "output_tokens": 1132,
+    "api_call_count": 117
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T09:08:47.186385Z",
+    "agent_lines": 612,
+    "human_added": 609,
+    "human_modified": 11,
+    "human_removed": 0,
+    "total_committed": 1232,
+    "agent_percentage": 49.67532467532468
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-atlanta/6b08e4dc-c046-4db8-8563-ad7f1ea70355.jsonl"
+}
