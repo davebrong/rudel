@@ -1,5 +1,5 @@
+import { contract } from "@gazed/api-routes";
 import { implement, ORPCError } from "@orpc/server";
-import { contract } from "@repo/api-routes";
 import type { Session } from "./auth.js";
 
 export interface AppContext {
