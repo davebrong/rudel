@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll, afterAll } from "bun:test";
+import { afterAll, describe, expect, it } from "bun:test";
 import { createClickHouseExecutor } from "@chkit/clickhouse";
 import {
 	ingestFlickClaudeSessions,
@@ -12,10 +12,10 @@ import type {
 const testId = `test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 const executor = createClickHouseExecutor({
-	url: process.env.CLICKHOUSE_URL ?? "http://localhost:8123",
-	username: process.env.CLICKHOUSE_USER ?? "default",
-	password: process.env.CLICKHOUSE_PASSWORD ?? "",
-	database: process.env.CLICKHOUSE_DB ?? "default",
+	url: process.env.CLICKHOUSE_URL || "http://localhost:8123",
+	username: process.env.CLICKHOUSE_USER || "default",
+	password: process.env.CLICKHOUSE_PASSWORD || "",
+	database: process.env.CLICKHOUSE_DB || "default",
 });
 
 afterAll(async () => {
@@ -60,12 +60,16 @@ describe("ingestFlickClaudeSessions", () => {
 		);
 
 		expect(results).toHaveLength(1);
-		expect(results[0]!.session_id).toBe(testId);
-		expect(results[0]!.tag).toBe("integration-test");
+		expect(results[0]).toBeDefined();
+		expect(results[0].session_id).toBe(testId);
+		expect(results[0].tag).toBe("integration-test");
 	});
 
 	it("rejects invalid data with validate option", async () => {
-		const badRow = { ...row, input_tokens: 999 } as unknown as FlickClaudeSessionsRow;
+		const badRow = {
+			...row,
+			input_tokens: 999,
+		} as unknown as FlickClaudeSessionsRow;
 		expect(
 			ingestFlickClaudeSessions(executor, [badRow], { validate: true }),
 		).rejects.toThrow();
@@ -110,12 +114,16 @@ describe("ingestFlickUptimeCheckResults", () => {
 		);
 
 		expect(results).toHaveLength(1);
-		expect(results[0]!.monitor_id).toBe(testId);
-		expect(results[0]!.success).toBe(1);
+		expect(results[0]).toBeDefined();
+		expect(results[0].monitor_id).toBe(testId);
+		expect(results[0].success).toBe(1);
 	});
 
 	it("rejects invalid data with validate option", async () => {
-		const badRow = { ...row, success: "yes" } as unknown as FlickUptimeCheckResultsRow;
+		const badRow = {
+			...row,
+			success: "yes",
+		} as unknown as FlickUptimeCheckResultsRow;
 		expect(
 			ingestFlickUptimeCheckResults(executor, [badRow], { validate: true }),
 		).rejects.toThrow();
