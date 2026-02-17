@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "c2b02a63aad8",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/session-ingest-endpoint",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/chx/meta/snapshot.json",
+    "packages/ch-schema/chx/migrations/20260213092427_auto.sql",
+    "packages/ch-schema/src/__tests__/ingest.test.ts",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/db/schema/flick.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c2/b02a63aad8/0/metadata.json",
+      "transcript": "/c2/b02a63aad8/0/full.jsonl",
+      "context": "/c2/b02a63aad8/0/context.md",
+      "content_hash": "/c2/b02a63aad8/0/content_hash.txt",
+      "prompt": "/c2/b02a63aad8/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 45502,
+    "cache_read_tokens": 1036109,
+    "output_tokens": 138,
+    "api_call_count": 22
+  }
+}
