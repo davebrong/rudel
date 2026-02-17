@@ -10,3 +10,11 @@ Your work should take place in the /Users/marc/conductor/workspaces/rudel/seoul 
 Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
 The target branch for this workspace is main. Use this for actions like creating new PRs, bisecting, etc., ...
 
+### Prompt 2
+
+i just published the latest version of chkit, to beta.5 update the dependency
+
+### Prompt 3
+
+okay commit all changes, push. createa a pr and merge when CI is green
+

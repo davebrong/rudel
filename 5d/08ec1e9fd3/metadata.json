@@ -5,9 +5,8 @@
   "branch": "KeKs0r/update-chkit-codegen",
   "checkpoints_count": 1,
   "files_touched": [
-    ".context/attachments/summary-Generate Chkit Ingestion.txt",
-    "packages/ch-schema/src/__tests__/ingest.test.ts",
-    "packages/ch-schema/src/generated/chkit-ingest.ts"
+    "package.json",
+    "packages/ch-schema/package.json"
   ],
   "sessions": [
     {
@@ -19,10 +18,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 63,
-    "cache_creation_tokens": 49460,
-    "cache_read_tokens": 2674411,
-    "output_tokens": 524,
-    "api_call_count": 61
+    "input_tokens": 20,
+    "cache_creation_tokens": 8619,
+    "cache_read_tokens": 1107040,
+    "output_tokens": 221,
+    "api_call_count": 16
   }
 }

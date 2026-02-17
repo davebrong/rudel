@@ -10,3 +10,11 @@ click on the comment icon in the bottom left to send feedback.
 </system_instruction>
 
 retrigger CI for this branch. and check if it passes now
+
+---
+
+i just published the latest version of chkit, to beta.5 update the dependency
+
+---
+
+okay commit all changes, push. createa a pr and merge when CI is green
