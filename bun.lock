@@ -14,8 +14,10 @@
       "name": "@rudel/api",
       "version": "0.0.0",
       "dependencies": {
+        "@chkit/clickhouse": "0.1.0-beta.5",
         "@orpc/server": "latest",
         "@rudel/api-routes": "workspace:*",
+        "@rudel/ch-schema": "workspace:*",
         "better-auth": "^1.4.18",
       },
       "devDependencies": {
@@ -31,6 +33,9 @@
         "rudel": "./src/bin/cli.ts",
       },
       "dependencies": {
+        "@orpc/client": "latest",
+        "@orpc/contract": "latest",
+        "@rudel/api-routes": "workspace:*",
         "@stricli/core": "^1.2.5",
       },
       "devDependencies": {

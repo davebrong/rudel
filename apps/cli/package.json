@@ -13,6 +13,9 @@
 		"test": "bun test"
 	},
 	"dependencies": {
+		"@orpc/client": "latest",
+		"@orpc/contract": "latest",
+		"@rudel/api-routes": "workspace:*",
 		"@stricli/core": "^1.2.5"
 	},
 	"devDependencies": {

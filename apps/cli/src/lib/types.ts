@@ -40,4 +40,4 @@ export interface UploadResult {
 }
 
 export const DEFAULT_ENDPOINT =
-	"https://flick-api.numia.workers.dev/api/orpc/compound/ingestSession";
+	"https://flick-api.numia.workers.dev/api/orpc/compound";

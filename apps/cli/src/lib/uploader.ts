@@ -1,3 +1,7 @@
+import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import type { ContractRouterClient } from "@orpc/contract";
+import type { contract } from "@rudel/api-routes";
 import type { IngestRequest, UploadResult } from "./types.js";
 
 export interface UploadConfig {
@@ -6,33 +10,24 @@ export interface UploadConfig {
 }
 
 /**
- * Upload a session transcript to the backend endpoint.
+ * Upload a session transcript to the backend via oRPC.
  */
 export async function uploadSession(
 	request: IngestRequest,
 	config: UploadConfig,
 ): Promise<UploadResult> {
+	const link = new RPCLink({
+		url: config.endpoint,
+		headers: {
+			Authorization: `Bearer ${config.token}`,
+		},
+	});
+
+	const client: ContractRouterClient<typeof contract> = createORPCClient(link);
+
 	try {
-		const response = await fetch(config.endpoint, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${config.token}`,
-			},
-			body: JSON.stringify(request),
-		});
-
-		const responseText = await response.text();
-
-		if (!response.ok) {
-			return {
-				success: false,
-				status: response.status,
-				error: `HTTP ${response.status}: ${responseText}`,
-			};
-		}
-
-		return { success: true, status: response.status };
+		await client.ingestSession(request);
+		return { success: true, status: 200 };
 	} catch (error) {
 		return { success: false, error: String(error) };
 	}

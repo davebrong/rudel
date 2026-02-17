@@ -5,11 +5,14 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
-		"check-types": "tsc --noEmit"
+		"check-types": "tsc --noEmit",
+		"test": "bun test"
 	},
 	"dependencies": {
+		"@chkit/clickhouse": "0.1.0-beta.5",
 		"@orpc/server": "latest",
 		"@rudel/api-routes": "workspace:*",
+		"@rudel/ch-schema": "workspace:*",
 		"better-auth": "^1.4.18"
 	},
 	"devDependencies": {
