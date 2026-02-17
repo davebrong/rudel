@@ -1,8 +1,14 @@
 import { buildApplication, buildRouteMap } from "@stricli/core";
+import { loginCommand } from "./commands/login.js";
+import { logoutCommand } from "./commands/logout.js";
 import { uploadCommand } from "./commands/upload.js";
+import { whoamiCommand } from "./commands/whoami.js";
 
 const routes = buildRouteMap({
 	routes: {
+		login: loginCommand,
+		logout: logoutCommand,
+		whoami: whoamiCommand,
 		upload: uploadCommand,
 	},
 	docs: {

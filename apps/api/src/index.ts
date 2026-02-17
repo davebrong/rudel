@@ -40,6 +40,22 @@ Bun.serve({
 
 		const url = new URL(request.url);
 
+		if (url.pathname === "/api/cli-token") {
+			const session = await auth.api.getSession({
+				headers: request.headers,
+			});
+			if (!session) {
+				return new Response(JSON.stringify({ error: "Not authenticated" }), {
+					status: 401,
+					headers: { ...cors, "Content-Type": "application/json" },
+				});
+			}
+			return new Response(JSON.stringify({ token: session.session.token }), {
+				status: 200,
+				headers: { ...cors, "Content-Type": "application/json" },
+			});
+		}
+
 		if (url.pathname.startsWith("/api/auth")) {
 			const response = await auth.handler(request);
 			for (const [key, value] of Object.entries(cors)) {
