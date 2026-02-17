@@ -40,5 +40,10 @@ coverage/
 # Vercel
 .vercel
 
+# SQLite
+data/
+*.sqlite
+*.sqlite-journal
+
 # Misc
 *.pem

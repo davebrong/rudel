@@ -1,7 +1,4 @@
-import { implement } from "@orpc/server";
-import { contract } from "@repo/api-routes";
-
-const os = implement(contract);
+import { authMiddleware, os } from "./middleware.js";
 
 const health = os.health.handler(() => {
 	return {
@@ -10,6 +7,15 @@ const health = os.health.handler(() => {
 	};
 });
 
+const me = os.me.use(authMiddleware).handler(({ context }) => {
+	return {
+		id: context.user.id,
+		email: context.user.email,
+		name: context.user.name,
+	};
+});
+
 export const router = os.router({
 	health,
+	me,
 });
