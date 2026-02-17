@@ -1,5 +1,6 @@
 import { buildCommand } from "@stricli/core";
 import { classifySession } from "../lib/classifier.js";
+import { loadCredentials } from "../lib/credentials.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { resolveSession } from "../lib/session-resolver.js";
 import { readSubagentFiles } from "../lib/subagent-reader.js";
@@ -17,7 +18,6 @@ async function runUpload(
 	flags: {
 		tag?: SessionTag;
 		endpoint: string;
-		apiKey?: string;
 		classify: boolean;
 		dryRun: boolean;
 	},
@@ -30,12 +30,10 @@ async function runUpload(
 		process.stderr.write(`${msg}\n`);
 	};
 
-	// Resolve API key
-	const apiKey = flags.apiKey ?? process.env.FLICK_COMPOUND_API_KEY;
-	if (!apiKey && !flags.dryRun) {
-		writeError(
-			"Error: API key required. Set FLICK_COMPOUND_API_KEY or use --api-key",
-		);
+	// Load credentials
+	const credentials = loadCredentials();
+	if (!credentials && !flags.dryRun) {
+		writeError("Error: Not authenticated. Run `rudel login` first.");
 		process.exitCode = 1;
 		return;
 	}
@@ -127,7 +125,7 @@ async function runUpload(
 	const result = await uploadSession(request, {
 		endpoint: flags.endpoint,
 		// biome-ignore lint/style/noNonNullAssertion: validated above with early return
-		apiKey: apiKey!,
+		token: credentials!.token,
 	});
 
 	if (result.success) {
@@ -164,12 +162,6 @@ export const uploadCommand = buildCommand({
 				brief: "Override the upload endpoint URL",
 				default: DEFAULT_ENDPOINT,
 			},
-			apiKey: {
-				kind: "parsed",
-				parse: String,
-				brief: "API key (overrides FLICK_COMPOUND_API_KEY env var)",
-				optional: true,
-			},
 			classify: {
 				kind: "boolean",
 				brief: "Auto-classify session tag using Claude CLI",
@@ -183,7 +175,6 @@ export const uploadCommand = buildCommand({
 		},
 		aliases: {
 			t: "tag",
-			k: "apiKey",
 			c: "classify",
 			n: "dryRun",
 		},

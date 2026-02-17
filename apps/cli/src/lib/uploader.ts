@@ -2,7 +2,7 @@ import type { IngestRequest, UploadResult } from "./types.js";
 
 export interface UploadConfig {
 	endpoint: string;
-	apiKey: string;
+	token: string;
 }
 
 /**
@@ -17,7 +17,7 @@ export async function uploadSession(
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"x-api-key": config.apiKey,
+				Authorization: `Bearer ${config.token}`,
 			},
 			body: JSON.stringify(request),
 		});

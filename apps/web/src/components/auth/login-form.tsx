@@ -12,6 +12,16 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 
+function getCallbackURL(): string {
+	const params = new URLSearchParams(window.location.search);
+	const cliCallback = params.get("cli_callback");
+	const state = params.get("state");
+	if (cliCallback && state) {
+		return `/?cli_callback=${encodeURIComponent(cliCallback)}&state=${encodeURIComponent(state)}`;
+	}
+	return "/";
+}
+
 export function LoginForm({
 	onSwitchToSignup,
 }: {
@@ -82,7 +92,7 @@ export function LoginForm({
 						onClick={() =>
 							authClient.signIn.social({
 								provider: "google",
-								callbackURL: "/",
+								callbackURL: getCallbackURL(),
 							})
 						}
 					>
@@ -93,7 +103,7 @@ export function LoginForm({
 						onClick={() =>
 							authClient.signIn.social({
 								provider: "github",
-								callbackURL: "/",
+								callbackURL: getCallbackURL(),
 							})
 						}
 					>
