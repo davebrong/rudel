@@ -1,0 +1,23 @@
+{
+	"name": "@gazed/cli",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"bin": {
+		"gazed": "./src/bin/cli.ts"
+	},
+	"scripts": {
+		"dev": "bun run src/bin/cli.ts",
+		"check-types": "tsc --noEmit",
+		"build": "bun build src/bin/cli.ts --outdir dist --target bun",
+		"test": "bun test"
+	},
+	"dependencies": {
+		"@stricli/core": "^1.2.5"
+	},
+	"devDependencies": {
+		"@gazed/typescript-config": "workspace:*",
+		"bun-types": "latest",
+		"typescript": "5.9.2"
+	}
+}
