@@ -1,6 +1,6 @@
 import { defineConfig } from "@chkit/core";
-import { pull } from "@chkit/plugin-pull";
 import { codegen } from "@chkit/plugin-codegen";
+import { pull } from "@chkit/plugin-pull";
 
 export default defineConfig({
 	schema: "./src/db/schema/**/*.ts",
