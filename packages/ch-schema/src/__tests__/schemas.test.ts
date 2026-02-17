@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
 	FlickClaudeSessionsRowSchema,
 	FlickUptimeCheckResultsRowSchema,
-} from "../generated/chx-types.js";
+} from "../generated/chkit-types.js";
 
 describe("FlickClaudeSessionsRowSchema", () => {
 	const validRow = {

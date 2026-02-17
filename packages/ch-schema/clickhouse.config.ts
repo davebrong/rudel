@@ -1,13 +1,13 @@
 import { defineConfig } from "@chkit/core";
+import { codegen } from "@chkit/plugin-codegen";
 import { pull } from "@chkit/plugin-pull";
-import { typegen } from "@chkit/plugin-typegen";
 
 export default defineConfig({
 	schema: "./src/db/schema/**/*.ts",
 	outDir: "./chx",
 	migrationsDir: "./chx/migrations",
 	metaDir: "./chx/meta",
-	plugins: [pull(), typegen({ emitZod: true })],
+	plugins: [pull(), codegen({ emitZod: true, emitIngest: true })],
 	clickhouse: {
 		url: process.env.CLICKHOUSE_URL ?? "http://localhost:8123",
 		username: process.env.CLICKHOUSE_USER ?? "default",
