@@ -52,7 +52,7 @@ async function resolveFromId(sessionId: string): Promise<SessionInfo> {
 	try {
 		projectDirs = await readdir(SESSIONS_BASE_DIR);
 	} catch {
-		throw new Error(`Cannot read sessions directory: ${SESSIONS_BASE_DIR}`);
+		throw new Error(`Session not found: ${sessionId}`);
 	}
 
 	for (const projectDir of projectDirs) {

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -33,6 +34,9 @@ const SAMPLE_SUBAGENT_CONTENT = JSON.stringify({
 	role: "assistant",
 	content: "Subagent work done",
 });
+
+const CLAUDE_PROJECTS_DIR = join(homedir(), ".claude", "projects");
+const hasClaudeProjects = existsSync(CLAUDE_PROJECTS_DIR);
 
 let tempDir: string;
 
@@ -81,15 +85,18 @@ describe("session resolver", () => {
 		expect(result.sessionDir).toBe(tempDir);
 	});
 
-	test("resolves session by ID from ~/.claude/projects/", async () => {
-		const realSessionId = await findRealSessionId();
-		const result = await resolveSession(realSessionId);
+	test.skipIf(!hasClaudeProjects)(
+		"resolves session by ID from ~/.claude/projects/",
+		async () => {
+			const realSessionId = await findRealSessionId();
+			const result = await resolveSession(realSessionId);
 
-		expect(result.sessionId).toBe(realSessionId);
-		expect(result.transcriptPath).toContain(`${realSessionId}.jsonl`);
-		expect(result.projectPath).toBeTruthy();
-		expect(result.sessionDir).toBeTruthy();
-	});
+			expect(result.sessionId).toBe(realSessionId);
+			expect(result.transcriptPath).toContain(`${realSessionId}.jsonl`);
+			expect(result.projectPath).toBeTruthy();
+			expect(result.sessionDir).toBeTruthy();
+		},
+	);
 
 	test("rejects subagent file passed as path", async () => {
 		const agentFile = join(tempDir, "agent-sub123.jsonl");
@@ -207,14 +214,7 @@ describe("subagent reader", () => {
 describe("git info", () => {
 	test("extracts git info from current repo", async () => {
 		// This test runs inside a git repo (the monorepo itself)
-		const cwd = join(
-			homedir(),
-			"conductor",
-			"workspaces",
-			"gazed",
-			"belo-horizonte-v1",
-		);
-		const info = await getGitInfo(cwd);
+		const info = await getGitInfo(process.cwd());
 
 		expect(info.branch).toBeTruthy();
 		expect(info.sha).toMatch(/^[0-9a-f]{40}$/);
@@ -280,26 +280,29 @@ describe("full upload pipeline (dry-run)", () => {
 		expect(request.subagents).toHaveLength(1);
 	});
 
-	test("full CLI dry-run with real session ID", async () => {
-		const realSessionId = await findRealSessionId();
+	test.skipIf(!hasClaudeProjects)(
+		"full CLI dry-run with real session ID",
+		async () => {
+			const realSessionId = await findRealSessionId();
 
-		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
-		const proc = Bun.spawn(
-			["bun", cliPath, "upload", realSessionId, "--dry-run"],
-			{ stdout: "pipe", stderr: "pipe" },
-		);
+			const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
+			const proc = Bun.spawn(
+				["bun", cliPath, "upload", realSessionId, "--dry-run"],
+				{ stdout: "pipe", stderr: "pipe" },
+			);
 
-		const exitCode = await proc.exited;
-		const stdout = await new Response(proc.stdout).text();
-		const stderr = await new Response(proc.stderr).text();
+			const exitCode = await proc.exited;
+			const stdout = await new Response(proc.stdout).text();
+			const stderr = await new Response(proc.stderr).text();
 
-		expect(exitCode).toBe(0);
-		expect(stdout).toContain("Resolving session:");
-		expect(stdout).toContain("Found session at:");
-		expect(stdout).toContain("Dry run - would upload:");
-		expect(stdout).toContain(`"sessionId": "${realSessionId}"`);
-		expect(stderr).toBe("");
-	});
+			expect(exitCode).toBe(0);
+			expect(stdout).toContain("Resolving session:");
+			expect(stdout).toContain("Found session at:");
+			expect(stdout).toContain("Dry run - would upload:");
+			expect(stdout).toContain(`"sessionId": "${realSessionId}"`);
+			expect(stderr).toBe("");
+		},
+	);
 
 	test("full CLI dry-run with file path and subagent files", async () => {
 		const projectDir = join(tempDir, "cli-path-test2");
