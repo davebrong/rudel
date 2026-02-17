@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from "bun:test";
+import { afterAll, describe, expect, it, test } from "bun:test";
 import { createClickHouseExecutor } from "@chkit/clickhouse";
 import {
 	ingestFlickClaudeSessions,
@@ -9,6 +9,7 @@ import type {
 	FlickUptimeCheckResultsRow,
 } from "../generated/chkit-types.js";
 
+const hasClickHouse = !!process.env.CLICKHOUSE_URL;
 const testId = `test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 const executor = createClickHouseExecutor({
@@ -19,6 +20,7 @@ const executor = createClickHouseExecutor({
 });
 
 afterAll(async () => {
+	if (!hasClickHouse) return;
 	await executor.execute(
 		`DELETE FROM flick.claude_sessions WHERE session_id = '${testId}'`,
 	);
@@ -52,10 +54,13 @@ describe("ingestFlickClaudeSessions", () => {
 		tag: "integration-test",
 	};
 
-	it("inserts a row and reads it back", async () => {
+	test.skipIf(!hasClickHouse)("inserts a row and reads it back", async () => {
 		await ingestFlickClaudeSessions(executor, [row]);
 
-		const results = await executor.query<{ session_id: string; tag: string }>(
+		const results = await executor.query<{
+			session_id: string;
+			tag: string;
+		}>(
 			`SELECT session_id, tag FROM flick.claude_sessions WHERE session_id = '${testId}' LIMIT 1`,
 		);
 
@@ -103,7 +108,7 @@ describe("ingestFlickUptimeCheckResults", () => {
 		retries_needed: 0,
 	};
 
-	it("inserts a row and reads it back", async () => {
+	test.skipIf(!hasClickHouse)("inserts a row and reads it back", async () => {
 		await ingestFlickUptimeCheckResults(executor, [row]);
 
 		const results = await executor.query<{
