@@ -65,9 +65,8 @@ describe("ingestFlickClaudeSessions", () => {
 		);
 
 		expect(results).toHaveLength(1);
-		expect(results[0]).toBeDefined();
-		expect(results[0].session_id).toBe(testId);
-		expect(results[0].tag).toBe("integration-test");
+		expect(results[0]?.session_id).toBe(testId);
+		expect(results[0]?.tag).toBe("integration-test");
 	});
 
 	it("rejects invalid data with validate option", async () => {
@@ -119,9 +118,8 @@ describe("ingestFlickUptimeCheckResults", () => {
 		);
 
 		expect(results).toHaveLength(1);
-		expect(results[0]).toBeDefined();
-		expect(results[0].monitor_id).toBe(testId);
-		expect(results[0].success).toBe(1);
+		expect(results[0]?.monitor_id).toBe(testId);
+		expect(results[0]?.success).toBe(1);
 	});
 
 	it("rejects invalid data with validate option", async () => {

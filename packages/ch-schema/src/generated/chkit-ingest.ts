@@ -25,7 +25,10 @@ export async function ingestFlickClaudeSessions(
 	const data = options?.validate
 		? rows.map((row) => FlickClaudeSessionsRowSchema.parse(row))
 		: rows;
-	await ingestor.insert({ table: "flick.claude_sessions", values: data });
+	await ingestor.insert({
+		table: "flick.claude_sessions",
+		values: data as unknown as Record<string, unknown>[],
+	});
 }
 
 export async function ingestFlickUptimeCheckResults(
@@ -36,5 +39,8 @@ export async function ingestFlickUptimeCheckResults(
 	const data = options?.validate
 		? rows.map((row) => FlickUptimeCheckResultsRowSchema.parse(row))
 		: rows;
-	await ingestor.insert({ table: "flick.uptime_check_results", values: data });
+	await ingestor.insert({
+		table: "flick.uptime_check_results",
+		values: data as unknown as Record<string, unknown>[],
+	});
 }
