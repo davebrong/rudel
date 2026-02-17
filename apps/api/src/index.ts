@@ -10,7 +10,11 @@ await runMigrations();
 const rpcHandler = new RPCHandler(router);
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "http://localhost:4011";
-const STATIC_DIR = join(import.meta.dir, "..", process.env.STATIC_DIR ?? "public");
+const STATIC_DIR = join(
+	import.meta.dir,
+	"..",
+	process.env.STATIC_DIR ?? "public",
+);
 
 function corsHeaders(origin: string | null): Record<string, string> {
 	if (origin !== ALLOWED_ORIGIN) return {};
