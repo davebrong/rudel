@@ -2,8 +2,10 @@ import Database from "bun:sqlite";
 import { betterAuth } from "better-auth";
 import { bearer } from "better-auth/plugins";
 
-const socialProviders: Record<string, { clientId: string; clientSecret: string }> =
-	{};
+const socialProviders: Record<
+	string,
+	{ clientId: string; clientSecret: string }
+> = {};
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 	socialProviders.google = {
 		clientId: process.env.GOOGLE_CLIENT_ID,
