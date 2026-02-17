@@ -1,10 +1,16 @@
+import { join } from "node:path";
 import { RPCHandler } from "@orpc/server/fetch";
-import { auth } from "./auth.js";
+import { getMigrations } from "better-auth/db";
+import { auth, authOptions } from "./auth.js";
 import { router } from "./router.js";
+
+const { runMigrations } = await getMigrations(authOptions);
+await runMigrations();
 
 const rpcHandler = new RPCHandler(router);
 
-const ALLOWED_ORIGIN = "http://localhost:4011";
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "http://localhost:4011";
+const STATIC_DIR = join(import.meta.dir, "..", process.env.STATIC_DIR ?? "public");
 
 function corsHeaders(origin: string | null): Record<string, string> {
 	if (origin !== ALLOWED_ORIGIN) return {};
@@ -48,6 +54,19 @@ Bun.serve({
 				response.headers.set(key, value);
 			}
 			return response;
+		}
+
+		// Static file serving (production: frontend assets)
+		const filePath = join(STATIC_DIR, url.pathname);
+		const file = Bun.file(filePath);
+		if (await file.exists()) {
+			return new Response(file);
+		}
+
+		// SPA fallback: serve index.html for non-API routes
+		const indexFile = Bun.file(join(STATIC_DIR, "index.html"));
+		if (await indexFile.exists()) {
+			return new Response(indexFile);
 		}
 
 		return new Response("Not found", { status: 404, headers: cors });

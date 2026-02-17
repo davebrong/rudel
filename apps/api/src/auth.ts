@@ -19,9 +19,17 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 	};
 }
 
-export const auth = betterAuth({
-	baseURL: "http://localhost:4010",
-	database: new Database("data/auth.sqlite"),
+const appURL = process.env.APP_URL ?? "http://localhost:4010";
+const trustedOrigins = process.env.TRUSTED_ORIGINS
+	? process.env.TRUSTED_ORIGINS.split(",").map((o) => o.trim())
+	: ["http://localhost:4011"];
+if (!trustedOrigins.includes(appURL)) {
+	trustedOrigins.push(appURL);
+}
+
+export const authOptions = {
+	baseURL: appURL,
+	database: new Database(process.env.DATABASE_PATH ?? "data/auth.sqlite"),
 	emailAndPassword: {
 		enabled: true,
 	},
@@ -30,7 +38,9 @@ export const auth = betterAuth({
 	session: {
 		expiresIn: 60 * 60 * 24 * 365,
 	},
-	trustedOrigins: ["http://localhost:4011"],
-});
+	trustedOrigins,
+} satisfies Parameters<typeof betterAuth>[0];
+
+export const auth = betterAuth(authOptions);
 
 export type Session = typeof auth.$Infer.Session;
