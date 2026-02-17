@@ -1,10 +1,10 @@
 {
-	"name": "@gazed/cli",
+	"name": "@rudel/cli",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
 	"bin": {
-		"gazed": "./src/bin/cli.ts"
+		"rudel": "./src/bin/cli.ts"
 	},
 	"scripts": {
 		"dev": "bun run src/bin/cli.ts",
@@ -16,7 +16,7 @@
 		"@stricli/core": "^1.2.5"
 	},
 	"devDependencies": {
-		"@gazed/typescript-config": "workspace:*",
+		"@rudel/typescript-config": "workspace:*",
 		"bun-types": "latest",
 		"typescript": "5.9.2"
 	}

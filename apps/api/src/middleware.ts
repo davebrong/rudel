@@ -1,4 +1,4 @@
-import { contract } from "@gazed/api-routes";
+import { contract } from "@rudel/api-routes";
 import { implement, ORPCError } from "@orpc/server";
 import type { Session } from "./auth.js";
 

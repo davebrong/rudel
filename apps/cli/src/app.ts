@@ -11,7 +11,7 @@ const routes = buildRouteMap({
 });
 
 export const app = buildApplication(routes, {
-	name: "gazed",
+	name: "rudel",
 	versionInfo: {
 		currentVersion: "0.0.0",
 	},

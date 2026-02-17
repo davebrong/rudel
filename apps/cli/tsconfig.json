@@ -1,5 +1,5 @@
 {
-	"extends": "@gazed/typescript-config/node.json",
+	"extends": "@rudel/typescript-config/node.json",
 	"compilerOptions": {
 		"outDir": "./dist",
 		"rootDir": "./src",

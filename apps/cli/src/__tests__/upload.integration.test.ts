@@ -41,7 +41,7 @@ const hasClaudeProjects = existsSync(CLAUDE_PROJECTS_DIR);
 let tempDir: string;
 
 beforeAll(async () => {
-	tempDir = await mkdtemp(join(homedir(), ".gazed-cli-test-"));
+	tempDir = await mkdtemp(join(homedir(), ".rudel-cli-test-"));
 });
 
 afterAll(async () => {

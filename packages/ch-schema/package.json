@@ -1,5 +1,5 @@
 {
-	"name": "@gazed/ch-schema",
+	"name": "@rudel/ch-schema",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -18,7 +18,7 @@
 		"zod": "^3.24.0"
 	},
 	"devDependencies": {
-		"@gazed/typescript-config": "workspace:*",
+		"@rudel/typescript-config": "workspace:*",
 		"bun-types": "latest",
 		"typescript": "5.9.2"
 	}

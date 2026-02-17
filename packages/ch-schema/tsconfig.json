@@ -1,5 +1,5 @@
 {
-	"extends": "@gazed/typescript-config/base.json",
+	"extends": "@rudel/typescript-config/base.json",
 	"compilerOptions": {
 		"noEmit": true,
 		"types": ["bun-types"]

@@ -1,4 +1,4 @@
-import type { contract } from "@gazed/api-routes";
+import type { contract } from "@rudel/api-routes";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
