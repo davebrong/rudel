@@ -96,6 +96,7 @@ const baseExecutor = createClickHouseExecutor({
 
 // ClickHouse Cloud's @clickhouse/client insert() silently drops data.
 // Wrap the executor to use execute() with FORMAT JSONEachRow instead.
+// async_insert=0 forces synchronous insert so data is immediately queryable.
 const executor: typeof baseExecutor = {
 	...baseExecutor,
 	async insert(params) {
@@ -103,7 +104,7 @@ const executor: typeof baseExecutor = {
 			.map((r: Record<string, unknown>) => JSON.stringify(r))
 			.join("\n");
 		await baseExecutor.execute(
-			`INSERT INTO ${params.table} FORMAT JSONEachRow ${rows}`,
+			`INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
 		);
 	},
 };
@@ -129,7 +130,6 @@ async function waitForRow(
 		organization_id: string;
 	}>
 > {
-	const today = new Date().toISOString().split("T")[0];
 	const start = Date.now();
 	while (Date.now() - start < timeoutMs) {
 		try {
@@ -141,7 +141,7 @@ async function waitForRow(
 				user_id: string;
 				organization_id: string;
 			}>(
-				`SELECT session_id, project_path, repository, tag, user_id, organization_id FROM flick.claude_sessions WHERE session_id = '${sessionId}' AND toDate(session_date) = '${today}' LIMIT 1`,
+				`SELECT session_id, project_path, repository, tag, user_id, organization_id FROM flick.claude_sessions WHERE session_id = '${sessionId}' LIMIT 1`,
 			);
 			if (results.length > 0) return results;
 		} catch {

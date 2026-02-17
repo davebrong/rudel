@@ -15,6 +15,7 @@ const baseExecutor = createClickHouseExecutor({
 
 // ClickHouse Cloud's @clickhouse/client insert() silently drops data.
 // Wrap the executor to use execute() with FORMAT JSONEachRow instead.
+// async_insert=0 forces synchronous insert so data is immediately queryable.
 const executor: typeof baseExecutor = {
 	...baseExecutor,
 	async insert(params) {
@@ -22,7 +23,7 @@ const executor: typeof baseExecutor = {
 			.map((r: Record<string, unknown>) => JSON.stringify(r))
 			.join("\n");
 		await baseExecutor.execute(
-			`INSERT INTO ${params.table} FORMAT JSONEachRow ${rows}`,
+			`INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
 		);
 	},
 };
