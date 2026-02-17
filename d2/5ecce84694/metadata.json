@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "d25ecce84694",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/update-chkit-codegen",
+  "checkpoints_count": 7,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "package.json",
+    "packages/ch-schema/clickhouse.config.ts",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/src/__tests__/ingest.test.ts",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts",
+    "packages/ch-schema/src/generated/chx-types.ts",
+    "packages/ch-schema/src/index.ts",
+    "packages/ch-schema/turbo.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d2/5ecce84694/0/metadata.json",
+      "transcript": "/d2/5ecce84694/0/full.jsonl",
+      "context": "/d2/5ecce84694/0/context.md",
+      "content_hash": "/d2/5ecce84694/0/content_hash.txt",
+      "prompt": "/d2/5ecce84694/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 109,
+    "cache_creation_tokens": 222247,
+    "cache_read_tokens": 7140632,
+    "output_tokens": 1815,
+    "api_call_count": 91
+  }
+}

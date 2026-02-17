@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "d25ecce84694",
+  "session_id": "3897928f-c147-4eaf-aa92-eaaae5d4b1aa",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T07:47:20.878984Z",
+  "branch": "KeKs0r/update-chkit-codegen",
+  "checkpoints_count": 7,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "package.json",
+    "packages/ch-schema/clickhouse.config.ts",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/src/__tests__/ingest.test.ts",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts",
+    "packages/ch-schema/src/generated/chx-types.ts",
+    "packages/ch-schema/src/index.ts",
+    "packages/ch-schema/turbo.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 109,
+    "cache_creation_tokens": 222247,
+    "cache_read_tokens": 7140632,
+    "output_tokens": 1815,
+    "api_call_count": 91
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T07:47:20.623191Z",
+    "agent_lines": 281,
+    "human_added": 2,
+    "human_modified": 8,
+    "human_removed": 0,
+    "total_committed": 291,
+    "agent_percentage": 96.56357388316151
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-seoul/3897928f-c147-4eaf-aa92-eaaae5d4b1aa.jsonl"
+}
