@@ -9,7 +9,7 @@ import type {
 	FlickUptimeCheckResultsRow,
 } from "../generated/chkit-types.js";
 
-const hasClickHouse = !!process.env.CLICKHOUSE_URL;
+const hasClickHouse = process.env.TEST_CLICKHOUSE === "1";
 const testId = `test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 const executor = createClickHouseExecutor({
