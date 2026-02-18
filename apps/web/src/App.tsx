@@ -84,8 +84,14 @@ function App() {
 						: "offline"}
 			</p>
 			<div className="flex gap-2">
-				<Button type="button" onClick={() => health.refetch()}>Check Health</Button>
-				<Button type="button" variant="outline" onClick={() => authClient.signOut()}>
+				<Button type="button" onClick={() => health.refetch()}>
+					Check Health
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					onClick={() => authClient.signOut()}
+				>
 					Sign out
 				</Button>
 			</div>
