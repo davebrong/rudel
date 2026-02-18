@@ -1,17 +1,16 @@
-export {
-	user,
-	session,
-	account,
-	verification,
-} from "./schema.js";
-
 export type {
-	UserSelect,
-	UserInsert,
-	SessionSelect,
-	SessionInsert,
-	AccountSelect,
 	AccountInsert,
-	VerificationSelect,
+	AccountSelect,
+	SessionInsert,
+	SessionSelect,
+	UserInsert,
+	UserSelect,
 	VerificationInsert,
+	VerificationSelect,
+} from "./schema.js";
+export {
+	account,
+	session,
+	user,
+	verification,
 } from "./schema.js";

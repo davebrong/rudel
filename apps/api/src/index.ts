@@ -1,8 +1,8 @@
 import { join } from "node:path";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { RPCHandler } from "@orpc/server/fetch";
-import { db } from "./db.js";
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { createAuth } from "./auth.js";
+import { db } from "./db.js";
 import { router } from "./router.js";
 
 const migrationsFolder = join(

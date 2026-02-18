@@ -1,7 +1,8 @@
 /// <reference types="@cloudflare/workers-types" />
-import { drizzle } from "drizzle-orm/d1";
+
 import { RPCHandler } from "@orpc/server/fetch";
 import * as schema from "@rudel/sql-schema";
+import { drizzle } from "drizzle-orm/d1";
 import { createAuth } from "./auth.js";
 import { getClickhouse } from "./clickhouse.js";
 import { ingestSession } from "./ingest.js";
