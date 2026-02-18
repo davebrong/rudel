@@ -3,12 +3,16 @@
   "checkpoint_id": "0c5434e1d312",
   "strategy": "manual-commit",
   "branch": "KeKs0r/cli-deploy-endpoint",
-  "checkpoints_count": 3,
+  "checkpoints_count": 5,
   "files_touched": [
     ".context/plans/replace-chkit-clickhouse-with-clickhouse-client-we.md",
+    ".gitignore",
     "apps/api/package.json",
     "apps/api/src/__tests__/ingest.test.ts",
     "apps/api/src/clickhouse.ts",
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "apps/cli/src/__tests__/auth.e2e.test.ts",
+    "apps/cli/src/__tests__/helpers/wrangler-server.ts",
     "apps/cli/src/commands/login.ts",
     "apps/cli/src/lib/types.ts"
   ],
@@ -26,13 +30,20 @@
       "context": "/0c/5434e1d312/1/context.md",
       "content_hash": "/0c/5434e1d312/1/content_hash.txt",
       "prompt": "/0c/5434e1d312/1/prompt.txt"
+    },
+    {
+      "metadata": "/0c/5434e1d312/2/metadata.json",
+      "transcript": "/0c/5434e1d312/2/full.jsonl",
+      "context": "/0c/5434e1d312/2/context.md",
+      "content_hash": "/0c/5434e1d312/2/content_hash.txt",
+      "prompt": "/0c/5434e1d312/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 131,
-    "cache_creation_tokens": 95324,
-    "cache_read_tokens": 3156280,
-    "output_tokens": 933,
-    "api_call_count": 72
+    "input_tokens": 258,
+    "cache_creation_tokens": 345965,
+    "cache_read_tokens": 8409191,
+    "output_tokens": 1981,
+    "api_call_count": 161
   }
 }
