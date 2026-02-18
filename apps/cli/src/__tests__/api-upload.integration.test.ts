@@ -5,9 +5,9 @@ import { join } from "node:path";
 import type { IngestRequest } from "../lib/types.js";
 import { uploadSession } from "../lib/uploader.js";
 import {
-	type TestWorker,
 	signUpTestUser,
 	startTestWorker,
+	type TestWorker,
 } from "./helpers/wrangler-server.js";
 
 let worker: TestWorker;
@@ -84,14 +84,7 @@ describe("CLI upload to local API", () => {
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
 		const proc = Bun.spawn(
-			[
-				"bun",
-				cliPath,
-				"upload",
-				sessionFile,
-				"--endpoint",
-				worker.rpcUrl,
-			],
+			["bun", cliPath, "upload", sessionFile, "--endpoint", worker.rpcUrl],
 			{
 				stdout: "pipe",
 				stderr: "pipe",

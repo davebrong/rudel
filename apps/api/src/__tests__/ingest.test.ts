@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { createClickHouseExecutor } from "../clickhouse.js";
 import type { IngestSessionInput } from "@rudel/api-routes";
+import { createClickHouseExecutor } from "../clickhouse.js";
 import { buildSessionRow, ingestSession } from "../ingest.js";
 
 const sampleInput: IngestSessionInput = {

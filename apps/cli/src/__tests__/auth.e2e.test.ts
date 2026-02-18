@@ -13,9 +13,9 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-	type TestWorker,
 	signUpTestUser,
 	startTestWorker,
+	type TestWorker,
 } from "./helpers/wrangler-server.js";
 
 let worker: TestWorker;

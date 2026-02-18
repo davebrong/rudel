@@ -98,9 +98,7 @@ export async function startTestWorker(): Promise<TestWorker> {
 		async stop() {
 			proc.kill();
 			await proc.exited;
-			await rm(persistDir, { recursive: true, force: true }).catch(
-				() => {},
-			);
+			await rm(persistDir, { recursive: true, force: true }).catch(() => {});
 		},
 	};
 }
@@ -127,9 +125,7 @@ async function parseReadyPort(proc: Subprocess): Promise<number> {
 			buffer += decoder.decode(value, { stream: true });
 
 			// wrangler prints: "Ready on http://localhost:<port>"
-			const match = buffer.match(
-				/Ready on https?:\/\/localhost:(\d+)/i,
-			);
+			const match = buffer.match(/Ready on https?:\/\/localhost:(\d+)/i);
 			if (match?.[1]) {
 				reader.releaseLock();
 				return Number.parseInt(match[1], 10);
@@ -154,9 +150,7 @@ async function parseReadyPort(proc: Subprocess): Promise<number> {
 /**
  * Create a test user via better-auth sign-up and return a bearer token.
  */
-export async function signUpTestUser(
-	baseUrl: string,
-): Promise<string> {
+export async function signUpTestUser(baseUrl: string): Promise<string> {
 	const res = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
