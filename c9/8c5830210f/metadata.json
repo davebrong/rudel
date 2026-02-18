@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "c98c5830210f",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/fix-local-dev",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/web/src/App.tsx",
+    "apps/web/src/lib/orpc.ts",
+    "apps/web/vite.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c9/8c5830210f/0/metadata.json",
+      "transcript": "/c9/8c5830210f/0/full.jsonl",
+      "context": "/c9/8c5830210f/0/context.md",
+      "content_hash": "/c9/8c5830210f/0/content_hash.txt",
+      "prompt": "/c9/8c5830210f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 400,
+    "cache_creation_tokens": 371817,
+    "cache_read_tokens": 7265890,
+    "output_tokens": 1404,
+    "api_call_count": 116
+  }
+}
