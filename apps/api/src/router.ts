@@ -1,4 +1,5 @@
 import { getClickhouse } from "./clickhouse.js";
+import { analyticsRouter } from "./handlers/analytics/index.js";
 import { ingestSession } from "./ingest.js";
 import { authMiddleware, os } from "./middleware.js";
 
@@ -35,4 +36,5 @@ export const router = os.router({
 	health,
 	me,
 	ingestSession: ingestSessionHandler,
+	analytics: analyticsRouter,
 });

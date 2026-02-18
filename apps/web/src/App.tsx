@@ -1,10 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginForm } from "./components/auth/login-form";
 import { SignupForm } from "./components/auth/signup-form";
-import { Button } from "./components/ui/button";
+import { DashboardLayout } from "./layouts/DashboardLayout";
 import { authClient } from "./lib/auth-client";
-import { orpc } from "./lib/orpc";
+import { OverviewPage } from "./pages/dashboard/OverviewPage";
+import { DevelopersListPage } from "./pages/dashboard/DevelopersListPage";
+import { DeveloperDetailPage } from "./pages/dashboard/DeveloperDetailPage";
+import { ProjectsListPage } from "./pages/dashboard/ProjectsListPage";
+import { ProjectDetailPage } from "./pages/dashboard/ProjectDetailPage";
+import { SessionsListPage } from "./pages/dashboard/SessionsListPage";
+import { SessionDetailPage } from "./pages/dashboard/SessionDetailPage";
+import { ROIPage } from "./pages/dashboard/ROIPage";
+import { ErrorsPage } from "./pages/dashboard/ErrorsPage";
+import { LearningsPage } from "./pages/dashboard/LearningsPage";
 
 type Page = "login" | "signup";
 
@@ -26,7 +35,6 @@ function App() {
 	const { data: session, isPending } = authClient.useSession();
 	const [page, setPage] = useState<Page>("login");
 	const [cliRedirecting, setCliRedirecting] = useState(false);
-	const health = useQuery(orpc.health.queryOptions({}));
 	const cliParams = getCliParams();
 
 	useEffect(() => {
@@ -52,7 +60,9 @@ function App() {
 	if (cliRedirecting) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
-				<p className="text-muted-foreground">Completing CLI login...</p>
+				<p className="text-muted-foreground">
+					Completing CLI login...
+				</p>
 			</div>
 		);
 	}
@@ -70,32 +80,31 @@ function App() {
 	}
 
 	return (
-		<div className="flex min-h-screen flex-col items-center justify-center gap-4">
-			<h1 className="text-4xl font-bold">Melbourne</h1>
-			<p className="text-muted-foreground">
-				Signed in as {session.user.name} ({session.user.email})
-			</p>
-			<p className="text-muted-foreground">
-				API status:{" "}
-				{health.isLoading
-					? "checking..."
-					: health.data
-						? health.data.status
-						: "offline"}
-			</p>
-			<div className="flex gap-2">
-				<Button type="button" onClick={() => health.refetch()}>
-					Check Health
-				</Button>
-				<Button
-					type="button"
-					variant="outline"
-					onClick={() => authClient.signOut()}
-				>
-					Sign out
-				</Button>
-			</div>
-		</div>
+		<Routes>
+			<Route path="/" element={<Navigate to="/dashboard" replace />} />
+			<Route path="/dashboard" element={<DashboardLayout />}>
+				<Route index element={<OverviewPage />} />
+				<Route path="developers" element={<DevelopersListPage />} />
+				<Route
+					path="developers/:userId"
+					element={<DeveloperDetailPage />}
+				/>
+				<Route path="projects" element={<ProjectsListPage />} />
+				<Route
+					path="projects/:projectPath"
+					element={<ProjectDetailPage />}
+				/>
+				<Route path="sessions" element={<SessionsListPage />} />
+				<Route
+					path="sessions/:sessionId"
+					element={<SessionDetailPage />}
+				/>
+				<Route path="roi" element={<ROIPage />} />
+				<Route path="errors" element={<ErrorsPage />} />
+				<Route path="learnings" element={<LearningsPage />} />
+			</Route>
+			<Route path="*" element={<Navigate to="/dashboard" replace />} />
+		</Routes>
 	);
 }
 

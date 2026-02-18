@@ -77,3 +77,19 @@ export function getClickhouse(): ClickHouseExecutor {
 	}
 	return _clickhouse;
 }
+
+export function escapeString(value: string): string {
+	return value.replace(/'/g, "\\'");
+}
+
+export function buildDateFilter(
+	days: number,
+	column = "session_date",
+): string {
+	return `${column} >= now() - INTERVAL ${Number(days)} DAY AND ${column} <= now()`;
+}
+
+export async function queryClickhouse<T>(sql: string): Promise<T[]> {
+	const ch = getClickhouse();
+	return ch.query<T>(sql);
+}

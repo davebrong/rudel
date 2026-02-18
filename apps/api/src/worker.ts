@@ -5,6 +5,7 @@ import * as schema from "@rudel/sql-schema";
 import { drizzle } from "drizzle-orm/d1";
 import { createAuth } from "./auth.js";
 import { getClickhouse } from "./clickhouse.js";
+import { analyticsRouter } from "./handlers/analytics/index.js";
 import { ingestSession } from "./ingest.js";
 import { authMiddleware, os } from "./middleware.js";
 
@@ -45,7 +46,7 @@ function buildRouter() {
 			return { success: true as const, sessionId: input.sessionId };
 		});
 
-	return os.router({ health, me, ingestSession: ingestSessionHandler });
+	return os.router({ health, me, ingestSession: ingestSessionHandler, analytics: analyticsRouter });
 }
 
 function corsHeaders(
