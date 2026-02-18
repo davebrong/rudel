@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4e36002bce2a",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/debug-ci-failures",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/clickhouse.ts",
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "packages/ch-schema/src/__tests__/ingest.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4e/36002bce2a/0/metadata.json",
+      "transcript": "/4e/36002bce2a/0/full.jsonl",
+      "context": "/4e/36002bce2a/0/context.md",
+      "content_hash": "/4e/36002bce2a/0/content_hash.txt",
+      "prompt": "/4e/36002bce2a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 59,
+    "cache_creation_tokens": 76614,
+    "cache_read_tokens": 3127892,
+    "output_tokens": 853,
+    "api_call_count": 53
+  }
+}
