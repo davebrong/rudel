@@ -9,12 +9,14 @@
 		"format": "biome format --write .",
 		"check-types": "turbo run check-types",
 		"test": "turbo run test",
-		"verify": "turbo run lint check-types test build"
+		"verify": "turbo run lint check-types test build",
+		"deploy": "turbo run build --filter=@rudel/web && wrangler deploy"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.0",
 		"turbo": "^2.8.9",
-		"typescript": "5.9.2"
+		"typescript": "5.9.2",
+		"wrangler": "^4"
 	},
 	"engines": {
 		"node": ">=18"

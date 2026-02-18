@@ -1,4 +1,4 @@
-import { clickhouse } from "./clickhouse.js";
+import { getClickhouse } from "./clickhouse.js";
 import { ingestSession } from "./ingest.js";
 import { authMiddleware, os } from "./middleware.js";
 
@@ -20,7 +20,7 @@ const me = os.me.use(authMiddleware).handler(({ context }) => {
 const ingestSessionHandler = os.ingestSession
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
-		await ingestSession(clickhouse, input, {
+		await ingestSession(getClickhouse(), input, {
 			userId: context.user.id,
 			organizationId: context.user.id,
 		});

@@ -1,46 +1,40 @@
-import Database from "bun:sqlite";
 import { betterAuth } from "better-auth";
 import { bearer } from "better-auth/plugins";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import * as schema from "@rudel/sql-schema";
+import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
 
-const socialProviders: Record<
-	string,
-	{ clientId: string; clientSecret: string }
-> = {};
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-	socialProviders.google = {
-		clientId: process.env.GOOGLE_CLIENT_ID,
-		clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-	};
-}
-if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-	socialProviders.github = {
-		clientId: process.env.GITHUB_CLIENT_ID,
-		clientSecret: process.env.GITHUB_CLIENT_SECRET,
-	};
+export interface AuthConfig {
+	appURL: string;
+	secret?: string;
+	socialProviders?: Record<string, { clientId: string; clientSecret: string }>;
+	trustedOrigins?: string[];
 }
 
-const appURL = process.env.APP_URL ?? "http://localhost:4010";
-const trustedOrigins = process.env.TRUSTED_ORIGINS
-	? process.env.TRUSTED_ORIGINS.split(",").map((o) => o.trim())
-	: ["http://localhost:4011"];
-if (!trustedOrigins.includes(appURL)) {
-	trustedOrigins.push(appURL);
+export function createAuth(
+	db: BaseSQLiteDatabase<any, any, typeof schema>,
+	config: AuthConfig,
+) {
+	const trustedOrigins = config.trustedOrigins ?? [];
+	if (!trustedOrigins.includes(config.appURL)) {
+		trustedOrigins.push(config.appURL);
+	}
+
+	return betterAuth({
+		baseURL: config.appURL,
+		secret: config.secret,
+		database: drizzleAdapter(db, { provider: "sqlite", schema }),
+		emailAndPassword: {
+			enabled: true,
+		},
+		socialProviders: config.socialProviders,
+		plugins: [bearer()],
+		session: {
+			expiresIn: 60 * 60 * 24 * 365,
+		},
+		trustedOrigins,
+	});
 }
 
-export const authOptions = {
-	baseURL: appURL,
-	database: new Database(process.env.DATABASE_PATH ?? "data/auth.sqlite"),
-	emailAndPassword: {
-		enabled: true,
-	},
-	socialProviders,
-	plugins: [bearer()],
-	session: {
-		expiresIn: 60 * 60 * 24 * 365,
-	},
-	trustedOrigins,
-} satisfies Parameters<typeof betterAuth>[0];
-
-export const auth = betterAuth(authOptions);
-
-export type Session = typeof auth.$Infer.Session;
+export type Auth = ReturnType<typeof createAuth>;
+export type Session = Auth["$Infer"]["Session"];

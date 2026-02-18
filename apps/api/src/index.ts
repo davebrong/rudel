@@ -1,11 +1,50 @@
 import { join } from "node:path";
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { RPCHandler } from "@orpc/server/fetch";
-import { getMigrations } from "better-auth/db";
-import { auth, authOptions } from "./auth.js";
+import { db } from "./db.js";
+import { createAuth } from "./auth.js";
 import { router } from "./router.js";
 
-const { runMigrations } = await getMigrations(authOptions);
-await runMigrations();
+const migrationsFolder = join(
+	import.meta.dir,
+	"..",
+	"..",
+	"..",
+	"packages",
+	"sql-schema",
+	"db",
+	"migrations",
+);
+migrate(db, { migrationsFolder });
+
+const socialProviders: Record<
+	string,
+	{ clientId: string; clientSecret: string }
+> = {};
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+	socialProviders.google = {
+		clientId: process.env.GOOGLE_CLIENT_ID,
+		clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+	};
+}
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+	socialProviders.github = {
+		clientId: process.env.GITHUB_CLIENT_ID,
+		clientSecret: process.env.GITHUB_CLIENT_SECRET,
+	};
+}
+
+const appURL = process.env.APP_URL ?? "http://localhost:4010";
+const trustedOrigins = process.env.TRUSTED_ORIGINS
+	? process.env.TRUSTED_ORIGINS.split(",").map((o) => o.trim())
+	: ["http://localhost:4011"];
+
+const auth = createAuth(db, {
+	appURL,
+	secret: process.env.BETTER_AUTH_SECRET,
+	socialProviders,
+	trustedOrigins,
+});
 
 const rpcHandler = new RPCHandler(router);
 
