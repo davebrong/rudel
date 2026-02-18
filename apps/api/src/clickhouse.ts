@@ -25,9 +25,7 @@ export function getClickhouse(): ClickHouseExecutor {
 					} catch (error) {
 						// Retry on INSERT race conditions (ClickHouse code 236)
 						if (attempt === maxRetries - 1) throw error;
-						await new Promise((r) =>
-							setTimeout(r, 100 * (attempt + 1)),
-						);
+						await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
 					}
 				}
 			},
