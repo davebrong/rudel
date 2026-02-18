@@ -20,37 +20,7 @@ beforeAll(async () => {
 	tempDir = await mkdtemp(join(homedir(), ".rudel-api-test-"));
 	const testDbPath = join(tempDir, "auth.sqlite");
 
-	// Run better-auth migration to initialize the test SQLite DB
-	const migrateProc = Bun.spawn(
-		[
-			"bun",
-			"-e",
-			`
-			import Database from "bun:sqlite";
-			import { betterAuth } from "better-auth";
-			import { bearer } from "better-auth/plugins";
-			import { getMigrations } from "better-auth/db";
-			const config = {
-				baseURL: "http://localhost:${API_PORT}",
-				database: new Database("${testDbPath}"),
-				emailAndPassword: { enabled: true },
-				plugins: [bearer()],
-			};
-			const { runMigrations } = await getMigrations(config);
-			await runMigrations();
-			console.log("OK");
-		`,
-		],
-		{ cwd: API_DIR, stdout: "pipe", stderr: "pipe" },
-	);
-	const migrateOut = await new Response(migrateProc.stdout).text();
-	await migrateProc.exited;
-	if (!migrateOut.includes("OK")) {
-		const stderr = await new Response(migrateProc.stderr).text();
-		throw new Error(`Migration failed: ${stderr}`);
-	}
-
-	// Start the API server using the test database
+	// Start the API server — Drizzle migrations in index.ts create tables automatically
 	apiProcess = Bun.spawn(["bun", join(API_DIR, "src", "index.ts")], {
 		cwd: API_DIR,
 		env: {
