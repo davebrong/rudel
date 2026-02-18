@@ -165,14 +165,19 @@ describe("ingestSession", () => {
 			subagents: [{ agentId: "sub-1", content: "subagent content" }],
 		};
 
-		// ClickHouse Cloud can silently drop inserts under load.
-		// Retry the insert+read cycle to handle transient failures.
+		// ClickHouse Cloud can silently drop inserts or throw race condition
+		// errors (code 236). Retry the insert+read cycle with exponential backoff.
 		let results: Awaited<ReturnType<typeof waitForRow>> = [];
-		for (let attempt = 0; attempt < 3; attempt++) {
-			await ingestSession(executor, input, {
-				userId: "test_user",
-				organizationId: "test_org",
-			});
+		for (let attempt = 0; attempt < 5; attempt++) {
+			try {
+				await ingestSession(executor, input, {
+					userId: "test_user",
+					organizationId: "test_org",
+				});
+			} catch {
+				await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt));
+				continue;
+			}
 			results = await waitForRow(testId);
 			if (results.length > 0) break;
 		}
