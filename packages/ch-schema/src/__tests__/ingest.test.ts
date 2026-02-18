@@ -54,9 +54,9 @@ async function insertWithRetry(
 	for (let attempt = 0; attempt < maxAttempts; attempt++) {
 		try {
 			await fn();
-		} catch {
+		} catch (error) {
 			// Retry on transient ClickHouse errors (e.g. INSERT race conditions)
-			if (attempt === maxAttempts - 1) throw;
+			if (attempt === maxAttempts - 1) throw error;
 			await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
 			continue;
 		}
