@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
+		"dev:env": "doppler run --project rudel --config ci -- bun --watch src/index.ts",
 		"check-types": "tsc --noEmit",
 		"test": "bun test"
 	},

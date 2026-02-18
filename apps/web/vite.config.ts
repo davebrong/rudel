@@ -7,6 +7,10 @@ export default defineConfig({
 	plugins: [react(), tailwindcss()],
 	server: {
 		port: 4011,
+		proxy: {
+			"/api": "http://localhost:4010",
+			"/rpc": "http://localhost:4010",
+		},
 	},
 	resolve: {
 		alias: {

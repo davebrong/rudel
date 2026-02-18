@@ -5,7 +5,7 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import type { contract } from "@rudel/api-routes";
 
 const link = new RPCLink({
-	url: "/rpc",
+	url: new URL("/rpc", window.location.origin).href,
 	fetch: (input, init) => fetch(input, { ...init, credentials: "include" }),
 });
 
