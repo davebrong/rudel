@@ -15,7 +15,7 @@
       "name": "@rudel/api",
       "version": "0.0.0",
       "dependencies": {
-        "@chkit/clickhouse": "0.1.0-beta.5",
+        "@clickhouse/client-web": "^1.11.0",
         "@orpc/server": "latest",
         "@rudel/api-routes": "workspace:*",
         "@rudel/ch-schema": "workspace:*",
@@ -229,6 +229,8 @@
     "@clickhouse/client": ["@clickhouse/client@1.17.0", "", { "dependencies": { "@clickhouse/client-common": "1.17.0" } }, "sha512-Y3DQoamKZ/Iyosoq7Lj7lqpDkQDK4R/5mI52yJs4ZLPIO+d6/CYDqTbFBIb4No3C/AlXUYE4TKhj/kXDpe6rOA=="],
 
     "@clickhouse/client-common": ["@clickhouse/client-common@1.17.0", "", {}, "sha512-MiwwgXViFAQA2YZkN4ymF1ynzG0K49KeSX9/iOcmJetWkxqSekDdpyp1GjwATWa9R215uQ+hGzJtJujeQVZZIw=="],
+
+    "@clickhouse/client-web": ["@clickhouse/client-web@1.17.0", "", { "dependencies": { "@clickhouse/client-common": "1.17.0" } }, "sha512-rady6FKTSKfB4DL3dO1Y9R4XMykc0WxY8Yex4RWYgsNuYWkvP8WQqQjEgHQZqVUYvIA6jth6AMBSKAnZLo4p7A=="],
 
     "@cloudflare/kv-asset-handler": ["@cloudflare/kv-asset-handler@0.4.2", "", {}, "sha512-SIOD2DxrRRwQ+jgzlXCqoEFiKOFqaPjhnNTGKXSRLvp1HiOvapLaFG2kEr9dYQTYe8rKrd9uvDUzmAITeNyaHQ=="],
 

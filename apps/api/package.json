@@ -11,7 +11,7 @@
 		"env:sync": "doppler secrets -p rudel -c prd --json | jq -c 'with_entries(.value = .value.computed)' > secrets.json && bun wrangler secret bulk < secrets.json && rm secrets.json"
 	},
 	"dependencies": {
-		"@chkit/clickhouse": "0.1.0-beta.5",
+		"@clickhouse/client-web": "^1.11.0",
 		"@orpc/server": "latest",
 		"@rudel/api-routes": "workspace:*",
 		"@rudel/ch-schema": "workspace:*",
