@@ -49,10 +49,17 @@ async function waitForQuery<T>(
 async function insertWithRetry(
 	fn: () => Promise<void>,
 	queryFn: () => Promise<unknown[]>,
-	maxAttempts = 3,
+	maxAttempts = 5,
 ): Promise<unknown[]> {
 	for (let attempt = 0; attempt < maxAttempts; attempt++) {
-		await fn();
+		try {
+			await fn();
+		} catch (error) {
+			// Retry on transient ClickHouse errors (e.g. INSERT race conditions)
+			if (attempt === maxAttempts - 1) throw error;
+			await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt));
+			continue;
+		}
 		const results = await queryFn();
 		if (results.length > 0) return results;
 	}
