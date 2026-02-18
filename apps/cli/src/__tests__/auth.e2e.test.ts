@@ -12,100 +12,28 @@ setDefaultTimeout(30_000);
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Subprocess } from "bun";
+import {
+	type TestWorker,
+	signUpTestUser,
+	startTestWorker,
+} from "./helpers/wrangler-server.js";
 
-let apiProcess: Subprocess;
-let apiPort: number;
-let apiBaseUrl: string;
-let tempDir: string;
+let worker: TestWorker;
 let configDir: string;
+let tempDir: string;
 let sessionToken: string;
 
-async function waitForServer(url: string, timeoutMs = 10_000): Promise<void> {
-	const deadline = Date.now() + timeoutMs;
-	while (Date.now() < deadline) {
-		try {
-			const res = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: "{}",
-			});
-			if (res.ok) return;
-		} catch {
-			// not ready yet
-		}
-		await Bun.sleep(100);
-	}
-	throw new Error(`Server at ${url} did not start within ${timeoutMs}ms`);
-}
-
 beforeAll(async () => {
-	// Create temp directories
 	tempDir = mkdtempSync(join(tmpdir(), "rudel-auth-test-"));
 	configDir = join(tempDir, "config");
 	mkdirSync(configDir, { recursive: true });
 
-	// Create data dir for SQLite DB
-	const dataDir = join(tempDir, "data");
-	mkdirSync(dataDir, { recursive: true });
-
-	// Find a free port by briefly binding
-	const tempServer = Bun.serve({
-		port: 0,
-		hostname: "127.0.0.1",
-		fetch: () => new Response(""),
-	});
-	apiPort = tempServer.port as number;
-	tempServer.stop(true);
-
-	apiBaseUrl = `http://localhost:${apiPort}`;
-
-	// Start real API server with test PORT and working directory
-	const apiEntrypoint = join(
-		import.meta.dir,
-		"..",
-		"..",
-		"..",
-		"api",
-		"src",
-		"index.ts",
-	);
-	apiProcess = Bun.spawn(["bun", apiEntrypoint], {
-		env: {
-			...process.env,
-			PORT: String(apiPort),
-		},
-		cwd: tempDir,
-		stdout: "ignore",
-		stderr: "ignore",
-	});
-
-	// Wait for server to be ready
-	await waitForServer(`${apiBaseUrl}/rpc/health`, 15_000);
-
-	// Create a test user via sign-up and extract session token
-	const signupResponse = await fetch(`${apiBaseUrl}/api/auth/sign-up/email`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({
-			name: "Test User",
-			email: "test@example.com",
-			password: "testpassword123",
-		}),
-	});
-
-	expect(signupResponse.ok).toBe(true);
-
-	// Extract session token from response body
-	const signupData = (await signupResponse.json()) as { token: string };
-	sessionToken = signupData.token;
-});
+	worker = await startTestWorker();
+	sessionToken = await signUpTestUser(worker.baseUrl);
+}, 60_000);
 
 afterAll(async () => {
-	if (apiProcess) {
-		apiProcess.kill();
-		await apiProcess.exited;
-	}
+	await worker?.stop();
 	rmSync(tempDir, { recursive: true, force: true });
 });
 
@@ -122,7 +50,7 @@ describe("auth e2e", () => {
 			[
 				"bash",
 				"-c",
-				`bun "${cliPath}" login --api-base="${apiBaseUrl}" --web-url=http://localhost:9999 2>&1 | tee "${stdoutLogPath}"`,
+				`bun "${cliPath}" login --api-base="${worker.baseUrl}" --web-url=http://localhost:9999 2>&1 | tee "${stdoutLogPath}"`,
 			],
 			{
 				env: {
@@ -173,12 +101,12 @@ describe("auth e2e", () => {
 		const savedCredentials = loadCredentialsFromDir(configDir);
 		expect(savedCredentials).not.toBeNull();
 		expect(savedCredentials?.token).toBe(sessionToken);
-		expect(savedCredentials?.apiBaseUrl).toBe(apiBaseUrl);
+		expect(savedCredentials?.apiBaseUrl).toBe(worker.baseUrl);
 	});
 
 	test("whoami: shows user info with valid credentials", async () => {
 		// Ensure credentials are stored
-		saveCredentialsToDir(configDir, sessionToken, apiBaseUrl);
+		saveCredentialsToDir(configDir, sessionToken, worker.baseUrl);
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
 		const proc = Bun.spawn(["bun", cliPath, "whoami"], {
@@ -196,13 +124,13 @@ describe("auth e2e", () => {
 
 		expect(exitCode).toBe(0);
 		expect(stdout).toContain("Test User");
-		expect(stdout).toContain("test@example.com");
+		expect(stdout).toContain("test-");
 		expect(stderr).toBe("");
 	});
 
 	test("logout: clears credentials", async () => {
 		// Ensure credentials exist
-		saveCredentialsToDir(configDir, sessionToken, apiBaseUrl);
+		saveCredentialsToDir(configDir, sessionToken, worker.baseUrl);
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
 		const proc = Bun.spawn(["bun", cliPath, "logout"], {

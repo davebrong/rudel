@@ -39,5 +39,4 @@ export interface UploadResult {
 	error?: string;
 }
 
-export const DEFAULT_ENDPOINT =
-	"https://flick-api.numia.workers.dev/api/orpc/compound";
+export const DEFAULT_ENDPOINT = "https://rudel.numia.workers.dev/rpc";

@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { createClickHouseExecutor } from "@chkit/clickhouse";
+import { createClickHouseExecutor } from "../clickhouse.js";
 import type { IngestSessionInput } from "@rudel/api-routes";
 import { buildSessionRow, ingestSession } from "../ingest.js";
 
