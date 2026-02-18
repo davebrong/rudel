@@ -32,8 +32,11 @@ export async function startTestWorker(): Promise<TestWorker> {
 		"CLICKHOUSE_USERNAME",
 		"CLICKHOUSE_PASSWORD",
 	]) {
-		if (process.env[key]) {
-			devVarsLines.push(`${key} = "${process.env[key]}"`);
+		const value =
+			process.env[key] ||
+			(key === "CLICKHOUSE_USERNAME" ? process.env.CLICKHOUSE_USER : undefined);
+		if (value) {
+			devVarsLines.push(`${key} = "${value}"`);
 		}
 	}
 

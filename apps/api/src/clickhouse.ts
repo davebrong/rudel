@@ -36,10 +36,11 @@ export function createClickHouseExecutor(config: {
 			return result.json();
 		},
 		async insert(params) {
-			await client.insert({
-				table: params.table,
-				values: params.values,
-				format: "JSONEachRow",
+			// Use command() with FORMAT JSONEachRow instead of client.insert()
+			// because ClickHouse Cloud's @clickhouse/client insert() silently drops data.
+			const rows = params.values.map((r) => JSON.stringify(r)).join("\n");
+			await client.command({
+				query: `INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
 			});
 		},
 	};
