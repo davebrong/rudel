@@ -52,7 +52,14 @@ async function insertWithRetry(
 	maxAttempts = 3,
 ): Promise<unknown[]> {
 	for (let attempt = 0; attempt < maxAttempts; attempt++) {
-		await fn();
+		try {
+			await fn();
+		} catch {
+			// Retry on transient ClickHouse errors (e.g. INSERT race conditions)
+			if (attempt === maxAttempts - 1) throw;
+			await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+			continue;
+		}
 		const results = await queryFn();
 		if (results.length > 0) return results;
 	}
