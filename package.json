@@ -1,34 +1,34 @@
 {
-  "name": "melbourne",
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "check-types": "turbo run check-types",
-    "test": "turbo run test",
-    "test:env": "doppler run --project rudel --config ci -- bun run test",
-    "verify": "turbo run lint check-types test build",
-    "deploy": "turbo run build --filter=@rudel/web && wrangler deploy"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.4.0",
-    "turbo": "^2.8.9",
-    "typescript": "5.9.2",
-    "wrangler": "^4"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "bun@1.3.5",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "overrides": {
-    "@chkit/core": "0.1.0-beta.5",
-    "@chkit/clickhouse": "0.1.0-beta.5"
-  }
+	"name": "melbourne",
+	"private": true,
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write .",
+		"check-types": "turbo run check-types",
+		"test": "turbo run test",
+		"test:env": "doppler run --project rudel --config ci -- bun run test",
+		"verify": "turbo run lint check-types test build",
+		"deploy": "turbo run build --filter=@rudel/web && wrangler deploy"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.0",
+		"turbo": "^2.8.9",
+		"typescript": "5.9.2",
+		"wrangler": "^4"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "bun@1.3.5",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"overrides": {
+		"@chkit/core": "0.1.0-beta.5",
+		"@chkit/clickhouse": "0.1.0-beta.5"
+	}
 }
