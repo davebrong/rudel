@@ -10,7 +10,7 @@
 		"check-types": "turbo run check-types",
 		"test": "turbo run test",
 		"test:env": "doppler run --project rudel --config ci -- bun run test",
-		"verify": "turbo run lint check-types test build",
+		"verify": "doppler run --project rudel --config ci -- turbo run lint check-types test build",
 		"release:cli": "bun run ./scripts/release-cli.ts",
 		"deploy": "turbo run build --filter=@rudel/web && wrangler deploy"
 	},
