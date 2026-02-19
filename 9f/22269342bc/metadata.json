@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "9f22269342bc",
+  "strategy": "manual-commit",
+  "branch": "add-chcli-skill",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".agents/skills/clickhouse-query/SKILL.md",
+    ".agents/skills/clickhouse-query/references/connection.md",
+    "CLAUDE.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/9f/22269342bc/0/metadata.json",
+      "transcript": "/9f/22269342bc/0/full.jsonl",
+      "context": "/9f/22269342bc/0/context.md",
+      "content_hash": "/9f/22269342bc/0/content_hash.txt",
+      "prompt": "/9f/22269342bc/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 59131,
+    "cache_read_tokens": 1323052,
+    "output_tokens": 9207,
+    "api_call_count": 32
+  }
+}
