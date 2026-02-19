@@ -28,46 +28,40 @@ afterAll(async () => {
 });
 
 describe("CLI upload to local API", () => {
-	test(
-		"uploads a session via uploadSession to the local API",
-		async () => {
-			expect(bearerToken).toBeTruthy();
+	test("uploads a session via uploadSession to the local API", async () => {
+		expect(bearerToken).toBeTruthy();
 
-			const testId = `cli_api_test_${Date.now()}`;
-			const request: IngestRequest = {
-				sessionId: testId,
-				projectPath: "/test/cli-api-upload",
-				repository: "test-repo",
-				gitBranch: "main",
-				gitSha: "abc123",
-				tag: "tests",
-				content: "cli api integration test content",
-				subagents: [{ agentId: "sub-1", content: "subagent content" }],
-			};
+		const testId = `cli_api_test_${Date.now()}`;
+		const request: IngestRequest = {
+			sessionId: testId,
+			projectPath: "/test/cli-api-upload",
+			repository: "test-repo",
+			gitBranch: "main",
+			gitSha: "abc123",
+			tag: "tests",
+			content: "cli api integration test content",
+			subagents: [{ agentId: "sub-1", content: "subagent content" }],
+		};
 
-			// Retry up to 3 times — wrangler dev + ClickHouse can be slow to accept
-			// the first request after startup (race condition with D1/CH readiness).
-			let result = { success: false, error: "not attempted" } as Awaited<
-				ReturnType<typeof uploadSession>
-			>;
-			for (let attempt = 0; attempt < 3; attempt++) {
-				result = await uploadSession(request, {
-					endpoint: worker.rpcUrl,
-					token: bearerToken,
-				});
-				if (result.success) break;
-				await Bun.sleep(1000);
-			}
+		// Retry up to 3 times — wrangler dev + ClickHouse can be slow to accept
+		// the first request after startup (race condition with D1/CH readiness).
+		let result = { success: false, error: "not attempted" } as Awaited<
+			ReturnType<typeof uploadSession>
+		>;
+		for (let attempt = 0; attempt < 3; attempt++) {
+			result = await uploadSession(request, {
+				endpoint: worker.rpcUrl,
+				token: bearerToken,
+			});
+			if (result.success) break;
+			await Bun.sleep(1000);
+		}
 
-			if (!result.success) {
-				throw new Error(
-					`uploadSession failed after 3 attempts: ${result.error}`,
-				);
-			}
-			expect(result.status).toBe(200);
-		},
-		30_000,
-	);
+		if (!result.success) {
+			throw new Error(`uploadSession failed after 3 attempts: ${result.error}`);
+		}
+		expect(result.status).toBe(200);
+	}, 30_000);
 
 	test("full CLI upload via subprocess to local API", async () => {
 		expect(bearerToken).toBeTruthy();
