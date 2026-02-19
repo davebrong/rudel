@@ -19,7 +19,7 @@ const routes = buildRouteMap({
 export const app = buildApplication(routes, {
 	name: "rudel",
 	versionInfo: {
-		currentVersion: "0.0.0",
+		currentVersion: "0.1.0",
 	},
 	scanner: {
 		caseStyle: "allow-kebab-for-camel",

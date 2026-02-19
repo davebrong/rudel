@@ -1,11 +1,13 @@
 {
-	"name": "@rudel/cli",
-	"version": "0.0.0",
-	"private": true,
+	"name": "rudel",
+	"version": "0.1.0",
 	"type": "module",
 	"bin": {
-		"rudel": "./src/bin/cli.ts"
+		"rudel": "./dist/cli.js"
 	},
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"dev": "bun run src/bin/cli.ts",
 		"check-types": "tsc --noEmit",
@@ -13,12 +15,12 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@orpc/client": "latest",
-		"@orpc/contract": "latest",
-		"@rudel/api-routes": "workspace:*",
+		"@orpc/client": "^1.13.5",
+		"@orpc/contract": "^1.13.5",
 		"@stricli/core": "^1.2.5"
 	},
 	"devDependencies": {
+		"@rudel/api-routes": "workspace:*",
 		"@rudel/typescript-config": "workspace:*",
 		"bun-types": "latest",
 		"typescript": "5.9.2"

@@ -31,18 +31,18 @@
       },
     },
     "apps/cli": {
-      "name": "@rudel/cli",
-      "version": "0.0.0",
+      "name": "rudel",
+      "version": "0.1.0",
       "bin": {
-        "rudel": "./src/bin/cli.ts",
+        "rudel": "./dist/cli.js",
       },
       "dependencies": {
-        "@orpc/client": "latest",
-        "@orpc/contract": "latest",
-        "@rudel/api-routes": "workspace:*",
+        "@orpc/client": "^1.13.5",
+        "@orpc/contract": "^1.13.5",
         "@stricli/core": "^1.2.5",
       },
       "devDependencies": {
+        "@rudel/api-routes": "workspace:*",
         "@rudel/typescript-config": "workspace:*",
         "bun-types": "latest",
         "typescript": "5.9.2",
@@ -626,8 +626,6 @@
 
     "@rudel/ch-schema": ["@rudel/ch-schema@workspace:packages/ch-schema"],
 
-    "@rudel/cli": ["@rudel/cli@workspace:apps/cli"],
-
     "@rudel/sql-schema": ["@rudel/sql-schema@workspace:packages/sql-schema"],
 
     "@rudel/typescript-config": ["@rudel/typescript-config@workspace:packages/typescript-config"],
@@ -1207,6 +1205,8 @@
     "rou3": ["rou3@0.7.12", "", {}, "sha512-iFE4hLDuloSWcD7mjdCDhx2bKcIsYbtOTpfH5MHHLSKMOUyjqQXTeZVa289uuwEGEKFoE/BAPbhaU4B774nceg=="],
 
     "router": ["router@2.2.0", "", { "dependencies": { "debug": "^4.4.0", "depd": "^2.0.0", "is-promise": "^4.0.0", "parseurl": "^1.3.3", "path-to-regexp": "^8.0.0" } }, "sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ=="],
+
+    "rudel": ["rudel@workspace:apps/cli"],
 
     "run-applescript": ["run-applescript@7.1.0", "", {}, "sha512-DPe5pVFaAsinSaV6QjQ6gdiedWDcRCbUuiQfQa2wmWV7+xC9bGulGI8+TdRmoFkAPaBXk8CrAbnlY2ISniJ47Q=="],
 

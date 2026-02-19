@@ -11,6 +11,7 @@
 		"test": "turbo run test",
 		"test:env": "doppler run --project rudel --config ci -- bun run test",
 		"verify": "turbo run lint check-types test build",
+		"release:cli": "bun run ./scripts/release-cli.ts",
 		"deploy": "turbo run build --filter=@rudel/web && wrangler deploy"
 	},
 	"devDependencies": {
