@@ -25,7 +25,7 @@ jobs:
         run: git diff --exit-code bun.lock
 
       - name: Verify
-        run: bun run verify
+        run: bunx turbo run lint check-types test build
         env:
           CLICKHOUSE_URL: ${{ secrets.CLICKHOUSE_URL }}
           CLICKHOUSE_USERNAME: ${{ secrets.CLICKHOUSE_USERNAME }}
