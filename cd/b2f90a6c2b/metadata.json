@@ -3,7 +3,7 @@
   "checkpoint_id": "cdb2f90a6c2b",
   "strategy": "manual-commit",
   "branch": "KeKs0r/update-claude-md",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     "CLAUDE.md",
     "apps/cli/src/app.ts",
@@ -12,7 +12,9 @@
     "apps/cli/src/commands/hooks/claude/index.ts",
     "apps/cli/src/commands/hooks/claude/session-end.ts",
     "apps/cli/src/commands/hooks/index.ts",
-    "apps/cli/src/lib/claude-settings.ts"
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/lib/claude-settings.ts",
+    "apps/cli/src/lib/types.ts"
   ],
   "sessions": [
     {
@@ -28,13 +30,20 @@
       "context": "/cd/b2f90a6c2b/1/context.md",
       "content_hash": "/cd/b2f90a6c2b/1/content_hash.txt",
       "prompt": "/cd/b2f90a6c2b/1/prompt.txt"
+    },
+    {
+      "metadata": "/cd/b2f90a6c2b/2/metadata.json",
+      "transcript": "/cd/b2f90a6c2b/2/full.jsonl",
+      "context": "/cd/b2f90a6c2b/2/context.md",
+      "content_hash": "/cd/b2f90a6c2b/2/content_hash.txt",
+      "prompt": "/cd/b2f90a6c2b/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 705,
-    "cache_creation_tokens": 135029,
-    "cache_read_tokens": 4364204,
-    "output_tokens": 1567,
-    "api_call_count": 97
+    "input_tokens": 984,
+    "cache_creation_tokens": 181968,
+    "cache_read_tokens": 4676848,
+    "output_tokens": 1650,
+    "api_call_count": 109
   }
 }
