@@ -2,8 +2,8 @@ import { randomBytes } from "node:crypto";
 import { buildCommand } from "@stricli/core";
 import { loadCredentials, saveCredentials } from "../lib/credentials.js";
 
-const DEFAULT_API_BASE = "https://rudel.numia.workers.dev";
-const DEFAULT_WEB_URL = "https://rudel.numia.workers.dev";
+const DEFAULT_API_BASE = "https://app.rudel.ai";
+const DEFAULT_WEB_URL = "https://app.rudel.ai";
 const CALLBACK_TIMEOUT_MS = 120_000;
 
 async function runLogin(flags: {

@@ -1,4 +1,7 @@
 import { buildApplication, buildRouteMap } from "@stricli/core";
+import { disableCommand } from "./commands/disable.js";
+import { enableCommand } from "./commands/enable.js";
+import { hooksRouteMap } from "./commands/hooks/index.js";
 import { loginCommand } from "./commands/login.js";
 import { logoutCommand } from "./commands/logout.js";
 import { uploadCommand } from "./commands/upload.js";
@@ -10,16 +13,20 @@ const routes = buildRouteMap({
 		logout: logoutCommand,
 		whoami: whoamiCommand,
 		upload: uploadCommand,
+		enable: enableCommand,
+		disable: disableCommand,
+		hooks: hooksRouteMap,
 	},
 	docs: {
 		brief: "CLI tools for managing Claude Code sessions",
+		hideRoute: { hooks: true },
 	},
 });
 
 export const app = buildApplication(routes, {
 	name: "rudel",
 	versionInfo: {
-		currentVersion: "0.0.0",
+		currentVersion: "0.1.4",
 	},
 	scanner: {
 		caseStyle: "allow-kebab-for-camel",

@@ -39,4 +39,4 @@ export interface UploadResult {
 	error?: string;
 }
 
-export const DEFAULT_ENDPOINT = "https://rudel.numia.workers.dev/rpc";
+export const DEFAULT_ENDPOINT = "https://app.rudel.ai/rpc";

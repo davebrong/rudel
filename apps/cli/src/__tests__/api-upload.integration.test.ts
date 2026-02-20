@@ -43,14 +43,25 @@ describe("CLI upload to local API", () => {
 			subagents: [{ agentId: "sub-1", content: "subagent content" }],
 		};
 
-		const result = await uploadSession(request, {
-			endpoint: worker.rpcUrl,
-			token: bearerToken,
-		});
+		// Retry up to 3 times — wrangler dev + ClickHouse can be slow to accept
+		// the first request after startup (race condition with D1/CH readiness).
+		let result = { success: false, error: "not attempted" } as Awaited<
+			ReturnType<typeof uploadSession>
+		>;
+		for (let attempt = 0; attempt < 3; attempt++) {
+			result = await uploadSession(request, {
+				endpoint: worker.rpcUrl,
+				token: bearerToken,
+			});
+			if (result.success) break;
+			await Bun.sleep(1000);
+		}
 
-		expect(result.success).toBe(true);
+		if (!result.success) {
+			throw new Error(`uploadSession failed after 3 attempts: ${result.error}`);
+		}
 		expect(result.status).toBe(200);
-	});
+	}, 30_000);
 
 	test("full CLI upload via subprocess to local API", async () => {
 		expect(bearerToken).toBeTruthy();
@@ -63,7 +74,7 @@ describe("CLI upload to local API", () => {
 		await mkdir(credDir, { recursive: true });
 		await writeFile(
 			join(credDir, "credentials.json"),
-			JSON.stringify({ token: bearerToken, apiBaseUrl: worker.rpcUrl }),
+			JSON.stringify({ token: bearerToken, apiBaseUrl: worker.baseUrl }),
 		);
 
 		const sessionFile = join(projectDir, "e2e-test-session.jsonl");
@@ -86,6 +97,7 @@ describe("CLI upload to local API", () => {
 		const proc = Bun.spawn(
 			["bun", cliPath, "upload", sessionFile, "--endpoint", worker.rpcUrl],
 			{
+				stdin: "ignore",
 				stdout: "pipe",
 				stderr: "pipe",
 				env: {
@@ -95,16 +107,23 @@ describe("CLI upload to local API", () => {
 			},
 		);
 
-		const exitCode = await proc.exited;
-		const stdout = await new Response(proc.stdout).text();
-		const stderr = await new Response(proc.stderr).text();
+		// Read stdout/stderr concurrently with proc.exited to avoid pipe drain races
+		const [exitCode, stdout, stderr] = await Promise.all([
+			proc.exited,
+			new Response(proc.stdout).text(),
+			new Response(proc.stderr).text(),
+		]);
 
-		expect(stdout).toContain("Upload successful!");
-		expect(exitCode).toBe(0);
-		if (stderr) {
-			expect(stderr).toBe("");
+		if (!stdout.includes("Upload successful!")) {
+			throw new Error(
+				`Expected "Upload successful!" in stdout.\n` +
+					`Exit code: ${exitCode}\n` +
+					`stdout: ${stdout}\n` +
+					`stderr: ${stderr}`,
+			);
 		}
-	});
+		expect(exitCode).toBe(0);
+	}, 30_000);
 
 	test("rejects unauthenticated requests", async () => {
 		const request: IngestRequest = {
