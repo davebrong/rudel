@@ -27,7 +27,7 @@ export async function getUserMappings(orgId: string, days = 30): Promise<UserMap
       user_id,
       project_path,
       count() as sessions
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${dateFilter}
       AND organization_id = '${org}'
     GROUP BY user_id, project_path
@@ -80,7 +80,7 @@ export async function getUserMapping(orgId: string, userId: string, days = 30): 
       user_id,
       project_path,
       count() as sessions
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${dateFilter}
       AND organization_id = '${org}'
       AND user_id = '${uid}'

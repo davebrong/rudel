@@ -139,10 +139,10 @@ export async function getProjectInvestment(
         SUM(ifNull(input_tokens, 0)) as input_tokens_sum,
         SUM(ifNull(output_tokens, 0)) as output_tokens_sum,
         SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
-        round(SUM(duration_minutes), 2) as total_duration_min,
-        round(AVG(duration_minutes), 2) as avg_session_duration_min,
+        round(SUM(actual_duration_min), 2) as total_duration_min,
+        round(AVG(actual_duration_min), 2) as avg_session_duration_min,
         round(AVG(success_score), 2) as success_rate
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
         AND repository != ''
@@ -153,9 +153,9 @@ export async function getProjectInvestment(
       SELECT
         repository,
         round(AVG(success_score), 2) as prev_success_rate
-      FROM flick.session_analytics
-      WHERE session_date >= now() - INTERVAL ${d * 2} DAY
-        AND session_date < now() - INTERVAL ${d} DAY
+      FROM rudel.session_analytics
+      WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
+        AND session_date < now64(3) - INTERVAL ${d} DAY
         AND organization_id = '${org}'
         AND repository != ''
         ${projectFilter}
@@ -211,7 +211,7 @@ export async function getKnowledgeSilos(
         WHEN COUNT(*) >= 10 THEN 'medium'
         ELSE 'low'
       END as risk_level
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND project_path != ''
@@ -253,7 +253,7 @@ export async function getProjectActivity(
   const query = `
     WITH project_repository AS (
       SELECT repository, any(project_path) as project_path
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE project_path = '${pp}'
         AND repository != ''
         AND organization_id = '${org}'
@@ -265,7 +265,7 @@ export async function getProjectActivity(
       COUNT(*) as sessions,
       COUNT(DISTINCT s.user_id) as unique_users
     FROM project_repository pr
-    INNER JOIN flick.session_analytics s ON s.repository = pr.repository
+    INNER JOIN rudel.session_analytics s ON s.repository = pr.repository
     WHERE s.${buildDateFilter(d)}
       AND s.organization_id = '${org}'
     GROUP BY ${dateGrouping}, pr.project_path
@@ -288,7 +288,7 @@ export async function getProjectSummary(orgId: string, days = 30): Promise<Proje
         project_path,
         COUNT(*) as sessions,
         COUNT(DISTINCT user_id) as users
-      FROM flick.claude_sessions
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
         AND project_path != ''
@@ -334,13 +334,13 @@ export async function getProjectDetails(
       SUM(ifNull(output_tokens, 0)) as output_tokens_sum,
       COUNT(DISTINCT user_id) as contributors_count,
       countIf(success_score < 40) as errors_count,
-      round(AVG(duration_minutes), 2) as avg_session_duration_min,
+      round(AVG(actual_duration_min), 2) as avg_session_duration_min,
       round(AVG(success_score), 2) as success_rate,
-      round(SUM(duration_minutes), 2) as total_duration_min
-    FROM flick.session_analytics
+      round(SUM(actual_duration_min), 2) as total_duration_min
+    FROM rudel.session_analytics
     WHERE repository = (
       SELECT repository
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE project_path = '${pp}'
         AND repository != ''
         AND organization_id = '${org}'
@@ -387,7 +387,7 @@ export async function getProjectContributors(
   const query = `
     WITH project_repository AS (
       SELECT repository
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE project_path = '${pp}'
         AND repository != ''
         AND organization_id = '${org}'
@@ -395,7 +395,7 @@ export async function getProjectContributors(
     ),
     project_totals AS (
       SELECT COUNT(*) as total_sessions
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE repository = (SELECT repository FROM project_repository)
         AND ${buildDateFilter(d)}
         AND organization_id = '${org}'
@@ -403,12 +403,12 @@ export async function getProjectContributors(
     SELECT
       user_id,
       COUNT(*) as sessions,
-      round(SUM(duration_minutes), 2) as total_duration_min,
+      round(SUM(actual_duration_min), 2) as total_duration_min,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       toString(min(session_date)) as first_session,
       toString(max(session_date)) as last_session,
       round(COUNT(*) * 100.0 / (SELECT total_sessions FROM project_totals), 2) as contribution_percentage
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE repository = (SELECT repository FROM project_repository)
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
@@ -433,7 +433,7 @@ export async function getProjectFeatureUsage(
 
   const repoSubquery = `(
     SELECT repository
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE project_path = '${pp}'
       AND repository != ''
       AND organization_id = '${org}'
@@ -446,7 +446,7 @@ export async function getProjectFeatureUsage(
       countIf(length(subagent_types) > 0) as subagents_sessions,
       countIf(length(skills) > 0) as skills_sessions,
       countIf(length(slash_commands) > 0) as slash_commands_sessions
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE repository = ${repoSubquery}
     AND ${buildDateFilter(d)}
     AND organization_id = '${org}'
@@ -454,7 +454,7 @@ export async function getProjectFeatureUsage(
 
   const topSubagentsQuery = `
     SELECT val as name, count() as count
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     ARRAY JOIN subagent_types as val
     WHERE repository = ${repoSubquery}
       AND ${buildDateFilter(d)}
@@ -467,7 +467,7 @@ export async function getProjectFeatureUsage(
 
   const topSkillsQuery = `
     SELECT val as name, count() as count
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     ARRAY JOIN skills as val
     WHERE repository = ${repoSubquery}
       AND ${buildDateFilter(d)}
@@ -480,7 +480,7 @@ export async function getProjectFeatureUsage(
 
   const topSlashCommandsQuery = `
     SELECT val as name, count() as count
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
     WHERE repository = ${repoSubquery}
       AND ${buildDateFilter(d)}
@@ -543,7 +543,7 @@ export async function getProjectErrors(
   const query = `
     WITH project_repository AS (
       SELECT repository
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE project_path = '${pp}'
         AND repository != ''
         AND organization_id = '${org}'
@@ -551,25 +551,24 @@ export async function getProjectErrors(
     ),
     error_extracts AS (
       SELECT
-        cs.session_id,
-        cs.user_id,
-        cs.session_date,
+        session_id,
+        user_id,
+        session_date,
         CASE
-          WHEN cs.content LIKE '%OperationFailed%' THEN 'OperationFailed'
-          WHEN cs.content LIKE '%UnknownError%' THEN 'UnknownError'
-          WHEN cs.content LIKE '%ORPCError%' THEN 'ORPCError'
-          WHEN cs.content LIKE '%TimeoutError%' THEN 'TimeoutError'
-          WHEN cs.content LIKE '%TypeError%' THEN 'TypeError'
-          WHEN cs.content LIKE '%ReferenceError%' THEN 'ReferenceError'
-          WHEN cs.content LIKE '%Error:%' OR cs.content LIKE '%error:%' THEN 'GenericError'
+          WHEN content LIKE '%OperationFailed%' THEN 'OperationFailed'
+          WHEN content LIKE '%UnknownError%' THEN 'UnknownError'
+          WHEN content LIKE '%ORPCError%' THEN 'ORPCError'
+          WHEN content LIKE '%TimeoutError%' THEN 'TimeoutError'
+          WHEN content LIKE '%TypeError%' THEN 'TypeError'
+          WHEN content LIKE '%ReferenceError%' THEN 'ReferenceError'
+          WHEN content LIKE '%Error:%' OR content LIKE '%error:%' THEN 'GenericError'
           ELSE NULL
         END as error_pattern
-      FROM flick.claude_sessions cs
-      INNER JOIN flick.session_analytics sa ON cs.session_id = sa.session_id
-      WHERE sa.repository = (SELECT repository FROM project_repository)
-        AND sa.${buildDateFilter(d)}
-        AND sa.organization_id = '${org}'
-        AND (cs.content LIKE '%Error:%' OR cs.content LIKE '%error:%')
+      FROM rudel.session_analytics
+      WHERE repository = (SELECT repository FROM project_repository)
+        AND ${buildDateFilter(d)}
+        AND organization_id = '${org}'
+        AND (content LIKE '%Error:%' OR content LIKE '%error:%')
     )
     SELECT
       error_pattern,
@@ -606,10 +605,10 @@ export async function getProjectTrends(
       repository,
       any(project_path) as project_path,
       COUNT(*) as sessions,
-      round(SUM(duration_minutes) / 60, 2) as total_hours,
+      round(SUM(actual_duration_min) / 60, 2) as total_hours,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       round(AVG(success_score), 2) as avg_success_rate
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND repository != ''

@@ -1,7 +1,7 @@
 import { schema, table } from "@chkit/core";
 
-const flick_claude_sessions = table({
-	database: "flick",
+const rudel_claude_sessions = table({
+	database: "rudel",
 	name: "claude_sessions",
 	engine: "SharedReplacingMergeTree(ingested_at)",
 	columns: [
@@ -40,7 +40,7 @@ const flick_claude_sessions = table({
 		{ name: "tag", type: "String", nullable: true },
 	],
 	primaryKey: [],
-	orderBy: ["organization_id, session_date, session_id"],
+	orderBy: ["organization_id", "session_date", "session_id"],
 	partitionBy: "toYYYYMM(toDate(session_date))",
 	ttl: "toDate(session_date) + toIntervalDay(365)",
 	settings: {
@@ -49,4 +49,4 @@ const flick_claude_sessions = table({
 	},
 });
 
-export default schema(flick_claude_sessions);
+export default schema(rudel_claude_sessions);

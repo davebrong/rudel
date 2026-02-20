@@ -109,6 +109,11 @@ Bun.serve({
 		});
 
 		if (matched) {
+			// Log 500 errors for debugging
+			if (response.status >= 500) {
+				const body = await response.clone().text();
+				console.error(`[RPC ${url.pathname}] ${response.status}:`, body);
+			}
 			for (const [key, value] of Object.entries(cors)) {
 				response.headers.set(key, value);
 			}

@@ -10,8 +10,6 @@ export interface SessionAnalyticsRaw {
 
   // Interaction timing metrics
   total_interactions: number;
-  min_period_sec: number;
-  max_period_sec: number;
   avg_period_sec: number;
   median_period_sec: number;
   quick_responses: number;
@@ -20,24 +18,17 @@ export interface SessionAnalyticsRaw {
   actual_duration_min: number;
 
   // Duration metrics
-  duration_minutes: number;
   last_interaction_date: string;
 
   // Token metrics
   total_tokens: number;
   input_tokens: number;
   output_tokens: number;
-  output_input_ratio: number;
 
   // Git activity
   git_sha: string;
   git_branch: string;
   has_commit: number;
-
-  // Feature usage counts
-  subagents_count: number;
-  skills_count: number;
-  slash_commands_count: number;
 
   // Feature arrays
   subagent_types: string[];
@@ -47,11 +38,6 @@ export interface SessionAnalyticsRaw {
   // Success metrics
   session_archetype: string;
   success_score: number;
-
-  // Task type classification
-  task_type: string;
-  task_type_confidence: number;
-  classification_signals: string[];
 
   // Effectiveness correlation factors
   error_count: number;
@@ -77,8 +63,8 @@ export interface SessionAnalytics {
   slash_commands: string[];
   has_commit: boolean;
   session_archetype: string;
-  task_type: string;
   model_used: string;
+  used_plan_mode: boolean;
 }
 
 export interface SessionAnalyticsSummary {
@@ -164,56 +150,43 @@ export async function getSessionAnalytics(
       ? 'actual_duration_min'
       : sort_by === 'interactions'
       ? 'total_interactions'
-      : 'session_date';
+      : 'sa.session_date';
   const sortDirection = sort_order === 'asc' ? 'ASC' : 'DESC';
 
   const query = `
     SELECT
       session_id,
       user_id,
-      formatDateTime(session_date, '%Y-%m-%d %H:%i:%S') as session_date,
+      formatDateTime(sa.session_date, '%Y-%m-%d %H:%i:%S') as session_date,
       project_path,
       organization_id,
       repository,
       total_interactions,
-      min_period_sec,
-      max_period_sec,
       avg_period_sec,
       median_period_sec,
       quick_responses,
       normal_responses,
       long_pauses,
       actual_duration_min,
-      duration_minutes,
-      formatDateTime(last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
+      formatDateTime(sa.last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
       total_tokens,
       input_tokens,
       output_tokens,
-      output_input_ratio,
       git_sha,
       git_branch,
       has_commit,
-      subagents_count,
-      skills_count,
-      slash_commands_count,
       subagent_types,
       skills,
       slash_commands,
       session_archetype,
       success_score,
-      task_type,
-      task_type_confidence,
-      classification_signals,
       error_count,
       model_used,
       used_plan_mode
-    FROM (
-      SELECT *
-      FROM flick.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
-        ${filters}
-    ) as filtered
+    FROM rudel.session_analytics sa
+    WHERE ${buildDateFilter(d, 'sa.session_date')}
+      AND organization_id = '${org}'
+      ${filters}
     ORDER BY ${sortColumn} ${sortDirection}
     LIMIT ${lim}
     OFFSET ${off}
@@ -239,8 +212,8 @@ export async function getSessionAnalytics(
     slash_commands: row.slash_commands,
     has_commit: row.has_commit > 0,
     session_archetype: row.session_archetype,
-    task_type: row.task_type,
     model_used: row.model_used,
+    used_plan_mode: row.used_plan_mode > 0,
   }));
 }
 
@@ -274,14 +247,14 @@ export async function getSessionAnalyticsSummary(
         SUM(total_interactions) as sum_interactions,
         SUM(quick_responses) as sum_quick_responses,
         SUM(long_pauses) as sum_long_pauses,
-        AVG(actual_duration_min) as avg_duration,
-        AVG(total_interactions) as avg_interactions,
-        AVG(avg_period_sec) as avg_response,
-        AVG(median_period_sec) as med_response,
-        countIf(subagents_count > 0) as cnt_subagents,
-        countIf(skills_count > 0) as cnt_skills,
-        countIf(slash_commands_count > 0) as cnt_slash
-      FROM flick.session_analytics
+        ifNull(AVG(actual_duration_min), 0) as avg_duration,
+        ifNull(AVG(total_interactions), 0) as avg_interactions,
+        ifNull(AVG(avg_period_sec), 0) as avg_response,
+        ifNull(AVG(median_period_sec), 0) as med_response,
+        countIf(length(subagent_types) > 0) as cnt_subagents,
+        countIf(length(skills) > 0) as cnt_skills,
+        countIf(length(slash_commands) > 0) as cnt_slash
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
         ${filters}
@@ -289,10 +262,10 @@ export async function getSessionAnalyticsSummary(
     SELECT
       cnt_sessions as total_sessions,
       sum_interactions as total_interactions,
-      round(avg_duration, 2) as avg_session_duration_min,
-      round(avg_interactions, 2) as avg_interactions_per_session,
-      round(avg_response, 2) as avg_response_time_sec,
-      round(med_response, 2) as median_response_time_sec,
+      ifNull(round(avg_duration, 2), 0) as avg_session_duration_min,
+      ifNull(round(avg_interactions, 2), 0) as avg_interactions_per_session,
+      ifNull(round(avg_response, 2), 0) as avg_response_time_sec,
+      ifNull(round(med_response, 2), 0) as median_response_time_sec,
       round(sum_quick_responses * 100.0 / if(sum_interactions > 0, sum_interactions, 1), 2) as quick_response_rate,
       round(sum_long_pauses * 100.0 / if(sum_interactions > 0, sum_interactions, 1), 2) as long_pause_rate,
       round(cnt_subagents * 100.0 / if(cnt_sessions > 0, cnt_sessions, 1), 2) as subagents_adoption_rate,
@@ -303,23 +276,32 @@ export async function getSessionAnalyticsSummary(
 
   const results = await queryClickhouse<SessionAnalyticsSummary>(query);
 
+  const defaults: SessionAnalyticsSummary = {
+    total_sessions: 0,
+    total_interactions: 0,
+    avg_session_duration_min: 0,
+    avg_interactions_per_session: 0,
+    avg_response_time_sec: 0,
+    median_response_time_sec: 0,
+    quick_response_rate: 0,
+    long_pause_rate: 0,
+    subagents_adoption_rate: 0,
+    skills_adoption_rate: 0,
+    slash_commands_adoption_rate: 0,
+  };
+
   if (results.length === 0) {
-    return {
-      total_sessions: 0,
-      total_interactions: 0,
-      avg_session_duration_min: 0,
-      avg_interactions_per_session: 0,
-      avg_response_time_sec: 0,
-      median_response_time_sec: 0,
-      quick_response_rate: 0,
-      long_pause_rate: 0,
-      subagents_adoption_rate: 0,
-      skills_adoption_rate: 0,
-      slash_commands_adoption_rate: 0,
-    };
+    return defaults;
   }
 
-  return results[0]!;
+  // Coalesce nulls from ClickHouse (AVG on 0 rows returns null despite ifNull)
+  const row = results[0]!;
+  return Object.fromEntries(
+    Object.entries(defaults).map(([key, def]) => [
+      key,
+      (row as any)[key] ?? def,
+    ])
+  ) as SessionAnalyticsSummary;
 }
 
 export interface SessionSummaryComparisonPeriod {
@@ -359,20 +341,20 @@ export async function getSessionAnalyticsSummaryComparison(
     WITH totals AS (
       SELECT
         COUNT(*) as cnt_sessions,
-        AVG(actual_duration_min) as avg_duration,
-        AVG(avg_period_sec) as avg_response,
-        countIf(subagents_count > 0) as cnt_subagents,
-        countIf(skills_count > 0) as cnt_skills,
-        countIf(slash_commands_count > 0) as cnt_slash
-      FROM flick.session_analytics
+        ifNull(AVG(actual_duration_min), 0) as avg_duration,
+        ifNull(AVG(avg_period_sec), 0) as avg_response,
+        countIf(length(subagent_types) > 0) as cnt_subagents,
+        countIf(length(skills) > 0) as cnt_skills,
+        countIf(length(slash_commands) > 0) as cnt_slash
+      FROM rudel.session_analytics
       WHERE ${dateCondition}
         AND organization_id = '${org}'
         ${filters}
     )
     SELECT
       cnt_sessions as total_sessions,
-      round(avg_duration, 2) as avg_session_duration_min,
-      round(avg_response, 2) as avg_response_time_sec,
+      ifNull(round(avg_duration, 2), 0) as avg_session_duration_min,
+      ifNull(round(avg_response, 2), 0) as avg_response_time_sec,
       round(cnt_subagents * 100.0 / if(cnt_sessions > 0, cnt_sessions, 1), 2) as subagents_adoption_rate,
       round(cnt_skills * 100.0 / if(cnt_sessions > 0, cnt_sessions, 1), 2) as skills_adoption_rate,
       round(cnt_slash * 100.0 / if(cnt_sessions > 0, cnt_sessions, 1), 2) as slash_commands_adoption_rate
@@ -380,7 +362,7 @@ export async function getSessionAnalyticsSummaryComparison(
   `;
 
   const currentQuery = summarySQL(buildDateFilter(d));
-  const previousQuery = summarySQL(`session_date >= now() - INTERVAL ${previousDays} DAY AND session_date < now() - INTERVAL ${d} DAY`);
+  const previousQuery = summarySQL(`session_date >= now64(3) - INTERVAL ${previousDays} DAY AND session_date < now64(3) - INTERVAL ${d} DAY`);
 
   const [currentData, previousData] = await Promise.all([
     queryClickhouse<SessionSummaryComparisonPeriod>(currentQuery),
@@ -396,8 +378,18 @@ export async function getSessionAnalyticsSummaryComparison(
     slash_commands_adoption_rate: 0,
   };
 
-  const current = currentData[0] || defaultPeriod;
-  const previous = previousData[0] || defaultPeriod;
+  // Coalesce nulls from ClickHouse (AVG on 0 rows returns null despite ifNull)
+  const coalesce = (row: SessionSummaryComparisonPeriod | undefined): SessionSummaryComparisonPeriod => {
+    if (!row) return { ...defaultPeriod };
+    return Object.fromEntries(
+      Object.entries(defaultPeriod).map(([key, def]) => [
+        key,
+        (row as any)[key] ?? def,
+      ])
+    ) as SessionSummaryComparisonPeriod;
+  };
+  const current = coalesce(currentData[0]);
+  const previous = coalesce(previousData[0]);
 
   const calculateChange = (curr: number, prev: number) => {
     if (!prev || prev === 0) return 0;
@@ -439,7 +431,7 @@ export async function getInteractionTimingDistribution(
   const query = `
     WITH total AS (
       SELECT SUM(total_interactions) as total_count
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
         ${filters}
@@ -448,7 +440,7 @@ export async function getInteractionTimingDistribution(
       'Instant (< 5s)' as bucket,
       SUM(quick_responses) as count,
       round(SUM(quick_responses) * 100.0 / (SELECT total_count FROM total), 2) as percentage
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       ${filters}
@@ -459,7 +451,7 @@ export async function getInteractionTimingDistribution(
       'Normal (5-60s)' as bucket,
       SUM(normal_responses) as count,
       round(SUM(normal_responses) * 100.0 / (SELECT total_count FROM total), 2) as percentage
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       ${filters}
@@ -470,7 +462,7 @@ export async function getInteractionTimingDistribution(
       'Long Pause (> 5m)' as bucket,
       SUM(long_pauses) as count,
       round(SUM(long_pauses) * 100.0 / (SELECT total_count FROM total), 2) as percentage
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       ${filters}
@@ -479,158 +471,6 @@ export async function getInteractionTimingDistribution(
   `;
 
   return queryClickhouse<{ bucket: string; count: number; percentage: number }>(query);
-}
-
-/**
- * Get task type distribution for pie chart
- */
-export async function getTaskTypeDistribution(
-  orgId: string,
-  params: {
-    days?: number;
-    user_id?: string;
-    project_path?: string;
-  } = {}
-): Promise<Array<{ task_type: string; count: number; percentage: number; avg_confidence: number }>> {
-  const { days = 30, user_id, project_path } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-
-  let filters = '';
-  if (user_id) {
-    filters += ` AND user_id = '${escapeString(user_id)}'`;
-  }
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
-
-  const query = `
-    WITH total AS (
-      SELECT COUNT(*) as total_count
-      FROM flick.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
-        ${filters}
-    )
-    SELECT
-      task_type,
-      COUNT(*) as count,
-      round(COUNT(*) * 100.0 / (SELECT total_count FROM total), 2) as percentage,
-      round(AVG(task_type_confidence), 2) as avg_confidence
-    FROM flick.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
-      ${filters}
-    GROUP BY task_type
-    ORDER BY count DESC
-  `;
-
-  return queryClickhouse<{ task_type: string; count: number; percentage: number; avg_confidence: number }>(query);
-}
-
-/**
- * Get sessions filtered by task type
- */
-export async function getSessionsByTaskType(
-  orgId: string,
-  params: {
-    days?: number;
-    task_type?: string;
-    user_id?: string;
-    project_path?: string;
-    limit?: number;
-    offset?: number;
-  } = {}
-): Promise<SessionAnalytics[]> {
-  const { days = 30, task_type, user_id, project_path, limit = 50, offset = 0 } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const lim = Number(limit);
-  const off = Number(offset);
-
-  let filters = '';
-  if (task_type) {
-    filters += ` AND task_type = '${escapeString(task_type)}'`;
-  }
-  if (user_id) {
-    filters += ` AND user_id = '${escapeString(user_id)}'`;
-  }
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
-
-  const query = `
-    SELECT
-      session_id,
-      user_id,
-      formatDateTime(session_date, '%Y-%m-%d %H:%i:%S') as session_date,
-      project_path,
-      organization_id,
-      repository,
-      total_interactions,
-      min_period_sec,
-      max_period_sec,
-      avg_period_sec,
-      median_period_sec,
-      quick_responses,
-      normal_responses,
-      long_pauses,
-      actual_duration_min,
-      duration_minutes,
-      formatDateTime(last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
-      total_tokens,
-      input_tokens,
-      output_tokens,
-      output_input_ratio,
-      git_sha,
-      git_branch,
-      has_commit,
-      subagents_count,
-      skills_count,
-      slash_commands_count,
-      subagent_types,
-      skills,
-      slash_commands,
-      session_archetype,
-      success_score,
-      task_type,
-      task_type_confidence,
-      classification_signals,
-      error_count,
-      model_used,
-      used_plan_mode
-    FROM flick.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
-      ${filters}
-    ORDER BY session_date DESC
-    LIMIT ${lim}
-    OFFSET ${off}
-  `;
-
-  const raw = await queryClickhouse<SessionAnalyticsRaw>(query);
-
-  return raw.map((row): SessionAnalytics => ({
-    session_id: row.session_id,
-    user_id: row.user_id,
-    session_date: row.session_date,
-    project_path: row.project_path,
-    repository: row.repository || null,
-    duration_min: row.actual_duration_min,
-    total_tokens: row.total_tokens,
-    input_tokens: row.input_tokens,
-    output_tokens: row.output_tokens,
-    success_score: row.success_score,
-    total_interactions: row.total_interactions,
-    avg_period_sec: row.avg_period_sec,
-    subagent_types: row.subagent_types,
-    skills: row.skills,
-    slash_commands: row.slash_commands,
-    has_commit: row.has_commit > 0,
-    session_archetype: row.session_archetype,
-    task_type: row.task_type,
-    model_used: row.model_used,
-  }));
 }
 
 /**
@@ -659,7 +499,6 @@ export async function getSessionDimensionAnalysis(
     'project_path',
     'repository',
     'session_archetype',
-    'task_type',
     'model_used',
     'has_commit',
     'used_plan_mode',
@@ -699,9 +538,9 @@ export async function getSessionDimensionAnalysis(
 
   // Map dimension to SQL expression (for computed dimensions)
   const dimensionExpressions: Record<string, string> = {
-    used_skills: 'if(skills_count > 0, 1, 0)',
-    used_slash_commands: 'if(slash_commands_count > 0, 1, 0)',
-    used_subagents: 'if(subagents_count > 0, 1, 0)',
+    used_skills: 'if(length(skills) > 0, 1, 0)',
+    used_slash_commands: 'if(length(slash_commands) > 0, 1, 0)',
+    used_subagents: 'if(length(subagent_types) > 0, 1, 0)',
   };
 
   const dimensionExpression = dimensionExpressions[dimension] || dimension;
@@ -723,7 +562,7 @@ export async function getSessionDimensionAnalysis(
         ${dimensionExpression} as dimension_value,
         ${splitByExpression} as split_value,
         ${metricExpression} as metric_value
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
         ${filters}
@@ -735,7 +574,7 @@ export async function getSessionDimensionAnalysis(
       SELECT
         ${dimensionExpression} as dimension_value,
         ${metricExpression} as metric_value
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
         ${filters}
@@ -799,29 +638,28 @@ export async function getSessionDetail(
 
   const query = `
     SELECT
-      cs.session_id,
-      cs.user_id,
-      formatDateTime(cs.session_date, '%Y-%m-%d %H:%i:%S') as session_date,
-      formatDateTime(cs.last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
-      cs.project_path,
-      cs.repository,
-      cs.content,
-      cs.subagents,
-      cs.skills,
-      cs.slash_commands,
-      cs.git_branch,
-      cs.git_sha,
-      cs.total_tokens,
-      cs.input_tokens,
-      cs.output_tokens,
-      sa.success_score,
-      sa.actual_duration_min as duration_min,
-      sa.total_interactions
-    FROM flick.claude_sessions cs
-    LEFT JOIN flick.session_analytics sa ON cs.session_id = sa.session_id
-    WHERE cs.session_id = '${sid}'
-      AND cs.organization_id = '${org}'
-    ORDER BY cs.ingested_at DESC
+      session_id,
+      user_id,
+      formatDateTime(sa.session_date, '%Y-%m-%d %H:%i:%S') as session_date,
+      formatDateTime(sa.last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
+      project_path,
+      repository,
+      content,
+      subagents,
+      skills,
+      slash_commands,
+      git_branch,
+      git_sha,
+      total_tokens,
+      input_tokens,
+      output_tokens,
+      success_score,
+      actual_duration_min as duration_min,
+      total_interactions
+    FROM rudel.session_analytics sa
+    WHERE session_id = '${sid}'
+      AND organization_id = '${org}'
+    ORDER BY ingested_at DESC
     LIMIT 1
   `;
 

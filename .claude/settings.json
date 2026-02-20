@@ -1,4 +1,33 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npx rudel upload --help:*)",
+      "Bash(npx rudel login:*)",
+      "Read(//c/Users/Lucas/.claude/**)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(bun -e:*)",
+      "Bash(bun run:*)",
+      "Bash(CLICKHOUSE_DB=default doppler run:*)",
+      "Bash(sqlite3:*)",
+      "Bash(bunx:*)",
+      "Bash(bun:*)",
+      "Bash(npx @obsessiondb/chcli:*)",
+      "Read(//c/Users/Lucas/AppData/Roaming/npm/**)",
+      "Bash(where:*)",
+      "Bash(/c/Users/Lucas/.bun/bin/bun:*)",
+      "Bash(npm root:*)",
+      "Bash(chcli:*)",
+      "Bash(doppler whoami:*)"
+    ],
+    "deny": [
+      "Read(./.entire/metadata/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\Personal\\Trabajo_Numia\\rudel\\packages\\ch-schema\\src\\generated",
+      "C:\\Users\\Lucas\\AppData\\Roaming\\npm"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -74,11 +103,6 @@
           }
         ]
       }
-    ]
-  },
-  "permissions": {
-    "deny": [
-      "Read(./.entire/metadata/**)"
     ]
   }
 }

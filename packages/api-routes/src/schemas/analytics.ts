@@ -265,8 +265,8 @@ export const SessionAnalyticsSchema = z.object({
 	slash_commands: z.array(z.string()),
 	has_commit: z.boolean(),
 	session_archetype: z.string(),
-	task_type: z.string(),
 	model_used: z.string(),
+	used_plan_mode: z.boolean(),
 });
 
 export const SessionAnalyticsSummarySchema = z.object({
@@ -313,13 +313,6 @@ export const DimensionAnalysisDataPointSchema = z.object({
 	dimension_value: z.string(),
 	metric_value: z.number().optional(),
 	split_values: z.record(z.string(), z.number()).optional(),
-});
-
-export const TaskClassificationSchema = z.object({
-	task_type: z.string(),
-	count: z.number(),
-	avg_confidence: z.number(),
-	percentage: z.number(),
 });
 
 export const SessionDetailSchema = z.object({
@@ -502,7 +495,6 @@ export type SessionDetail = z.infer<typeof SessionDetailSchema>;
 export type DimensionAnalysisDataPoint = z.infer<
 	typeof DimensionAnalysisDataPointSchema
 >;
-export type TaskClassification = z.infer<typeof TaskClassificationSchema>;
 export type ROIMetrics = z.infer<typeof ROIMetricsSchema>;
 export type ROITrend = z.infer<typeof ROITrendSchema>;
 export type DeveloperCostBreakdown = z.infer<

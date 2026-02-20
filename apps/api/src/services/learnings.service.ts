@@ -54,7 +54,7 @@ export async function getLearningsFeed(
   const lim = Number(limit);
   const off = Number(offset);
 
-  let filters = `last_interaction_date >= now() - INTERVAL ${d} DAY
+  let filters = `last_interaction_date >= now64(3) - INTERVAL ${d} DAY
     AND has(slash_commands, 'compound:feedback')
     AND organization_id = '${org}'`;
 
@@ -79,7 +79,7 @@ export async function getLearningsFeed(
           skills,
           slash_commands,
           content
-        FROM flick.claude_sessions
+        FROM rudel.session_analytics
         WHERE ${filters}
       )
     SELECT
@@ -137,7 +137,7 @@ export async function getLearningsFeedStats(
   const org = escapeString(orgId);
   const d = Number(days);
 
-  let filters = `last_interaction_date >= now() - INTERVAL ${d} DAY
+  let filters = `last_interaction_date >= now64(3) - INTERVAL ${d} DAY
     AND has(slash_commands, 'compound:feedback')
     AND organization_id = '${org}'`;
 
@@ -153,7 +153,7 @@ export async function getLearningsFeedStats(
       count() as total_learnings,
       uniq(user_id) as unique_users,
       uniq(project_path) as unique_projects
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     WHERE ${filters}
   `;
 
@@ -161,7 +161,7 @@ export async function getLearningsFeedStats(
     SELECT
       toDate(last_interaction_date) as date,
       count() as count
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     WHERE ${filters}
     GROUP BY date
     ORDER BY date DESC
@@ -196,8 +196,8 @@ export async function getLearningUsers(orgId: string): Promise<string[]> {
 
   const query = `
     SELECT DISTINCT user_id
-    FROM flick.claude_sessions
-    WHERE last_interaction_date >= now() - INTERVAL 90 DAY
+    FROM rudel.session_analytics
+    WHERE last_interaction_date >= now64(3) - INTERVAL 90 DAY
       AND has(slash_commands, 'compound:feedback')
       AND organization_id = '${org}'
     ORDER BY user_id
@@ -215,8 +215,8 @@ export async function getLearningProjects(orgId: string): Promise<string[]> {
 
   const query = `
     SELECT DISTINCT project_path
-    FROM flick.claude_sessions
-    WHERE last_interaction_date >= now() - INTERVAL 90 DAY
+    FROM rudel.session_analytics
+    WHERE last_interaction_date >= now64(3) - INTERVAL 90 DAY
       AND has(slash_commands, 'compound:feedback')
       AND organization_id = '${org}'
     ORDER BY project_path
@@ -249,8 +249,8 @@ export async function getLearningsTrend(
       toDate(last_interaction_date) as date,
       ${splitColumn} as split_key,
       count() as count
-    FROM flick.claude_sessions
-    WHERE last_interaction_date >= now() - INTERVAL ${d} DAY
+    FROM rudel.session_analytics
+    WHERE last_interaction_date >= now64(3) - INTERVAL ${d} DAY
       AND has(slash_commands, 'compound:feedback')
       AND organization_id = '${org}'
     GROUP BY date, split_key

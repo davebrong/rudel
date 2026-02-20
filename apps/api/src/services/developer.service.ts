@@ -124,11 +124,11 @@ export async function getDeveloperList(orgId: string, days = 30): Promise<Develo
         SUM(ifNull(input_tokens, 0)) as input_tokens_sum,
         SUM(ifNull(output_tokens, 0)) as output_tokens_sum,
         SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
-        round(SUM(duration_minutes), 2) as total_duration_min,
-        round(AVG(duration_minutes), 2) as avg_session_duration_min,
+        round(SUM(actual_duration_min), 2) as total_duration_min,
+        round(AVG(actual_duration_min), 2) as avg_session_duration_min,
         toString(max(session_date)) as last_active_date,
         round(AVG(success_score), 2) as success_rate
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
       GROUP BY user_id
@@ -137,9 +137,9 @@ export async function getDeveloperList(orgId: string, days = 30): Promise<Develo
       SELECT
         user_id,
         round(AVG(success_score), 2) as prev_success_rate
-      FROM flick.session_analytics
-      WHERE session_date >= now() - INTERVAL ${d * 2} DAY
-        AND session_date < now() - INTERVAL ${d} DAY
+      FROM rudel.session_analytics
+      WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
+        AND session_date < now64(3) - INTERVAL ${d} DAY
         AND organization_id = '${org}'
       GROUP BY user_id
     )
@@ -185,13 +185,13 @@ export async function getDeveloperDetails(
         SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
         SUM(ifNull(input_tokens, 0)) as input_tokens_sum,
         SUM(ifNull(output_tokens, 0)) as output_tokens_sum,
-        round(SUM(duration_minutes), 2) as total_duration_min,
-        round(AVG(duration_minutes), 2) as avg_session_duration_min,
+        round(SUM(actual_duration_min), 2) as total_duration_min,
+        round(AVG(actual_duration_min), 2) as avg_session_duration_min,
         toString(max(session_date)) as last_active_date,
         round(AVG(success_score), 2) as success_rate,
         COUNT(DISTINCT project_path) as distinct_projects,
         SUM(error_count) as error_count
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE user_id = '${uid}'
         AND ${buildDateFilter(d)}
         AND organization_id = '${org}'
@@ -201,10 +201,10 @@ export async function getDeveloperDetails(
       SELECT
         user_id,
         round(AVG(success_score), 2) as prev_success_rate
-      FROM flick.session_analytics
+      FROM rudel.session_analytics
       WHERE user_id = '${uid}'
-        AND session_date >= now() - INTERVAL ${d * 2} DAY
-        AND session_date < now() - INTERVAL ${d} DAY
+        AND session_date >= now64(3) - INTERVAL ${d * 2} DAY
+        AND session_date < now64(3) - INTERVAL ${d} DAY
         AND organization_id = '${org}'
       GROUP BY user_id
     )
@@ -270,50 +270,36 @@ export async function getDeveloperSessions(
     filters += ` AND project_path = '${escapeString(project_path)}'`;
   }
   if (outcome === 'success') {
-    filters += ` AND dateDiff('minute', session_date, last_interaction_date) BETWEEN 5 AND 240`;
+    filters += ` AND actual_duration_min BETWEEN 5 AND 240`;
   }
 
   const sortColumn =
     sort_by === 'duration'
-      ? 'duration_min'
+      ? 'actual_duration_min'
       : sort_by === 'tokens'
       ? 'total_tokens'
       : 'session_date';
   const sortDirection = sort_order === 'asc' ? 'ASC' : 'DESC';
 
   const query = `
-    WITH session_data AS (
-      SELECT
-        session_id,
-        session_date,
-        project_path,
-        input_tokens,
-        output_tokens,
-        subagents,
-        skills,
-        slash_commands,
-        content,
-        dateDiff('minute', session_date, last_interaction_date) as duration_min
-      FROM flick.claude_sessions
-      WHERE user_id = '${uid}'
-        AND ${buildDateFilter(d)}
-        AND organization_id = '${org}'
-        ${filters}
-    )
     SELECT
       session_id,
       toString(session_date) as session_date,
       project_path,
-      round(duration_min, 2) as duration_min,
+      actual_duration_min as duration_min,
       ifNull(input_tokens, 0) as input_tokens,
       ifNull(output_tokens, 0) as output_tokens,
       ifNull(input_tokens, 0) + ifNull(output_tokens, 0) as total_tokens,
-      length(subagents) > 0 as has_subagents,
+      length(subagent_types) > 0 as has_subagents,
       length(skills) > 0 as has_skills,
       length(slash_commands) > 0 as has_slash_commands,
-      (content LIKE '%Error:%' OR content LIKE '%error:%') as has_errors,
-      duration_min BETWEEN 5 AND 240 as likely_success
-    FROM session_data
+      error_count > 0 as has_errors,
+      actual_duration_min BETWEEN 5 AND 240 as likely_success
+    FROM rudel.session_analytics
+    WHERE user_id = '${uid}'
+      AND ${buildDateFilter(d)}
+      AND organization_id = '${org}'
+      ${filters}
     ORDER BY ${sortColumn} ${sortDirection}
     LIMIT ${lim}
     OFFSET ${off}
@@ -343,11 +329,11 @@ export async function getDeveloperProjects(
     SELECT
       project_path,
       COUNT(*) as sessions,
-      round(SUM(dateDiff('minute', session_date, last_interaction_date)), 2) as total_duration_min,
+      round(SUM(actual_duration_min), 2) as total_duration_min,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       toString(min(session_date)) as first_session,
       toString(max(session_date)) as last_session
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     WHERE user_id = '${uid}'
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
@@ -391,7 +377,7 @@ export async function getDeveloperErrors(
           WHEN content LIKE '%Error:%' OR content LIKE '%error:%' THEN 'GenericError'
           ELSE NULL
         END as error_pattern
-      FROM flick.claude_sessions
+      FROM rudel.session_analytics
       WHERE user_id = '${uid}'
         AND ${buildDateFilter(d)}
         AND organization_id = '${org}'
@@ -429,11 +415,11 @@ export async function getDeveloperTimeline(
     SELECT
       toString(toDate(session_date)) as date,
       COUNT(*) as sessions,
-      round(SUM(duration_minutes), 2) as total_duration_min,
+      round(SUM(actual_duration_min), 2) as total_duration_min,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       COUNT(DISTINCT project_path) as projects_worked,
       round(AVG(success_score), 2) as avg_success_rate
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE user_id = '${uid}'
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
@@ -459,10 +445,10 @@ export async function getDeveloperFeatureUsage(
   const adoptionQuery = `
     SELECT
       COUNT(*) as total_sessions,
-      countIf(length(subagents) > 0) as subagents_sessions,
+      countIf(length(subagent_types) > 0) as subagents_sessions,
       countIf(length(skills) > 0) as skills_sessions,
       countIf(length(slash_commands) > 0) as slash_commands_sessions
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     WHERE user_id = '${uid}'
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
@@ -470,8 +456,8 @@ export async function getDeveloperFeatureUsage(
 
   const topSubagentsQuery = `
     SELECT val as name, count() as count
-    FROM flick.claude_sessions
-    ARRAY JOIN mapKeys(subagents) as val
+    FROM rudel.session_analytics
+    ARRAY JOIN subagent_types as val
     WHERE user_id = '${uid}'
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
@@ -483,7 +469,7 @@ export async function getDeveloperFeatureUsage(
 
   const topSkillsQuery = `
     SELECT val as name, count() as count
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     ARRAY JOIN skills as val
     WHERE user_id = '${uid}'
       AND ${buildDateFilter(d)}
@@ -496,7 +482,7 @@ export async function getDeveloperFeatureUsage(
 
   const topSlashCommandsQuery = `
     SELECT val as name, count() as count
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
     WHERE user_id = '${uid}'
       AND ${buildDateFilter(d)}
@@ -562,10 +548,10 @@ export async function getDeveloperTrends(
       toString(${dateFunc}) as date,
       user_id,
       COUNT(*) as sessions,
-      round(SUM(duration_minutes) / 60, 2) as total_hours,
+      round(SUM(actual_duration_min) / 60, 2) as total_hours,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       round(AVG(success_score), 2) as avg_success_rate
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
     GROUP BY date, user_id
@@ -592,9 +578,9 @@ export async function getDeveloperProjectTimeline(
       toString(toDate(session_date)) as date,
       project_path,
       COUNT(*) as sessions,
-      round(SUM(duration_minutes), 2) as total_duration_min,
+      round(SUM(actual_duration_min), 2) as total_duration_min,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE user_id = '${uid}'
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'

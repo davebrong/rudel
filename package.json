@@ -28,8 +28,7 @@
 		"apps/*",
 		"packages/*"
 	],
-	"overrides": {
-		"@chkit/core": "0.1.0-beta.7",
-		"@chkit/clickhouse": "0.1.0-beta.7"
+	"dependencies": {
+		"rudel": "^0.1.4"
 	}
 }

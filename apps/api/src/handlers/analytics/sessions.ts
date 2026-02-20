@@ -5,7 +5,6 @@ import {
 	getSessionAnalyticsSummary,
 	getSessionAnalyticsSummaryComparison,
 	getSessionDimensionAnalysis,
-	getTaskTypeDistribution,
 	getSessionDetail,
 } from "../../services/session-analytics.service.js";
 
@@ -19,32 +18,54 @@ const sortByMap: Record<string, "date" | "duration" | "interactions"> = {
 const list = os.analytics.sessions.list
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
-		return getSessionAnalytics(context.user.id, {
-			days: input.days,
-			user_id: input.userId,
-			project_path: input.projectPath,
-			repository: input.repository,
-			limit: input.limit,
-			offset: input.offset,
-			sort_by: sortByMap[input.sortBy] ?? "date",
-			sort_order: input.sortOrder,
-		});
+		console.log("[list] orgId:", context.user.id, "days:", input.days);
+		try {
+			const result = await getSessionAnalytics(context.user.id, {
+				days: input.days,
+				user_id: input.userId,
+				project_path: input.projectPath,
+				repository: input.repository,
+				limit: input.limit,
+				offset: input.offset,
+				sort_by: sortByMap[input.sortBy] ?? "date",
+				sort_order: input.sortOrder,
+			});
+			console.log("[list] OK, rows:", result.length);
+			return result;
+		} catch (e) {
+			console.error("[list] ERROR:", e);
+			throw e;
+		}
 	});
 
 const summary = os.analytics.sessions.summary
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
-		return getSessionAnalyticsSummary(context.user.id, {
-			days: input.days,
-		});
+		try {
+			const result = await getSessionAnalyticsSummary(context.user.id, {
+				days: input.days,
+			});
+			console.log("[summary] OK:", JSON.stringify(result));
+			return result;
+		} catch (e) {
+			console.error("[summary] ERROR:", e);
+			throw e;
+		}
 	});
 
 const summaryComparison = os.analytics.sessions.summaryComparison
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
-		return getSessionAnalyticsSummaryComparison(context.user.id, {
-			days: input.days,
-		});
+		try {
+			const result = await getSessionAnalyticsSummaryComparison(context.user.id, {
+				days: input.days,
+			});
+			console.log("[summaryComparison] OK:", JSON.stringify(result).slice(0, 300));
+			return result;
+		} catch (e) {
+			console.error("[summaryComparison] ERROR:", e);
+			throw e;
+		}
 	});
 
 const dimensionAnalysis = os.analytics.sessions.dimensionAnalysis
@@ -58,14 +79,6 @@ const dimensionAnalysis = os.analytics.sessions.dimensionAnalysis
 			limit: input.limit,
 			user_id: input.userId,
 			project_path: input.projectPath,
-		});
-	});
-
-const taskClassification = os.analytics.sessions.taskClassification
-	.use(authMiddleware)
-	.handler(async ({ input, context }) => {
-		return getTaskTypeDistribution(context.user.id, {
-			days: input.days,
 		});
 	});
 
@@ -84,6 +97,5 @@ export const sessionsRouter = os.analytics.sessions.router({
 	summary,
 	summaryComparison,
 	dimensionAnalysis,
-	taskClassification,
 	detail,
 });

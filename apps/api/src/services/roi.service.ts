@@ -137,13 +137,13 @@ export async function getROIMetrics(orgId: string, days = 7): Promise<ROIMetrics
         SUM(input_tokens) as total_input_tokens,
         SUM(output_tokens) as total_output_tokens,
         SUM(total_tokens) as total_tokens,
-        SUM(duration_minutes) / 60.0 as total_hours,
+        SUM(actual_duration_min) / 60.0 as total_hours,
         AVG(success_score) as avg_success_score,
         COUNT(DISTINCT user_id) as active_developers,
         SUM(has_commit) as total_commits,
-        now() - INTERVAL ${d} DAY as period_start,
-        now() as period_end
-      FROM flick.session_analytics
+        now64(3) - INTERVAL ${d} DAY as period_start,
+        now64(3) as period_end
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
     ),
@@ -153,11 +153,11 @@ export async function getROIMetrics(orgId: string, days = 7): Promise<ROIMetrics
         SUM(input_tokens) as total_input_tokens,
         SUM(output_tokens) as total_output_tokens,
         SUM(has_commit) as total_commits,
-        now() - INTERVAL ${d * 2} DAY as period_start,
-        now() - INTERVAL ${d} DAY as period_end
-      FROM flick.session_analytics
-      WHERE session_date >= now() - INTERVAL ${d * 2} DAY
-        AND session_date < now() - INTERVAL ${d} DAY
+        now64(3) - INTERVAL ${d * 2} DAY as period_start,
+        now64(3) - INTERVAL ${d} DAY as period_end
+      FROM rudel.session_analytics
+      WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
+        AND session_date < now64(3) - INTERVAL ${d} DAY
         AND organization_id = '${org}'
     )
     SELECT
@@ -295,8 +295,8 @@ export async function getROITrends(orgId: string, days = 56): Promise<ROITrend[]
       AVG(success_score) as avg_success_score,
       round((SUM(output_tokens) / 1000000.0) * ${OUTPUT_PRICE_PER_MILLION} +
             (SUM(input_tokens) / 1000000.0) * ${INPUT_PRICE_PER_MILLION}, 2) as total_cost
-    FROM flick.session_analytics
-    WHERE session_date >= now() - INTERVAL ${d} DAY
+    FROM rudel.session_analytics
+    WHERE session_date >= now64(3) - INTERVAL ${d} DAY
       AND organization_id = '${org}'
     GROUP BY week_start
     ORDER BY week_start ASC
@@ -338,7 +338,7 @@ export async function getDeveloperCostBreakdown(orgId: string, days = 30): Promi
       AVG(success_score) as avg_success_score,
       round((SUM(output_tokens) / 1000000.0) * ${OUTPUT_PRICE_PER_MILLION} +
             (SUM(input_tokens) / 1000000.0) * ${INPUT_PRICE_PER_MILLION}, 2) as total_cost
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
     GROUP BY user_id
@@ -381,7 +381,7 @@ export async function getProjectCostBreakdown(orgId: string, days = 30): Promise
       AVG(success_score) as avg_success_score,
       round((SUM(output_tokens) / 1000000.0) * ${OUTPUT_PRICE_PER_MILLION} +
             (SUM(input_tokens) / 1000000.0) * ${INPUT_PRICE_PER_MILLION}, 2) as total_cost
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND project_path != ''

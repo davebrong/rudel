@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { FlickClaudeSessionsRowSchema } from "../generated/chkit-types.js";
+import { RudelClaudeSessionsRowSchema } from "../generated/chkit-types.js";
 
-describe("FlickClaudeSessionsRowSchema", () => {
+describe("RudelClaudeSessionsRowSchema", () => {
 	const validRow = {
 		session_date: "2026-02-13T09:24:27.180Z",
 		last_interaction_date: "2026-02-13T09:24:27.180Z",
@@ -27,7 +27,7 @@ describe("FlickClaudeSessionsRowSchema", () => {
 	};
 
 	it("parses a valid row", () => {
-		const result = FlickClaudeSessionsRowSchema.parse(validRow);
+		const result = RudelClaudeSessionsRowSchema.parse(validRow);
 		expect(result.session_id).toBe("sess_abc123");
 		expect(result.organization_id).toBe("org_xyz");
 		expect(result.skills).toEqual(["code:testing"]);
@@ -42,7 +42,7 @@ describe("FlickClaudeSessionsRowSchema", () => {
 			git_sha: null,
 			tag: null,
 		};
-		const result = FlickClaudeSessionsRowSchema.parse(row);
+		const result = RudelClaudeSessionsRowSchema.parse(row);
 		expect(result.repository).toBeNull();
 		expect(result.git_branch).toBeNull();
 		expect(result.git_sha).toBeNull();
@@ -51,12 +51,12 @@ describe("FlickClaudeSessionsRowSchema", () => {
 
 	it("rejects missing required fields", () => {
 		const { session_id: _, ...incomplete } = validRow;
-		expect(() => FlickClaudeSessionsRowSchema.parse(incomplete)).toThrow();
+		expect(() => RudelClaudeSessionsRowSchema.parse(incomplete)).toThrow();
 	});
 
 	it("rejects wrong types", () => {
 		expect(() =>
-			FlickClaudeSessionsRowSchema.parse({ ...validRow, input_tokens: 1000 }),
+			RudelClaudeSessionsRowSchema.parse({ ...validRow, input_tokens: 1000 }),
 		).toThrow();
 	});
 });

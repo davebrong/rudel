@@ -86,7 +86,7 @@ export function buildDateFilter(
 	days: number,
 	column = "session_date",
 ): string {
-	return `${column} >= now() - INTERVAL ${Number(days)} DAY AND ${column} <= now()`;
+	return `${column} >= now64(3) - INTERVAL ${Number(days)} DAY AND ${column} <= now64(3)`;
 }
 
 export async function queryClickhouse<T>(sql: string): Promise<T[]> {

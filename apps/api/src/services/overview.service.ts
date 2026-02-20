@@ -44,10 +44,10 @@ export async function getOverviewKPIs(orgId: string, days = 7): Promise<Overview
       uniq(user_id) as distinct_users,
       count() as distinct_sessions,
       uniq(project_path) as distinct_projects,
-      (SELECT uniqExact(val) FROM flick.session_analytics ARRAY JOIN subagent_types as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_subagents,
-      (SELECT uniqExact(val) FROM flick.session_analytics ARRAY JOIN skills as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_skills,
-      (SELECT uniqExact(val) FROM flick.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands
-    FROM flick.session_analytics
+      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN subagent_types as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_subagents,
+      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN skills as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_skills,
+      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands
+    FROM rudel.session_analytics
     WHERE ${dateFilter}
       AND organization_id = '${org}'
   `;
@@ -77,7 +77,7 @@ export async function getModelTokensTrend(orgId: string, days = 30): Promise<Mod
       sum(total_tokens) as total_tokens,
       sum(input_tokens) as input_tokens,
       sum(output_tokens) as output_tokens
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${dateFilter}
       AND organization_id = '${org}'
       AND model_used != ''
@@ -101,9 +101,9 @@ export async function getUsageTrendDetailed(orgId: string, days = 30): Promise<U
       toDate(session_date) as date,
       count() as sessions,
       uniq(user_id) as active_users,
-      round(sum(dateDiff('minute', session_date, last_interaction_date)) / 60, 2) as total_hours,
+      round(sum(actual_duration_min) / 60, 2) as total_hours,
       sum(total_tokens) as total_tokens
-    FROM flick.claude_sessions
+    FROM rudel.session_analytics
     WHERE ${dateFilter}
       AND organization_id = '${org}'
     GROUP BY date
@@ -125,7 +125,7 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
       count() as total_sessions,
       uniq(user_id) as total_users,
       round(avg(actual_duration_min), 2) as avg_duration_min
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(days)}
       AND organization_id = '${org}'
   `;
@@ -136,9 +136,9 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
       count() as total_sessions,
       uniq(user_id) as total_users,
       round(avg(actual_duration_min), 2) as avg_duration_min
-    FROM flick.session_analytics
-    WHERE session_date >= now() - INTERVAL ${previousDays} DAY
-      AND session_date < now() - INTERVAL ${Number(days)} DAY
+    FROM rudel.session_analytics
+    WHERE session_date >= now64(3) - INTERVAL ${previousDays} DAY
+      AND session_date < now64(3) - INTERVAL ${Number(days)} DAY
       AND organization_id = '${org}'
   `;
 
@@ -174,7 +174,7 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
       user_id,
       count() as sessions,
       round(sum(actual_duration_min) / 60, 1) as total_hours
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(days)}
       AND organization_id = '${org}'
     GROUP BY user_id
@@ -203,7 +203,7 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
       project_path,
       uniq(user_id) as unique_users,
       count() as sessions
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(30)}
       AND organization_id = '${org}'
     GROUP BY project_path
@@ -244,7 +244,7 @@ export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
       uniq(user_id) as active_users,
       round(avg(actual_duration_min), 2) as avg_duration_min,
       round(count() / uniq(user_id), 2) as avg_sessions_per_user
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(days)}
       AND organization_id = '${org}'
   `;
@@ -255,9 +255,9 @@ export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
       uniq(user_id) as active_users,
       round(avg(actual_duration_min), 2) as avg_duration_min,
       round(count() / uniq(user_id), 2) as avg_sessions_per_user
-    FROM flick.session_analytics
-    WHERE session_date >= now() - INTERVAL ${previousDays} DAY
-      AND session_date < now() - INTERVAL ${Number(days)} DAY
+    FROM rudel.session_analytics
+    WHERE session_date >= now64(3) - INTERVAL ${previousDays} DAY
+      AND session_date < now64(3) - INTERVAL ${Number(days)} DAY
       AND organization_id = '${org}'
   `;
 
@@ -303,7 +303,7 @@ export async function getSuccessRateMetrics(orgId: string, days = 7) {
       count() as total_sessions,
       round(avg(success_score), 1) as avg_success_score,
       countIf(success_score >= 70) as high_quality_sessions
-    FROM flick.session_analytics
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(days)}
       AND organization_id = '${org}'
   `;
@@ -313,9 +313,9 @@ export async function getSuccessRateMetrics(orgId: string, days = 7) {
       count() as total_sessions,
       round(avg(success_score), 1) as avg_success_score,
       countIf(success_score >= 70) as high_quality_sessions
-    FROM flick.session_analytics
-    WHERE session_date >= now() - INTERVAL ${previousDays} DAY
-      AND session_date < now() - INTERVAL ${Number(days)} DAY
+    FROM rudel.session_analytics
+    WHERE session_date >= now64(3) - INTERVAL ${previousDays} DAY
+      AND session_date < now64(3) - INTERVAL ${Number(days)} DAY
       AND organization_id = '${org}'
   `;
 

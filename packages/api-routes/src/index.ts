@@ -44,7 +44,6 @@ import {
 	SessionDetailSchema,
 	SessionListInputSchema,
 	SuccessRateSchema,
-	TaskClassificationSchema,
 	TeamSummaryComparisonSchema,
 	UsageTrendDataSchema,
 	UserMappingSchema,
@@ -182,9 +181,6 @@ export const contract = {
 			dimensionAnalysis: oc
 				.input(DimensionAnalysisInputSchema)
 				.output(z.array(DimensionAnalysisDataPointSchema)),
-			taskClassification: oc
-				.input(DaysInputSchema)
-				.output(z.array(TaskClassificationSchema)),
 			detail: oc
 				.input(SessionDetailInputSchema)
 				.output(SessionDetailSchema),

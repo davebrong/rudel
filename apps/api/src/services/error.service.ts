@@ -55,7 +55,7 @@ export async function getTopRecurringErrors(
           WHEN content ILIKE '%not found%' THEN 'NotFound'
           ELSE 'UnknownError'
         END as error_pattern
-      FROM flick.claude_sessions
+      FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
         AND (
@@ -113,8 +113,8 @@ export async function getCrossDeveloperErrors(
       uniq(user_id) as developers_affected,
       COUNT(*) as total_occurrences,
       groupUniqArray(user_id) as affected_user_ids,
-      round(AVG(dateDiff('minute', session_date, last_interaction_date)), 2) as avg_session_duration_min
-    FROM flick.claude_sessions
+      round(AVG(actual_duration_min), 2) as avg_session_duration_min
+    FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND (
@@ -164,7 +164,7 @@ export async function getErrorTrends(
             ELSE 'UnknownError'
           END as error_type,
           length(splitByRegexp('\\\\n', content)) as error_count
-        FROM flick.claude_sessions
+        FROM rudel.session_analytics
         WHERE session_date >= '${sd}'
           AND session_date < '${ed}'
           AND organization_id = '${org}'
@@ -208,7 +208,7 @@ export async function getErrorTrends(
           sa.user_id,
           sa.model_used as dimension_value,
           sa.error_count
-        FROM flick.session_analytics sa
+        FROM rudel.session_analytics sa
         WHERE sa.session_date >= '${sd}'
           AND sa.session_date < '${ed}'
           AND sa.organization_id = '${org}'
@@ -249,7 +249,7 @@ export async function getErrorTrends(
         user_id,
         ${dimension_field} as dimension_value,
         length(splitByRegexp('\\\\n', content)) as error_count
-      FROM flick.claude_sessions
+      FROM rudel.session_analytics
       WHERE session_date >= '${sd}'
         AND session_date < '${ed}'
         AND organization_id = '${org}'
