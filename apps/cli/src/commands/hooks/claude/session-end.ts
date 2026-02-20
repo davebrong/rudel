@@ -6,7 +6,7 @@ import {
 	extractAgentIds,
 	readTranscript,
 } from "../../../lib/transcript-reader.js";
-import { DEFAULT_ENDPOINT, type IngestRequest } from "../../../lib/types.js";
+import type { IngestRequest } from "../../../lib/types.js";
 import { uploadSession } from "../../../lib/uploader.js";
 
 interface HookInput {

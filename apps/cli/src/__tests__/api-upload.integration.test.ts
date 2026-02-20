@@ -115,7 +115,7 @@ describe("CLI upload to local API", () => {
 		if (stderr) {
 			expect(stderr).toBe("");
 		}
-	});
+	}, 30_000);
 
 	test("rejects unauthenticated requests", async () => {
 		const request: IngestRequest = {

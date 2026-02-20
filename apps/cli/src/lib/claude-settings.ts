@@ -71,17 +71,18 @@ export function addHook(): void {
 
 export function removeHook(): void {
 	const settings = readClaudeSettings();
-	const entries = settings.hooks?.SessionEnd;
-	if (!Array.isArray(entries)) return;
+	const hooks = settings.hooks;
+	const entries = hooks?.SessionEnd;
+	if (!hooks || !Array.isArray(entries)) return;
 
-	settings.hooks!.SessionEnd = entries.filter(
+	hooks.SessionEnd = entries.filter(
 		(entry) => !entry.hooks?.some((h) => h.command === HOOK_COMMAND),
 	);
 
-	if (settings.hooks!.SessionEnd.length === 0) {
-		delete settings.hooks!.SessionEnd;
+	if (hooks.SessionEnd.length === 0) {
+		delete hooks.SessionEnd;
 	}
-	if (Object.keys(settings.hooks!).length === 0) {
+	if (Object.keys(hooks).length === 0) {
 		delete settings.hooks;
 	}
 
