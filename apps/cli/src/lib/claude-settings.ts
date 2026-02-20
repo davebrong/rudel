@@ -1,7 +1,12 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const HOOK_COMMAND = "rudel hooks claude session-end";
+
+function findGitRoot(): string {
+	return execSync("git rev-parse --show-toplevel", { encoding: "utf-8" }).trim();
+}
 
 interface HookEntry {
 	type: string;
@@ -23,7 +28,8 @@ interface ClaudeSettings {
 }
 
 export function getClaudeSettingsPath(): string {
-	return join(process.env.HOME ?? "~", ".claude", "settings.json");
+	const root = findGitRoot();
+	return join(root, ".claude", "settings.json");
 }
 
 export function readClaudeSettings(): ClaudeSettings {
@@ -35,6 +41,10 @@ export function readClaudeSettings(): ClaudeSettings {
 
 export function writeClaudeSettings(settings: ClaudeSettings): void {
 	const path = getClaudeSettingsPath();
+	const dir = join(path, "..");
+	if (!existsSync(dir)) {
+		mkdirSync(dir, { recursive: true });
+	}
 	writeFileSync(path, `${JSON.stringify(settings, null, 2)}\n`);
 }
 
