@@ -6,7 +6,8 @@
 		"rudel": "./dist/cli.js"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"README.md"
 	],
 	"scripts": {
 		"dev": "bun run src/bin/cli.ts",
