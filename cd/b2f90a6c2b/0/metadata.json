@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "cdb2f90a6c2b",
+  "session_id": "65e6015a-ef8c-4d4c-9d22-6cc117596472",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-20T10:09:06.179468Z",
+  "branch": "KeKs0r/update-claude-md",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/app.ts",
+    "apps/cli/src/commands/disable.ts",
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/commands/hooks/claude/index.ts",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/commands/hooks/index.ts",
+    "apps/cli/src/lib/claude-settings.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 134,
+    "cache_creation_tokens": 44207,
+    "cache_read_tokens": 2794938,
+    "output_tokens": 1088,
+    "api_call_count": 61
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-20T10:09:05.994973Z",
+    "agent_lines": 251,
+    "human_added": 152,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 403,
+    "agent_percentage": 62.28287841191067
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-douala/65e6015a-ef8c-4d4c-9d22-6cc117596472.jsonl"
+}
