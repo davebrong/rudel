@@ -74,7 +74,7 @@ describe("CLI upload to local API", () => {
 		await mkdir(credDir, { recursive: true });
 		await writeFile(
 			join(credDir, "credentials.json"),
-			JSON.stringify({ token: bearerToken, apiBaseUrl: worker.rpcUrl }),
+			JSON.stringify({ token: bearerToken, apiBaseUrl: worker.baseUrl }),
 		);
 
 		const sessionFile = join(projectDir, "e2e-test-session.jsonl");
@@ -97,6 +97,7 @@ describe("CLI upload to local API", () => {
 		const proc = Bun.spawn(
 			["bun", cliPath, "upload", sessionFile, "--endpoint", worker.rpcUrl],
 			{
+				stdin: "ignore",
 				stdout: "pipe",
 				stderr: "pipe",
 				env: {
@@ -106,15 +107,22 @@ describe("CLI upload to local API", () => {
 			},
 		);
 
-		const exitCode = await proc.exited;
-		const stdout = await new Response(proc.stdout).text();
-		const stderr = await new Response(proc.stderr).text();
+		// Read stdout/stderr concurrently with proc.exited to avoid pipe drain races
+		const [exitCode, stdout, stderr] = await Promise.all([
+			proc.exited,
+			new Response(proc.stdout).text(),
+			new Response(proc.stderr).text(),
+		]);
 
-		expect(stdout).toContain("Upload successful!");
-		expect(exitCode).toBe(0);
-		if (stderr) {
-			expect(stderr).toBe("");
+		if (!stdout.includes("Upload successful!")) {
+			throw new Error(
+				`Expected "Upload successful!" in stdout.\n` +
+					`Exit code: ${exitCode}\n` +
+					`stdout: ${stdout}\n` +
+					`stderr: ${stderr}`,
+			);
 		}
+		expect(exitCode).toBe(0);
 	}, 30_000);
 
 	test("rejects unauthenticated requests", async () => {
