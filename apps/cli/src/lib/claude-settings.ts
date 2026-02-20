@@ -5,7 +5,9 @@ import { join } from "node:path";
 const HOOK_COMMAND = "rudel hooks claude session-end";
 
 function findGitRoot(): string {
-	return execSync("git rev-parse --show-toplevel", { encoding: "utf-8" }).trim();
+	return execSync("git rev-parse --show-toplevel", {
+		encoding: "utf-8",
+	}).trim();
 }
 
 interface HookEntry {
