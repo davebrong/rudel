@@ -29,7 +29,7 @@
 		"packages/*"
 	],
 	"overrides": {
-		"@chkit/core": "0.1.0-beta.5",
-		"@chkit/clickhouse": "0.1.0-beta.5"
+		"@chkit/core": "0.1.0-beta.7",
+		"@chkit/clickhouse": "0.1.0-beta.7"
 	}
 }
