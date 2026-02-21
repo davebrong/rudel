@@ -1,9 +1,11 @@
 {
   "cli_version": "0.4.4",
   "checkpoint_id": "0fd3f8da1f30",
+  "session_id": "08f7b117-2fa7-43dd-8e0d-89d34de6d347",
   "strategy": "manual-commit",
+  "created_at": "2026-02-21T04:52:57.032927Z",
   "branch": "KeKs0r/simplify-infra",
-  "checkpoints_count": 11,
+  "checkpoints_count": 9,
   "files_touched": [
     ".context/attachments/Review request.md",
     ".env.example",
@@ -34,27 +36,22 @@
     "turbo.json",
     "wrangler.jsonc"
   ],
-  "sessions": [
-    {
-      "metadata": "/0f/d3f8da1f30/0/metadata.json",
-      "transcript": "/0f/d3f8da1f30/0/full.jsonl",
-      "context": "/0f/d3f8da1f30/0/context.md",
-      "content_hash": "/0f/d3f8da1f30/0/content_hash.txt",
-      "prompt": "/0f/d3f8da1f30/0/prompt.txt"
-    },
-    {
-      "metadata": "/0f/d3f8da1f30/1/metadata.json",
-      "transcript": "/0f/d3f8da1f30/1/full.jsonl",
-      "context": "/0f/d3f8da1f30/1/context.md",
-      "content_hash": "/0f/d3f8da1f30/1/content_hash.txt",
-      "prompt": "/0f/d3f8da1f30/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
   "token_usage": {
-    "input_tokens": 206,
-    "cache_creation_tokens": 349961,
-    "cache_read_tokens": 10720496,
-    "output_tokens": 1982,
-    "api_call_count": 156
-  }
+    "input_tokens": 196,
+    "cache_creation_tokens": 342357,
+    "cache_read_tokens": 10585433,
+    "output_tokens": 1898,
+    "api_call_count": 150
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-21T04:52:56.620613Z",
+    "agent_lines": 0,
+    "human_added": 4505,
+    "human_modified": 2452,
+    "human_removed": 0,
+    "total_committed": 5156,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-lagos/08f7b117-2fa7-43dd-8e0d-89d34de6d347.jsonl"
 }
