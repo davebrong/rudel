@@ -38,7 +38,7 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | Yes | Postgres connection string (e.g. `postgres://postgres:postgres@localhost:5432/rudel`) |
+| `PG_CONNECTION_STRING` | Yes | Postgres connection string (e.g. `postgres://postgres:postgres@localhost:5432/rudel`) |
 | `BETTER_AUTH_SECRET` | Yes | Auth secret (generate with `openssl rand -base64 32`) |
 | `CLICKHOUSE_URL` | Yes | ClickHouse HTTP endpoint |
 | `CLICKHOUSE_USERNAME` | No | ClickHouse username |

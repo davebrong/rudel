@@ -3,11 +3,10 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-const connectionString =
-	process.env.DATABASE_URL || process.env.PG_CONNECTION_STRING;
+const connectionString = process.env.PG_CONNECTION_STRING;
 if (!connectionString) {
 	throw new Error(
-		"DATABASE_URL or PG_CONNECTION_STRING environment variable is required",
+		"PG_CONNECTION_STRING environment variable is required",
 	);
 }
 

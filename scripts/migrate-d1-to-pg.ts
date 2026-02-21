@@ -4,10 +4,10 @@
  *
  * Prerequisites:
  *   - `wrangler` CLI installed and authenticated
- *   - DATABASE_URL env var pointing to the target Postgres database
+ *   - PG_CONNECTION_STRING env var pointing to the target Postgres database
  *
  * Usage:
- *   DATABASE_URL=postgres://... bun run scripts/migrate-d1-to-pg.ts
+ *   PG_CONNECTION_STRING=postgres://... bun run scripts/migrate-d1-to-pg.ts
  *
  * This script:
  *   1. Exports all rows from the 4 auth tables in D1 via `wrangler d1 execute`
@@ -18,15 +18,15 @@
 import { execSync } from "node:child_process";
 import postgres from "postgres";
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
-	console.error("DATABASE_URL environment variable is required");
+const PG_CONNECTION_STRING = process.env.PG_CONNECTION_STRING;
+if (!PG_CONNECTION_STRING) {
+	console.error("PG_CONNECTION_STRING environment variable is required");
 	process.exit(1);
 }
 
 const D1_DATABASE_NAME = process.env.D1_DATABASE_NAME ?? "rudel";
 
-const sql = postgres(DATABASE_URL);
+const sql = postgres(PG_CONNECTION_STRING);
 
 interface D1Result<T> {
 	success: boolean;

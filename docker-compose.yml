@@ -33,7 +33,7 @@ services:
       clickhouse:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/rudel
+      PG_CONNECTION_STRING: postgres://postgres:postgres@postgres:5432/rudel
       CLICKHOUSE_URL: http://clickhouse:8123
       BETTER_AUTH_SECRET: change-me-in-production
       APP_URL: http://localhost:3000
