@@ -1,6 +1,6 @@
 {
 	"name": "rudel",
-	"version": "0.1.2",
+	"version": "0.1.4",
 	"description": "CLI for uploading Claude Code session transcripts to Rudel",
 	"homepage": "https://app.rudel.ai",
 	"type": "module",
@@ -8,7 +8,8 @@
 		"rudel": "./dist/cli.js"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"README.md"
 	],
 	"scripts": {
 		"dev": "bun run src/bin/cli.ts",
