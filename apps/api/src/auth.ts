@@ -21,7 +21,7 @@ export function createAuth(db: object, config: AuthConfig) {
 		baseURL: config.appURL,
 		secret: config.secret,
 		database: drizzleAdapter(db as Parameters<typeof drizzleAdapter>[0], {
-			provider: "sqlite",
+			provider: "pg",
 			schema,
 		}),
 		emailAndPassword: {

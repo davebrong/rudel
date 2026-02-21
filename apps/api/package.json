@@ -7,8 +7,7 @@
 		"dev": "bun --watch src/index.ts",
 		"dev:env": "doppler run --project rudel --config ci -- bun --watch src/index.ts",
 		"check-types": "tsc --noEmit",
-		"test": "bun test",
-		"env:sync": "doppler secrets -p rudel -c prd --json | jq -c 'with_entries(.value = .value.computed)' > secrets.json && bun wrangler secret bulk < secrets.json && rm secrets.json"
+		"test": "bun test"
 	},
 	"dependencies": {
 		"@clickhouse/client-web": "^1.11.0",
@@ -17,10 +16,10 @@
 		"@rudel/ch-schema": "workspace:*",
 		"@rudel/sql-schema": "workspace:*",
 		"better-auth": "^1.4.18",
-		"drizzle-orm": "0.45.1"
+		"drizzle-orm": "0.45.1",
+		"postgres": "^3.4.5"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20251225.0",
 		"@rudel/typescript-config": "workspace:*",
 		"bun-types": "latest",
 		"typescript": "5.9.2"

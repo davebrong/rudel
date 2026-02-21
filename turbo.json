@@ -1,6 +1,14 @@
 {
 	"$schema": "https://turborepo.dev/schema.json",
 	"ui": "tui",
+	"globalPassThroughEnv": [
+		"DATABASE_URL",
+		"PG_CONNECTION_STRING",
+		"CLICKHOUSE_URL",
+		"CLICKHOUSE_USERNAME",
+		"CLICKHOUSE_PASSWORD",
+		"CLICKHOUSE_DB"
+	],
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],
