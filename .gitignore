@@ -49,5 +49,8 @@ data/
 .wrangler/
 .dev.vars
 
+# Secrets
+secrets.json
+
 # Misc
 *.pem
