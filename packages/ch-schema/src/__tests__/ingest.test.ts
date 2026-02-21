@@ -1,10 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it, test } from "bun:test";
+import { afterAll, describe, expect, it, test } from "bun:test";
 import { createClickHouseExecutor } from "@chkit/clickhouse";
 import { ingestFlickClaudeSessions } from "../generated/chkit-ingest.js";
 import type { FlickClaudeSessionsRow } from "../generated/chkit-types.js";
 
 const testId = `test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-let clickhouseReachable = false;
 
 const baseExecutor = createClickHouseExecutor({
 	url: process.env.CLICKHOUSE_URL || "http://localhost:8123",
@@ -73,15 +72,6 @@ afterAll(() => {
 		.catch(() => {});
 });
 
-beforeAll(async () => {
-	try {
-		await executor.query("SELECT 1");
-		clickhouseReachable = true;
-	} catch {
-		clickhouseReachable = false;
-	}
-}, 10_000);
-
 describe("ingestFlickClaudeSessions", () => {
 	const now = new Date().toISOString().replace("Z", "");
 	const row: FlickClaudeSessionsRow = {
@@ -108,7 +98,7 @@ describe("ingestFlickClaudeSessions", () => {
 		tag: "integration-test",
 	};
 
-	test.skipIf(!clickhouseReachable)("inserts a row and reads it back", async () => {
+	test("inserts a row and reads it back", async () => {
 		const results = (await insertWithRetry(
 			() => ingestFlickClaudeSessions(executor, [row]),
 			() =>
