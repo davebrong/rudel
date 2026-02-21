@@ -77,6 +77,7 @@ export const TypeUserEntrySchema = z
 			.object({
 				content: z.union([z.string(), z.array(ContentSchema)]),
 			})
+			.passthrough()
 			.optional(),
 		content: z.union([z.string(), z.array(ContentSchema)]).optional(),
 		timestamp: z.string().optional(),
@@ -90,6 +91,7 @@ export const TypeAssistantEntrySchema = z
 			.object({
 				content: z.union([z.string(), z.array(ContentSchema)]),
 			})
+			.passthrough()
 			.optional(),
 		content: z.union([z.string(), z.array(ContentSchema)]).optional(),
 		timestamp: z.string().optional(),

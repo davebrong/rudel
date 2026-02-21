@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { ConversationEntry, Content } from "@/lib/conversation-schema";
-import { User, Bot, FileText } from "lucide-react";
+import { User, Bot, FileText, Wrench, Settings, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MessageContent } from "./MessageContent";
 import {
@@ -13,12 +14,90 @@ interface ConversationMessageProps {
 	className?: string;
 }
 
+const variantStyles = {
+	default: {
+		row: "text-muted",
+		icon: "w-3.5 h-3.5 shrink-0",
+		border: "border-border",
+	},
+	error: {
+		row: "text-red-400",
+		icon: "w-3.5 h-3.5 shrink-0 text-red-400",
+		border: "border-red-300",
+	},
+	success: {
+		row: "text-green-500",
+		icon: "w-3.5 h-3.5 shrink-0 text-green-500",
+		border: "border-green-300",
+	},
+} as const;
+
+/** Collapsed row for tool results, system, and meta entries */
+function CollapsedEntry({
+	icon: Icon,
+	label,
+	summary,
+	children,
+	anchorId,
+	className,
+	variant = "default",
+}: {
+	icon: React.ComponentType<{ className?: string }>;
+	label: string;
+	summary: string;
+	children: React.ReactNode;
+	anchorId?: string;
+	className?: string;
+	variant?: "default" | "error" | "success";
+}) {
+	const [open, setOpen] = useState(false);
+	const styles = variantStyles[variant];
+
+	return (
+		<div id={anchorId} className={cn("scroll-mt-6", className)}>
+			<button
+				onClick={() => setOpen(!open)}
+				className={cn("flex items-center gap-2 w-full text-left px-3 py-1.5 rounded-md hover:bg-hover transition-colors text-xs", styles.row)}
+			>
+				<Icon className={styles.icon} />
+				<span className="font-medium">{label}</span>
+				<span className="truncate opacity-60">{summary}</span>
+				<ChevronRight className={cn("w-3 h-3 ml-auto shrink-0 transition-transform", open && "rotate-90")} />
+			</button>
+			{open && (
+				<div className={cn("mt-1 ml-5 pl-3 border-l-2", styles.border)}>
+					{children}
+				</div>
+			)}
+		</div>
+	);
+}
+
+/** Extract a short summary from content for the collapsed label */
+function contentSummary(content: unknown): string {
+	if (typeof content === "string") {
+		return content.slice(0, 100);
+	}
+	if (Array.isArray(content)) {
+		const first = content[0] as Record<string, unknown> | undefined;
+		if (first?.type === "tool_result") {
+			const text = typeof first.content === "string"
+				? first.content
+				: JSON.stringify(first.content);
+			return `tool_result: ${text.slice(0, 80)}`;
+		}
+		if (first?.type === "text" && first?.text) {
+			return String(first.text).slice(0, 100);
+		}
+	}
+	return "";
+}
+
 export function ConversationMessage({
 	entry,
 	messageIndex,
 	className,
 }: ConversationMessageProps) {
-	// Generate anchor ID for deep linking
 	const anchorId =
 		messageIndex !== undefined ? `message-${messageIndex}` : undefined;
 
@@ -27,7 +106,8 @@ export function ConversationMessage({
 		const entryType = (entry as Record<string, unknown>).type;
 		if (
 			entryType === "file-history-snapshot" ||
-			entryType === "progress"
+			entryType === "progress" ||
+			entryType === "queue-operation"
 		) {
 			return null;
 		}
@@ -65,20 +145,17 @@ export function ConversationMessage({
 		const systemContent =
 			"content" in entry ? String(entry.content) : "";
 		return (
-			<div
-				id={anchorId}
-				className={cn(
-					"border border-border bg-muted/30 p-4 rounded-lg scroll-mt-6",
-					className,
-				)}
+			<CollapsedEntry
+				icon={Settings}
+				label="System"
+				summary={systemContent.slice(0, 100)}
+				anchorId={anchorId}
+				className={className}
 			>
-				<p className="text-xs font-semibold text-muted-foreground mb-2">
-					System
-				</p>
-				<p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-mono">
+				<p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-mono py-2">
 					{systemContent}
 				</p>
-			</div>
+			</CollapsedEntry>
 		);
 	}
 
@@ -89,15 +166,88 @@ export function ConversationMessage({
 			(entry as Record<string, unknown>).type === "user");
 
 	if (isUserMessage) {
-		// Type-based entries have content nested in message.content
-		// Role-based entries have content directly
 		const entryAny = entry as Record<string, unknown>;
+
+		// Type-based entries have content nested in message.content
 		const content =
 			(entryAny.message as Record<string, unknown> | undefined)
 				?.content ||
 			entryAny.content ||
 			entryAny.text ||
 			"";
+
+		// Tool result entries — collapsed with wrench icon
+		if (entryAny.toolUseResult != null) {
+			const toolResult = entryAny.toolUseResult as Record<string, unknown>;
+			const toolType = (toolResult.type as string) || "tool";
+
+			// Check for errors: exit code, stderr, interrupted, or is_error on content items
+			const hasNonZeroExit = typeof toolResult.code === "number" && toolResult.code !== 0;
+			const hasStderr = typeof toolResult.stderr === "string" && toolResult.stderr.length > 0;
+			const wasInterrupted = toolResult.interrupted === true;
+			const contentHasError = Array.isArray(content) && content.some(
+				(item: Record<string, unknown>) => item?.is_error,
+			);
+			const isError = hasNonZeroExit || hasStderr || wasInterrupted || contentHasError;
+
+			return (
+				<CollapsedEntry
+					icon={Wrench}
+					label={`Tool Result (${toolType})`}
+					summary={contentSummary(content)}
+					variant={isError ? "error" : "success"}
+					anchorId={anchorId}
+					className={className}
+				>
+					<div className="py-2">
+						<MessageContent content={content as string | Content[]} />
+					</div>
+				</CollapsedEntry>
+			);
+		}
+
+		// Meta entries — collapsed with settings icon
+		if (entryAny.isMeta || entryAny.isCompactSummary) {
+			return (
+				<CollapsedEntry
+					icon={Settings}
+					label={entryAny.isCompactSummary ? "Compact Summary" : "Meta"}
+					summary={contentSummary(content)}
+					anchorId={anchorId}
+					className={className}
+				>
+					<div className="py-2">
+						<MessageContent content={content as string | Content[]} />
+					</div>
+				</CollapsedEntry>
+			);
+		}
+
+		// Content that's all tool_result items — collapsed with wrench icon
+		if (Array.isArray(content)) {
+			const allToolResults = content.every(
+				(item: Record<string, unknown>) => item?.type === "tool_result",
+			);
+			if (allToolResults) {
+				const hasError = content.some(
+					(item: Record<string, unknown>) => item?.is_error,
+				);
+				return (
+					<CollapsedEntry
+						icon={Wrench}
+						label={`Tool Results (${content.length})`}
+						summary={contentSummary(content)}
+						variant={hasError ? "error" : "success"}
+						anchorId={anchorId}
+						className={className}
+					>
+						<div className="py-2">
+							<MessageContent content={content as Content[]} />
+						</div>
+					</CollapsedEntry>
+				);
+			}
+		}
 
 		// Check for slash command
 		const isSlashCommand =
@@ -178,8 +328,6 @@ export function ConversationMessage({
 			(entry as Record<string, unknown>).type === "assistant");
 
 	if (isAssistantMessage) {
-		// Type-based entries have content nested in message.content
-		// Role-based entries have content directly
 		const entryAny = entry as Record<string, unknown>;
 		const assistantContent =
 			(entryAny.message as Record<string, unknown> | undefined)
@@ -232,21 +380,19 @@ export function ConversationMessage({
 		const entryAny = entry as Record<string, unknown>;
 		const systemContent =
 			(entryAny.content as string) || (entryAny.text as string) || "";
+		const subtype = (entryAny.subtype as string) || "system";
 		return (
-			<div
-				id={anchorId}
-				className={cn(
-					"border border-border bg-muted/30 p-4 rounded-lg scroll-mt-6",
-					className,
-				)}
+			<CollapsedEntry
+				icon={Settings}
+				label={`System (${subtype})`}
+				summary={systemContent.slice(0, 100)}
+				anchorId={anchorId}
+				className={className}
 			>
-				<p className="text-xs font-semibold text-muted-foreground mb-2">
-					System
-				</p>
-				<p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-mono">
+				<p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-mono py-2">
 					{systemContent}
 				</p>
-			</div>
+			</CollapsedEntry>
 		);
 	}
 

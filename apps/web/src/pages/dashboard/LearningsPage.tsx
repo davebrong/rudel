@@ -115,7 +115,7 @@ export function LearningsPage() {
 	};
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title="Learning Feed"
 				description="Team feedback and insights from /compound:feedback sessions"

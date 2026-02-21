@@ -73,7 +73,7 @@ export function ErrorsPage() {
 
 	if (isLoading) {
 		return (
-			<div>
+			<div className="px-8 py-6">
 				<PageHeader
 					title="Error Intelligence"
 					description="Track and analyze recurring errors across your team"
@@ -94,7 +94,7 @@ export function ErrorsPage() {
 	}
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title="Error Intelligence"
 				description="Track and analyze recurring errors across your team"

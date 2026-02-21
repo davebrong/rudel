@@ -110,7 +110,7 @@ export function ROIPage() {
 	};
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title="ROI & Business Value"
 				description="Track return on investment and measure business impact of Claude Code"

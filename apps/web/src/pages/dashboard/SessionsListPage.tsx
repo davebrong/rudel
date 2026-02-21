@@ -117,7 +117,7 @@ export function SessionsListPage() {
 
 	if (isLoading) {
 		return (
-			<div>
+			<div className="px-8 py-6">
 				<PageHeader
 					title="Sessions"
 					description="Analyze session interaction timing and patterns"
@@ -140,7 +140,7 @@ export function SessionsListPage() {
 	}
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title="Sessions"
 				description="Analyze session interaction timing and patterns"

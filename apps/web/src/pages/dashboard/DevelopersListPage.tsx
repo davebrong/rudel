@@ -70,7 +70,7 @@ export function DevelopersListPage() {
 
 	if (isLoading) {
 		return (
-			<div>
+			<div className="px-8 py-6">
 				<PageHeader
 					title="Developers"
 					description="Individual developer activity and metrics"
@@ -91,7 +91,7 @@ export function DevelopersListPage() {
 	}
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title="Developers"
 				description="Individual developer activity and metrics"

@@ -655,7 +655,9 @@ export async function getSessionDetail(
       output_tokens,
       success_score,
       actual_duration_min as duration_min,
-      total_interactions
+      total_interactions,
+      session_archetype,
+      model_used
     FROM rudel.session_analytics sa
     WHERE session_id = '${sid}'
       AND organization_id = '${org}'

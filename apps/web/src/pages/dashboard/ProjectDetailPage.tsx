@@ -80,7 +80,7 @@ export function ProjectDetailPage() {
 
 	if (isLoading || !details) {
 		return (
-			<div>
+			<div className="px-8 py-6">
 				<PageHeader
 					title="Project Details"
 					description="Loading project information..."
@@ -104,7 +104,7 @@ export function ProjectDetailPage() {
 	const projectName = projectPath.split("/").pop() || "Unknown Project";
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title={projectName}
 				description="Project analytics and contributor insights"

@@ -1,19 +1,185 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { parseConversations } from "@/lib/conversation-schema";
 import type { ConversationEntry } from "@/lib/conversation-schema";
 import { cn } from "@/lib/utils";
 import { ConversationMessage } from "./ConversationMessage";
+import type { TokenDataPoint } from "./TokenUsageChart";
+import type { ToolActivityPoint } from "./ToolActivityChart";
+import { isSlashCommandMessage } from "@/lib/parse-slash-command";
 
 interface ConversationViewProps {
-	content: string; // JSONL formatted conversation data
+	content: string;
 	className?: string;
+	scrollContainerRef?: React.RefObject<HTMLElement | null>;
+	onActiveMessageChange?: (messageIndex: number) => void;
+	onTokenDataReady?: (data: TokenDataPoint[], totalMessages: number) => void;
+	onToolActivityReady?: (data: ToolActivityPoint[]) => void;
+	scrollToMessageIndex?: number | null;
 }
 
-export function ConversationView({ content, className }: ConversationViewProps) {
+/** Extract token usage data from parsed conversations */
+function extractTokenData(entries: ConversationEntry[]): TokenDataPoint[] {
+	const points: TokenDataPoint[] = [];
+
+	for (let i = 0; i < entries.length; i++) {
+		const entry = entries[i]!;
+		const entryAny = entry as Record<string, unknown>;
+
+		if (
+			("role" in entry && entry.role === "assistant") ||
+			("type" in entry && entryAny.type === "assistant")
+		) {
+			const message = entryAny.message as
+				| Record<string, unknown>
+				| undefined;
+			const usage = message?.usage as
+				| Record<string, unknown>
+				| undefined;
+
+			if (usage) {
+				points.push({
+					messageIndex: i,
+					inputTokens: (usage.input_tokens as number) || 0,
+					outputTokens: (usage.output_tokens as number) || 0,
+				});
+			}
+		}
+	}
+
+	return points;
+}
+
+/** Extract tool, skill, and subagent activity from parsed conversations */
+function extractToolActivity(
+	entries: ConversationEntry[],
+): ToolActivityPoint[] {
+	const points: ToolActivityPoint[] = [];
+
+	for (let i = 0; i < entries.length; i++) {
+		const entry = entries[i]!;
+		const entryAny = entry as Record<string, unknown>;
+
+		const isUser =
+			("role" in entry && entry.role === "user") ||
+			("type" in entry && entryAny.type === "user");
+
+		const isAssistant =
+			("role" in entry && entry.role === "assistant") ||
+			("type" in entry && entryAny.type === "assistant");
+
+		// User messages with toolUseResult → tool invocation result
+		if (isUser && entryAny.toolUseResult != null) {
+			const toolResult = entryAny.toolUseResult as Record<string, unknown>;
+			const toolType = (toolResult.type as string) || "tool";
+
+			const hasNonZeroExit =
+				typeof toolResult.code === "number" && toolResult.code !== 0;
+			const hasStderr =
+				typeof toolResult.stderr === "string" &&
+				toolResult.stderr.length > 0;
+			const wasInterrupted = toolResult.interrupted === true;
+
+			const content =
+				(entryAny.message as Record<string, unknown> | undefined)
+					?.content || entryAny.content;
+			const contentHasError =
+				Array.isArray(content) &&
+				content.some(
+					(item: Record<string, unknown>) => item?.is_error,
+				);
+
+			const isError =
+				hasNonZeroExit ||
+				hasStderr ||
+				wasInterrupted ||
+				contentHasError;
+
+			// Check if this is a subagent (Task tool)
+			if (toolType === "Task") {
+				points.push({
+					messageIndex: i,
+					category: "subagent",
+					name: toolType,
+					isError,
+				});
+			} else {
+				points.push({
+					messageIndex: i,
+					category: "tool",
+					name: toolType,
+					isError,
+				});
+			}
+		}
+
+		// User messages with slash command content → skill
+		if (isUser) {
+			const content =
+				(entryAny.message as Record<string, unknown> | undefined)
+					?.content ||
+				entryAny.content ||
+				entryAny.text ||
+				"";
+			if (
+				typeof content === "string" &&
+				isSlashCommandMessage(content)
+			) {
+				points.push({
+					messageIndex: i,
+					category: "skill",
+					name: "slash-command",
+					isError: false,
+				});
+			}
+		}
+
+		// Assistant messages — scan content for tool_use items to capture Task/subagent launches
+		if (isAssistant) {
+			const message = entryAny.message as
+				| Record<string, unknown>
+				| undefined;
+			const content = (message?.content || entryAny.content) as
+				| unknown[]
+				| undefined;
+
+			if (Array.isArray(content)) {
+				for (const block of content) {
+					const b = block as Record<string, unknown>;
+					if (b?.type === "tool_use" && b?.name === "Task") {
+						const input = b.input as
+							| Record<string, unknown>
+							| undefined;
+						points.push({
+							messageIndex: i,
+							category: "subagent",
+							name:
+								(input?.subagent_type as string) || "Task",
+							isError: false,
+						});
+					}
+				}
+			}
+		}
+	}
+
+	return points;
+}
+
+export function ConversationView({
+	content,
+	className,
+	scrollContainerRef,
+	onActiveMessageChange,
+	onTokenDataReady,
+	onToolActivityReady,
+	scrollToMessageIndex,
+}: ConversationViewProps) {
 	const [conversations, setConversations] = useState<ConversationEntry[]>([]);
 	const [parseError, setParseError] = useState<string | null>(null);
-	const [totalLines, setTotalLines] = useState(0);
+	const messageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
+	const observerRef = useRef<IntersectionObserver | null>(null);
 
+	// Parse content
 	useEffect(() => {
 		if (!content || content.trim() === "") {
 			setConversations([]);
@@ -24,12 +190,10 @@ export function ConversationView({ content, className }: ConversationViewProps) 
 			const lines = content
 				.split("\n")
 				.filter((line) => line.trim() !== "");
-			setTotalLines(lines.length);
 
 			const parsed = parseConversations(content);
 
 			if (parsed.length === 0 && lines.length > 0) {
-				// Try to parse first line to see what's wrong
 				try {
 					JSON.parse(lines[0]!);
 					setParseError(
@@ -41,6 +205,17 @@ export function ConversationView({ content, className }: ConversationViewProps) 
 			}
 
 			setConversations(parsed);
+
+			if (parsed.length > 0) {
+				if (onTokenDataReady) {
+					const tokenData = extractTokenData(parsed);
+					onTokenDataReady(tokenData, parsed.length);
+				}
+				if (onToolActivityReady) {
+					const activityData = extractToolActivity(parsed);
+					onToolActivityReady(activityData);
+				}
+			}
 		} catch (error) {
 			console.error(
 				"[ConversationView] Error parsing conversations:",
@@ -50,63 +225,101 @@ export function ConversationView({ content, className }: ConversationViewProps) 
 				error instanceof Error ? error.message : "Unknown error",
 			);
 		}
-	}, [content]);
+	}, [content, onTokenDataReady, onToolActivityReady]);
+
+	// Set up IntersectionObserver for scroll tracking
+	useEffect(() => {
+		if (!onActiveMessageChange) return;
+
+		const root = scrollContainerRef?.current || null;
+
+		observerRef.current = new IntersectionObserver(
+			(entries) => {
+				let topmostIndex = -1;
+				let topmostTop = Infinity;
+
+				for (const ioEntry of entries) {
+					if (ioEntry.isIntersecting) {
+						const idx = Number(
+							ioEntry.target.getAttribute("data-message-index"),
+						);
+						if (
+							!Number.isNaN(idx) &&
+							ioEntry.boundingClientRect.top < topmostTop
+						) {
+							topmostTop = ioEntry.boundingClientRect.top;
+							topmostIndex = idx;
+						}
+					}
+				}
+
+				if (topmostIndex >= 0) {
+					onActiveMessageChange(topmostIndex);
+				}
+			},
+			{
+				root,
+				rootMargin: "0px 0px -80% 0px",
+				threshold: 0,
+			},
+		);
+
+		for (const [, el] of messageRefsMap.current) {
+			observerRef.current.observe(el);
+		}
+
+		return () => {
+			observerRef.current?.disconnect();
+		};
+	}, [onActiveMessageChange, scrollContainerRef, conversations]);
+
+	// Scroll to message when scrollToMessageIndex changes
+	useEffect(() => {
+		if (scrollToMessageIndex == null) return;
+
+		const el = messageRefsMap.current.get(scrollToMessageIndex);
+		if (el) {
+			el.scrollIntoView({ behavior: "smooth", block: "center" });
+		}
+	}, [scrollToMessageIndex]);
+
+	const registerMessageRef = useCallback(
+		(index: number, el: HTMLDivElement | null) => {
+			if (el) {
+				messageRefsMap.current.set(index, el);
+				observerRef.current?.observe(el);
+			} else {
+				const existing = messageRefsMap.current.get(index);
+				if (existing) {
+					observerRef.current?.unobserve(existing);
+				}
+				messageRefsMap.current.delete(index);
+			}
+		},
+		[],
+	);
 
 	if (parseError) {
 		return (
-			<div className={cn("py-8", className)}>
-				<div className="text-center mb-4">
-					<p className="text-red-600 dark:text-red-400 font-semibold mb-2">
-						Error parsing conversation data
-					</p>
-					<p className="text-muted-foreground text-sm">
-						{parseError}
-					</p>
-					<p className="text-muted-foreground text-xs mt-2">
-						Total lines: {totalLines}
-					</p>
-				</div>
-				<details className="text-xs border border-red-300 dark:border-red-800 rounded-lg p-4 bg-red-50 dark:bg-red-950">
-					<summary className="cursor-pointer text-red-700 dark:text-red-300 hover:text-red-800 dark:hover:text-red-200 font-medium mb-2">
-						Show raw data (first 2000 characters)
-					</summary>
-					<pre className="mt-2 p-4 bg-gray-900 text-gray-100 rounded overflow-x-auto text-xs">
-						{content.slice(0, 2000)}
-						{content.length > 2000 && "\n\n... (truncated)"}
-					</pre>
-				</details>
+			<div className={cn("py-8 text-center", className)}>
+				<p className="text-red-600 dark:text-red-400 font-semibold mb-2">
+					Error parsing conversation data
+				</p>
+				<p className="text-muted-foreground text-sm">{parseError}</p>
 			</div>
 		);
 	}
 
 	if (conversations.length === 0) {
 		return (
-			<div className={cn("py-8", className)}>
-				<div className="text-center mb-4">
-					<p className="text-muted-foreground">
-						No conversation data available
-					</p>
-					{totalLines > 0 && (
-						<p className="text-muted-foreground text-xs mt-2">
-							Found {totalLines} lines but couldn't parse any
-							valid entries
-						</p>
-					)}
-				</div>
-				<details className="text-xs border border-border rounded-lg p-4 bg-muted/30">
-					<summary className="cursor-pointer text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium mb-2">
-						Show raw data (first 2000 characters)
-					</summary>
-					<pre className="mt-2 p-4 bg-gray-900 text-gray-100 rounded overflow-x-auto text-xs">
-						{content.slice(0, 2000)}
-						{content.length > 2000 && "\n\n... (truncated)"}
-					</pre>
-				</details>
+			<div className={cn("py-8 text-center", className)}>
+				<p className="text-muted-foreground">
+					No conversation data available
+				</p>
 			</div>
 		);
 	}
 
-	// Count actual conversation messages (filter out generic/metadata entries)
 	const conversationMessages = conversations.filter((entry) => {
 		if ("role" in entry) return true;
 		if ("type" in entry) {
@@ -121,29 +334,33 @@ export function ConversationView({ content, className }: ConversationViewProps) 
 	const metadataEntries = conversations.filter((entry) => {
 		if ("type" in entry) {
 			const type = (entry as Record<string, unknown>).type;
-			return type === "file-history-snapshot" || type === "progress";
+			return (
+				type === "file-history-snapshot" ||
+				type === "progress" ||
+				type === "queue-operation"
+			);
 		}
 		return false;
 	});
 
 	return (
 		<div className={cn("space-y-6", className)}>
-			<div className="text-xs text-muted-foreground mb-4 flex items-center justify-between">
-				<span>
-					Showing {conversationMessages.length} conversation messages
-					{metadataEntries.length > 0 &&
-						` (${metadataEntries.length} metadata entries hidden)`}
-				</span>
-				<span className="text-muted-foreground">
-					{totalLines} total entries
-				</span>
+			<div className="text-xs text-muted-foreground mb-4">
+				Showing {conversationMessages.length} messages
+				{metadataEntries.length > 0 &&
+					` (${metadataEntries.length} metadata entries hidden)`}
 			</div>
 			{conversations.map((entry, idx) => (
-				<ConversationMessage
+				<div
 					key={idx}
-					entry={entry}
-					messageIndex={idx}
-				/>
+					ref={(el) => registerMessageRef(idx, el)}
+					data-message-index={idx}
+				>
+					<ConversationMessage
+						entry={entry}
+						messageIndex={idx}
+					/>
+				</div>
 			))}
 		</div>
 	);

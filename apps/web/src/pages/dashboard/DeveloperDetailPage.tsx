@@ -161,7 +161,7 @@ export function DeveloperDetailPage() {
 
 	if (detailsLoading || !details) {
 		return (
-			<div>
+			<div className="px-8 py-6">
 				<PageHeader
 					title="Developer Details"
 					description="Loading developer information..."
@@ -183,7 +183,7 @@ export function DeveloperDetailPage() {
 	}
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title={username}
 				description="Detailed developer activity and metrics"

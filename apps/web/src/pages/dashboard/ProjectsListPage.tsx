@@ -47,7 +47,7 @@ export function ProjectsListPage() {
 
 	if (isLoading) {
 		return (
-			<div>
+			<div className="px-8 py-6">
 				<PageHeader
 					title="Projects"
 					description="Analyze project activity and team investment"
@@ -68,7 +68,7 @@ export function ProjectsListPage() {
 	}
 
 	return (
-		<div>
+		<div className="px-8 py-6">
 			<PageHeader
 				title="Projects"
 				description="Analyze project activity and team investment"

@@ -334,6 +334,8 @@ export const SessionDetailSchema = z.object({
 	success_score: z.number().optional(),
 	duration_min: z.number().optional(),
 	total_interactions: z.number().optional(),
+	session_archetype: z.string().optional(),
+	model_used: z.string().optional(),
 });
 
 export const SessionDetailInputSchema = z.object({
