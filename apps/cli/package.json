@@ -1,6 +1,8 @@
 {
 	"name": "rudel",
 	"version": "0.1.2",
+	"description": "CLI for uploading Claude Code session transcripts to Rudel",
+	"homepage": "https://app.rudel.ai",
 	"type": "module",
 	"bin": {
 		"rudel": "./dist/cli.js"
