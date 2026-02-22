@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "e2f2d3625753",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/simplify-infra",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/db.ts",
+    "packages/sql-schema/src/migrate.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e2/f2d3625753/0/metadata.json",
+      "transcript": "/e2/f2d3625753/0/full.jsonl",
+      "context": "/e2/f2d3625753/0/context.md",
+      "content_hash": "/e2/f2d3625753/0/content_hash.txt",
+      "prompt": "/e2/f2d3625753/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4041,
+    "cache_creation_tokens": 270431,
+    "cache_read_tokens": 1960392,
+    "output_tokens": 389,
+    "api_call_count": 33
+  }
+}
