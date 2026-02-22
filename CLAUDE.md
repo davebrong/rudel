@@ -3,7 +3,7 @@
 A platform for ingesting, storing, and analyzing Claude Code session transcripts. Users authenticate via the web app, use the CLI to upload `.jsonl` session transcripts, which are stored in ClickHouse for analytics.
 
 **Stack**: Bun, Turborepo, Biome, TypeScript
-**Deployment**: Cloudflare Workers + D1 (SQLite) + ClickHouse
+**Deployment**: Bun server + Postgres (Neon) + ClickHouse
 **Domain**: `app.rudel.ai`
 
 ## Monorepo Structure
@@ -12,7 +12,7 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 
 | App | Package | Description |
 |-----|---------|-------------|
-| `apps/api` | `@rudel/api` | HTTP API server (Cloudflare Workers / local Bun). Auth via `better-auth`, RPC via `@orpc/server`, session ingestion into ClickHouse. |
+| `apps/api` | `@rudel/api` | HTTP API server (Bun). Auth via `better-auth`, RPC via `@orpc/server`, session ingestion into ClickHouse. |
 | `apps/cli` | `rudel` (npm) | CLI tool for authenticating and uploading Claude Code session transcripts. Commands: `login`, `logout`, `whoami`, `upload`. |
 | `apps/web` | `@rudel/web` | React SPA (Vite + Tailwind + shadcn). Auth UI and CLI login portal. |
 
@@ -22,7 +22,7 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 |---------|-------------|
 | `packages/api-routes` (`@rudel/api-routes`) | Shared RPC contract (`@orpc/contract` + Zod schemas). Single source of truth for the API interface. |
 | `packages/ch-schema` (`@rudel/ch-schema`) | ClickHouse table schema (`rudel.claude_sessions`, `rudel.session_analytics`), generated TypeScript types, and ingest functions via `chkit`. |
-| `packages/sql-schema` (`@rudel/sql-schema`) | Drizzle ORM schema for SQLite/D1 auth tables (`user`, `session`, `account`, `verification`). |
+| `packages/sql-schema` (`@rudel/sql-schema`) | Drizzle ORM schema for Postgres auth tables (`user`, `session`, `account`, `verification`). |
 | `packages/typescript-config` (`@rudel/typescript-config`) | Shared `tsconfig` base files (`base.json`, `node.json`, `react-library.json`). |
 
 ### Dependency Graph
@@ -33,6 +33,27 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 @rudel/sql-schema        ← @rudel/api
 @rudel/ch-schema         ← @rudel/api
 ```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PG_CONNECTION_STRING` | Yes | Postgres connection string (e.g. `postgres://postgres:postgres@localhost:5432/rudel`) |
+| `BETTER_AUTH_SECRET` | Yes | Auth secret (generate with `openssl rand -base64 32`) |
+| `CLICKHOUSE_URL` | Yes | ClickHouse HTTP endpoint |
+| `CLICKHOUSE_USERNAME` | No | ClickHouse username |
+| `CLICKHOUSE_PASSWORD` | No | ClickHouse password |
+| `CLICKHOUSE_DB` | No | ClickHouse database name |
+| `APP_URL` | No | API base URL (default: `http://localhost:4010`) |
+| `ALLOWED_ORIGIN` | No | CORS origin (default: `http://localhost:4011`) |
+
+## Self-Hosting
+
+```bash
+docker compose up
+```
+
+This starts Postgres, ClickHouse, and the Rudel server. Everything works with zero external accounts.
 
 ## Secrets Management (Doppler)
 
@@ -174,7 +195,7 @@ To drop everything and recreate:
 
 **`WITH expr AS alias` columns are NOT included in `SELECT *`.** ClickHouse's column-level WITH aliases (used for intermediate computations in the MV like `_timestamps`, `_prompt_periods_sec`, etc.) are not expanded by `SELECT *`. This is by design and is what allows the MV to use `SELECT *` for source columns while computing additional columns explicitly.
 
-**`organization_id` = `user.id` in the API.** The API sets `organizationId: context.user.id` (see `apps/api/src/router.ts` and `apps/api/src/worker.ts`). When testing the frontend locally, the user ID from the local SQLite auth database (`apps/api/data/auth.sqlite`) must match the `organization_id` in ClickHouse data. Use `scripts/duplicate_org.sql` to copy data with a different org_id for testing.
+**`organization_id` = `user.id` in the API.** The API sets `organizationId: context.user.id` (see `apps/api/src/router.ts`). When testing the frontend locally, the user ID from the Postgres auth database must match the `organization_id` in ClickHouse data. Use `scripts/duplicate_org.sql` to copy data with a different org_id for testing.
 
 **Stale generated types after schema changes.** After modifying `src/db/schema/*.ts`, the generated `chkit-types.ts` will be out of sync. Always run `bun run ch:codegen` (or manually copy the `.tmp` file if EPERM). The old types may have columns that no longer exist or be missing new columns — this won't cause build errors if nothing imports them yet, but will cause runtime issues when consumed.
 
@@ -209,7 +230,4 @@ bun run --cwd apps/api dev:env
 
 # Run tests locally
 doppler run --project rudel --config ci -- bun run verify
-
-# Sync production secrets to Cloudflare Workers
-bun run --cwd apps/api env:sync
 ```

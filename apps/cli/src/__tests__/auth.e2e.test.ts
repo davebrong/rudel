@@ -14,11 +14,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
 	signUpTestUser,
-	startTestWorker,
-	type TestWorker,
-} from "./helpers/wrangler-server.js";
+	startTestServer,
+	type TestServer,
+} from "./helpers/bun-server.js";
 
-let worker: TestWorker;
+let server: TestServer;
 let configDir: string;
 let tempDir: string;
 let sessionToken: string;
@@ -28,12 +28,12 @@ beforeAll(async () => {
 	configDir = join(tempDir, "config");
 	mkdirSync(configDir, { recursive: true });
 
-	worker = await startTestWorker();
-	sessionToken = await signUpTestUser(worker.baseUrl);
+	server = await startTestServer();
+	sessionToken = await signUpTestUser(server.baseUrl);
 }, 60_000);
 
 afterAll(async () => {
-	await worker?.stop();
+	await server?.stop();
 	rmSync(tempDir, { recursive: true, force: true });
 });
 
@@ -50,7 +50,7 @@ describe("auth e2e", () => {
 			[
 				"bash",
 				"-c",
-				`bun "${cliPath}" login --api-base="${worker.baseUrl}" --web-url=http://localhost:9999 2>&1 | tee "${stdoutLogPath}"`,
+				`bun "${cliPath}" login --api-base="${server.baseUrl}" --web-url=http://localhost:9999 2>&1 | tee "${stdoutLogPath}"`,
 			],
 			{
 				env: {
@@ -101,12 +101,12 @@ describe("auth e2e", () => {
 		const savedCredentials = loadCredentialsFromDir(configDir);
 		expect(savedCredentials).not.toBeNull();
 		expect(savedCredentials?.token).toBe(sessionToken);
-		expect(savedCredentials?.apiBaseUrl).toBe(worker.baseUrl);
+		expect(savedCredentials?.apiBaseUrl).toBe(server.baseUrl);
 	});
 
 	test("whoami: shows user info with valid credentials", async () => {
 		// Ensure credentials are stored
-		saveCredentialsToDir(configDir, sessionToken, worker.baseUrl);
+		saveCredentialsToDir(configDir, sessionToken, server.baseUrl);
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
 		const proc = Bun.spawn(["bun", cliPath, "whoami"], {
@@ -130,7 +130,7 @@ describe("auth e2e", () => {
 
 	test("logout: clears credentials", async () => {
 		// Ensure credentials exist
-		saveCredentialsToDir(configDir, sessionToken, worker.baseUrl);
+		saveCredentialsToDir(configDir, sessionToken, server.baseUrl);
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
 		const proc = Bun.spawn(["bun", cliPath, "logout"], {
