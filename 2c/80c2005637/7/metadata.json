@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2c80c2005637",
+  "session_id": "ff1c77f0-c3ab-4d46-80d1-a014dfc88282",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-22T06:54:25.794385Z",
+  "branch": "lucas-setup-everything",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/session-analytics.service.ts",
+    "apps/web/src/components/charts/TaskClassificationChart.tsx",
+    "packages/ch-schema/src/generated/chkit-ingest.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "c37ad402-25d5-48e3-9552-762baa5f1674",
+  "token_usage": {
+    "input_tokens": 32,
+    "cache_creation_tokens": 24030,
+    "cache_read_tokens": 1096894,
+    "output_tokens": 1397,
+    "api_call_count": 30
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-22T06:54:25.733911Z",
+    "agent_lines": 697,
+    "human_added": 2625,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 3326,
+    "agent_percentage": 20.95610342754059
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/ff1c77f0-c3ab-4d46-80d1-a014dfc88282.jsonl"
+}
