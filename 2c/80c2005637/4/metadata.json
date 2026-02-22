@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2c80c2005637",
+  "session_id": "3c05e1e0-2340-455f-a7b9-85ce6d94bb8b",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-22T06:54:25.38268Z",
+  "branch": "lucas-setup-everything",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md",
+    "package.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "e09d809a-fab1-4ef8-b01c-b19198cddbd7",
+  "token_usage": {
+    "input_tokens": 43,
+    "cache_creation_tokens": 49526,
+    "cache_read_tokens": 1995643,
+    "output_tokens": 8167,
+    "api_call_count": 41
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-22T06:54:25.280259Z",
+    "agent_lines": 32,
+    "human_added": 4109,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 4141,
+    "agent_percentage": 0.7727602028495533
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/3c05e1e0-2340-455f-a7b9-85ce6d94bb8b.jsonl"
+}
