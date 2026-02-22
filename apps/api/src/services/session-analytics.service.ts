@@ -1,159 +1,163 @@
-import { queryClickhouse, escapeString, buildDateFilter } from '../clickhouse.js';
+import {
+	buildDateFilter,
+	escapeString,
+	queryClickhouse,
+} from "../clickhouse.js";
 
 export interface SessionAnalyticsRaw {
-  session_id: string;
-  user_id: string;
-  session_date: string;
-  project_path: string;
-  organization_id: string;
-  repository: string;
+	session_id: string;
+	user_id: string;
+	session_date: string;
+	project_path: string;
+	organization_id: string;
+	repository: string;
 
-  // Interaction timing metrics
-  total_interactions: number;
-  avg_period_sec: number;
-  median_period_sec: number;
-  quick_responses: number;
-  normal_responses: number;
-  long_pauses: number;
-  actual_duration_min: number;
+	// Interaction timing metrics
+	total_interactions: number;
+	avg_period_sec: number;
+	median_period_sec: number;
+	quick_responses: number;
+	normal_responses: number;
+	long_pauses: number;
+	actual_duration_min: number;
 
-  // Duration metrics
-  last_interaction_date: string;
+	// Duration metrics
+	last_interaction_date: string;
 
-  // Token metrics
-  total_tokens: number;
-  input_tokens: number;
-  output_tokens: number;
+	// Token metrics
+	total_tokens: number;
+	input_tokens: number;
+	output_tokens: number;
 
-  // Git activity
-  git_sha: string;
-  git_branch: string;
-  has_commit: number;
+	// Git activity
+	git_sha: string;
+	git_branch: string;
+	has_commit: number;
 
-  // Feature arrays
-  subagent_types: string[];
-  skills: string[];
-  slash_commands: string[];
+	// Feature arrays
+	subagent_types: string[];
+	skills: string[];
+	slash_commands: string[];
 
-  // Success metrics
-  session_archetype: string;
-  success_score: number;
+	// Success metrics
+	session_archetype: string;
+	success_score: number;
 
-  // Effectiveness correlation factors
-  error_count: number;
-  model_used: string;
-  used_plan_mode: number;
+	// Effectiveness correlation factors
+	error_count: number;
+	model_used: string;
+	used_plan_mode: number;
 }
 
 export interface SessionAnalytics {
-  session_id: string;
-  user_id: string;
-  session_date: string;
-  project_path: string;
-  repository: string | null;
-  duration_min: number;
-  total_tokens: number;
-  input_tokens: number;
-  output_tokens: number;
-  success_score: number;
-  total_interactions: number;
-  avg_period_sec: number;
-  subagent_types: string[];
-  skills: string[];
-  slash_commands: string[];
-  has_commit: boolean;
-  session_archetype: string;
-  model_used: string;
-  used_plan_mode: boolean;
+	session_id: string;
+	user_id: string;
+	session_date: string;
+	project_path: string;
+	repository: string | null;
+	duration_min: number;
+	total_tokens: number;
+	input_tokens: number;
+	output_tokens: number;
+	success_score: number;
+	total_interactions: number;
+	avg_period_sec: number;
+	subagent_types: string[];
+	skills: string[];
+	slash_commands: string[];
+	has_commit: boolean;
+	session_archetype: string;
+	model_used: string;
+	used_plan_mode: boolean;
 }
 
 export interface SessionAnalyticsSummary {
-  total_sessions: number;
-  total_interactions: number;
-  avg_session_duration_min: number;
-  avg_interactions_per_session: number;
-  avg_response_time_sec: number;
-  median_response_time_sec: number;
-  quick_response_rate: number;
-  long_pause_rate: number;
-  subagents_adoption_rate: number;
-  skills_adoption_rate: number;
-  slash_commands_adoption_rate: number;
+	total_sessions: number;
+	total_interactions: number;
+	avg_session_duration_min: number;
+	avg_interactions_per_session: number;
+	avg_response_time_sec: number;
+	median_response_time_sec: number;
+	quick_response_rate: number;
+	long_pause_rate: number;
+	subagents_adoption_rate: number;
+	skills_adoption_rate: number;
+	slash_commands_adoption_rate: number;
 }
 
 export interface SessionDetail {
-  session_id: string;
-  user_id: string;
-  session_date: string;
-  last_interaction_date: string;
-  project_path: string;
-  repository: string | null;
-  content: string;
-  subagents: Record<string, string>;
-  skills: string[];
-  slash_commands: string[];
-  git_branch: string | null;
-  git_sha: string | null;
-  total_tokens: number;
-  input_tokens: number;
-  output_tokens: number;
-  success_score?: number;
-  duration_min?: number;
-  total_interactions?: number;
+	session_id: string;
+	user_id: string;
+	session_date: string;
+	last_interaction_date: string;
+	project_path: string;
+	repository: string | null;
+	content: string;
+	subagents: Record<string, string>;
+	skills: string[];
+	slash_commands: string[];
+	git_branch: string | null;
+	git_sha: string | null;
+	total_tokens: number;
+	input_tokens: number;
+	output_tokens: number;
+	success_score?: number;
+	duration_min?: number;
+	total_interactions?: number;
 }
 
 /**
  * Get session analytics from the materialized view
  */
 export async function getSessionAnalytics(
-  orgId: string,
-  params: {
-    days?: number;
-    user_id?: string;
-    project_path?: string;
-    repository?: string;
-    limit?: number;
-    offset?: number;
-    sort_by?: 'date' | 'duration' | 'interactions';
-    sort_order?: 'asc' | 'desc';
-  } = {}
+	orgId: string,
+	params: {
+		days?: number;
+		user_id?: string;
+		project_path?: string;
+		repository?: string;
+		limit?: number;
+		offset?: number;
+		sort_by?: "date" | "duration" | "interactions";
+		sort_order?: "asc" | "desc";
+	} = {},
 ): Promise<SessionAnalytics[]> {
-  const {
-    days = 30,
-    user_id,
-    project_path,
-    repository,
-    limit = 50,
-    offset = 0,
-    sort_by = 'date',
-    sort_order = 'desc',
-  } = params;
+	const {
+		days = 30,
+		user_id,
+		project_path,
+		repository,
+		limit = 50,
+		offset = 0,
+		sort_by = "date",
+		sort_order = "desc",
+	} = params;
 
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const lim = Number(limit);
-  const off = Number(offset);
+	const org = escapeString(orgId);
+	const d = Number(days);
+	const lim = Number(limit);
+	const off = Number(offset);
 
-  let filters = '';
-  if (user_id) {
-    filters += ` AND user_id = '${escapeString(user_id)}'`;
-  }
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
-  if (repository) {
-    filters += ` AND repository = '${escapeString(repository)}'`;
-  }
+	let filters = "";
+	if (user_id) {
+		filters += ` AND user_id = '${escapeString(user_id)}'`;
+	}
+	if (project_path) {
+		filters += ` AND project_path = '${escapeString(project_path)}'`;
+	}
+	if (repository) {
+		filters += ` AND repository = '${escapeString(repository)}'`;
+	}
 
-  const sortColumn =
-    sort_by === 'duration'
-      ? 'actual_duration_min'
-      : sort_by === 'interactions'
-      ? 'total_interactions'
-      : 'sa.session_date';
-  const sortDirection = sort_order === 'asc' ? 'ASC' : 'DESC';
+	const sortColumn =
+		sort_by === "duration"
+			? "actual_duration_min"
+			: sort_by === "interactions"
+				? "total_interactions"
+				: "sa.session_date";
+	const sortDirection = sort_order === "asc" ? "ASC" : "DESC";
 
-  const query = `
+	const query = `
     SELECT
       session_id,
       user_id,
@@ -184,7 +188,7 @@ export async function getSessionAnalytics(
       model_used,
       used_plan_mode
     FROM rudel.session_analytics sa
-    WHERE ${buildDateFilter(d, 'sa.session_date')}
+    WHERE ${buildDateFilter(d, "sa.session_date")}
       AND organization_id = '${org}'
       ${filters}
     ORDER BY ${sortColumn} ${sortDirection}
@@ -192,55 +196,57 @@ export async function getSessionAnalytics(
     OFFSET ${off}
   `;
 
-  const raw = await queryClickhouse<SessionAnalyticsRaw>(query);
+	const raw = await queryClickhouse<SessionAnalyticsRaw>(query);
 
-  return raw.map((row): SessionAnalytics => ({
-    session_id: row.session_id,
-    user_id: row.user_id,
-    session_date: row.session_date,
-    project_path: row.project_path,
-    repository: row.repository || null,
-    duration_min: row.actual_duration_min,
-    total_tokens: row.total_tokens,
-    input_tokens: row.input_tokens,
-    output_tokens: row.output_tokens,
-    success_score: row.success_score,
-    total_interactions: row.total_interactions,
-    avg_period_sec: row.avg_period_sec,
-    subagent_types: row.subagent_types,
-    skills: row.skills,
-    slash_commands: row.slash_commands,
-    has_commit: row.has_commit > 0,
-    session_archetype: row.session_archetype,
-    model_used: row.model_used,
-    used_plan_mode: row.used_plan_mode > 0,
-  }));
+	return raw.map(
+		(row): SessionAnalytics => ({
+			session_id: row.session_id,
+			user_id: row.user_id,
+			session_date: row.session_date,
+			project_path: row.project_path,
+			repository: row.repository || null,
+			duration_min: row.actual_duration_min,
+			total_tokens: row.total_tokens,
+			input_tokens: row.input_tokens,
+			output_tokens: row.output_tokens,
+			success_score: row.success_score,
+			total_interactions: row.total_interactions,
+			avg_period_sec: row.avg_period_sec,
+			subagent_types: row.subagent_types,
+			skills: row.skills,
+			slash_commands: row.slash_commands,
+			has_commit: row.has_commit > 0,
+			session_archetype: row.session_archetype,
+			model_used: row.model_used,
+			used_plan_mode: row.used_plan_mode > 0,
+		}),
+	);
 }
 
 /**
  * Get summary statistics from session analytics
  */
 export async function getSessionAnalyticsSummary(
-  orgId: string,
-  params: {
-    days?: number;
-    user_id?: string;
-    project_path?: string;
-  } = {}
+	orgId: string,
+	params: {
+		days?: number;
+		user_id?: string;
+		project_path?: string;
+	} = {},
 ): Promise<SessionAnalyticsSummary> {
-  const { days = 30, user_id, project_path } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
+	const { days = 30, user_id, project_path } = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  let filters = '';
-  if (user_id) {
-    filters += ` AND user_id = '${escapeString(user_id)}'`;
-  }
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
+	let filters = "";
+	if (user_id) {
+		filters += ` AND user_id = '${escapeString(user_id)}'`;
+	}
+	if (project_path) {
+		filters += ` AND project_path = '${escapeString(project_path)}'`;
+	}
 
-  const query = `
+	const query = `
     WITH totals AS (
       SELECT
         COUNT(*) as cnt_sessions,
@@ -274,70 +280,68 @@ export async function getSessionAnalyticsSummary(
     FROM totals
   `;
 
-  const results = await queryClickhouse<SessionAnalyticsSummary>(query);
+	const results = await queryClickhouse<SessionAnalyticsSummary>(query);
 
-  const defaults: SessionAnalyticsSummary = {
-    total_sessions: 0,
-    total_interactions: 0,
-    avg_session_duration_min: 0,
-    avg_interactions_per_session: 0,
-    avg_response_time_sec: 0,
-    median_response_time_sec: 0,
-    quick_response_rate: 0,
-    long_pause_rate: 0,
-    subagents_adoption_rate: 0,
-    skills_adoption_rate: 0,
-    slash_commands_adoption_rate: 0,
-  };
+	const defaults: SessionAnalyticsSummary = {
+		total_sessions: 0,
+		total_interactions: 0,
+		avg_session_duration_min: 0,
+		avg_interactions_per_session: 0,
+		avg_response_time_sec: 0,
+		median_response_time_sec: 0,
+		quick_response_rate: 0,
+		long_pause_rate: 0,
+		subagents_adoption_rate: 0,
+		skills_adoption_rate: 0,
+		slash_commands_adoption_rate: 0,
+	};
 
-  if (results.length === 0) {
-    return defaults;
-  }
+	if (results.length === 0) {
+		return defaults;
+	}
 
-  // Coalesce nulls from ClickHouse (AVG on 0 rows returns null despite ifNull)
-  const row = results[0]!;
-  return Object.fromEntries(
-    Object.entries(defaults).map(([key, def]) => [
-      key,
-      (row as any)[key] ?? def,
-    ])
-  ) as SessionAnalyticsSummary;
+	// Coalesce nulls from ClickHouse (AVG on 0 rows returns null despite ifNull)
+	const row = results[0] as Record<string, unknown> | undefined;
+	if (!row) return defaults;
+	return Object.fromEntries(
+		Object.entries(defaults).map(([key, def]) => [key, row[key] ?? def]),
+	) as SessionAnalyticsSummary;
 }
 
 export interface SessionSummaryComparisonPeriod {
-  total_sessions: number;
-  avg_session_duration_min: number;
-  avg_response_time_sec: number;
-  subagents_adoption_rate: number;
-  skills_adoption_rate: number;
-  slash_commands_adoption_rate: number;
+	total_sessions: number;
+	avg_session_duration_min: number;
+	avg_response_time_sec: number;
+	subagents_adoption_rate: number;
+	skills_adoption_rate: number;
+	slash_commands_adoption_rate: number;
 }
 
 /**
  * Get session analytics summary with period-over-period comparison
  */
 export async function getSessionAnalyticsSummaryComparison(
-  orgId: string,
-  params: {
-    days?: number;
-    user_id?: string;
-    project_path?: string;
-  } = {}
+	orgId: string,
+	params: {
+		days?: number;
+		user_id?: string;
+		project_path?: string;
+	} = {},
 ) {
-  const { days = 7, user_id, project_path } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const previousDays = d * 2;
+	const { days = 7, user_id, project_path } = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
+	const previousDays = d * 2;
 
-  let filters = '';
-  if (user_id) {
-    filters += ` AND user_id = '${escapeString(user_id)}'`;
-  }
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
+	let filters = "";
+	if (user_id) {
+		filters += ` AND user_id = '${escapeString(user_id)}'`;
+	}
+	if (project_path) {
+		filters += ` AND project_path = '${escapeString(project_path)}'`;
+	}
 
-  const summarySQL = (dateCondition: string) => `
+	const summarySQL = (dateCondition: string) => `
     WITH totals AS (
       SELECT
         COUNT(*) as cnt_sessions,
@@ -361,74 +365,87 @@ export async function getSessionAnalyticsSummaryComparison(
     FROM totals
   `;
 
-  const currentQuery = summarySQL(buildDateFilter(d));
-  const previousQuery = summarySQL(`session_date >= now64(3) - INTERVAL ${previousDays} DAY AND session_date < now64(3) - INTERVAL ${d} DAY`);
+	const currentQuery = summarySQL(buildDateFilter(d));
+	const previousQuery = summarySQL(
+		`session_date >= now64(3) - INTERVAL ${previousDays} DAY AND session_date < now64(3) - INTERVAL ${d} DAY`,
+	);
 
-  const [currentData, previousData] = await Promise.all([
-    queryClickhouse<SessionSummaryComparisonPeriod>(currentQuery),
-    queryClickhouse<SessionSummaryComparisonPeriod>(previousQuery),
-  ]);
+	const [currentData, previousData] = await Promise.all([
+		queryClickhouse<SessionSummaryComparisonPeriod>(currentQuery),
+		queryClickhouse<SessionSummaryComparisonPeriod>(previousQuery),
+	]);
 
-  const defaultPeriod: SessionSummaryComparisonPeriod = {
-    total_sessions: 0,
-    avg_session_duration_min: 0,
-    avg_response_time_sec: 0,
-    subagents_adoption_rate: 0,
-    skills_adoption_rate: 0,
-    slash_commands_adoption_rate: 0,
-  };
+	const defaultPeriod: SessionSummaryComparisonPeriod = {
+		total_sessions: 0,
+		avg_session_duration_min: 0,
+		avg_response_time_sec: 0,
+		subagents_adoption_rate: 0,
+		skills_adoption_rate: 0,
+		slash_commands_adoption_rate: 0,
+	};
 
-  // Coalesce nulls from ClickHouse (AVG on 0 rows returns null despite ifNull)
-  const coalesce = (row: SessionSummaryComparisonPeriod | undefined): SessionSummaryComparisonPeriod => {
-    if (!row) return { ...defaultPeriod };
-    return Object.fromEntries(
-      Object.entries(defaultPeriod).map(([key, def]) => [
-        key,
-        (row as any)[key] ?? def,
-      ])
-    ) as SessionSummaryComparisonPeriod;
-  };
-  const current = coalesce(currentData[0]);
-  const previous = coalesce(previousData[0]);
+	// Coalesce nulls from ClickHouse (AVG on 0 rows returns null despite ifNull)
+	const coalesce = (
+		row: SessionSummaryComparisonPeriod | undefined,
+	): SessionSummaryComparisonPeriod => {
+		if (!row) return { ...defaultPeriod };
+		return Object.fromEntries(
+			Object.entries(defaultPeriod).map(([key, def]) => [
+				key,
+				(row as unknown as Record<string, unknown>)[key] ?? def,
+			]),
+		) as SessionSummaryComparisonPeriod;
+	};
+	const current = coalesce(currentData[0]);
+	const previous = coalesce(previousData[0]);
 
-  const calculateChange = (curr: number, prev: number) => {
-    if (!prev || prev === 0) return 0;
-    return ((curr - prev) / prev) * 100;
-  };
+	const calculateChange = (curr: number, prev: number) => {
+		if (!prev || prev === 0) return 0;
+		return ((curr - prev) / prev) * 100;
+	};
 
-  const changes = {
-    total_sessions: calculateChange(current.total_sessions || 0, previous.total_sessions || 0),
-    avg_session_duration_min: calculateChange(current.avg_session_duration_min || 0, previous.avg_session_duration_min || 0),
-    avg_response_time_sec: calculateChange(current.avg_response_time_sec || 0, previous.avg_response_time_sec || 0),
-  };
+	const changes = {
+		total_sessions: calculateChange(
+			current.total_sessions || 0,
+			previous.total_sessions || 0,
+		),
+		avg_session_duration_min: calculateChange(
+			current.avg_session_duration_min || 0,
+			previous.avg_session_duration_min || 0,
+		),
+		avg_response_time_sec: calculateChange(
+			current.avg_response_time_sec || 0,
+			previous.avg_response_time_sec || 0,
+		),
+	};
 
-  return { current, previous, changes };
+	return { current, previous, changes };
 }
 
 /**
  * Get interaction timing distribution
  */
 export async function getInteractionTimingDistribution(
-  orgId: string,
-  params: {
-    days?: number;
-    user_id?: string;
-    project_path?: string;
-  } = {}
+	orgId: string,
+	params: {
+		days?: number;
+		user_id?: string;
+		project_path?: string;
+	} = {},
 ): Promise<Array<{ bucket: string; count: number; percentage: number }>> {
-  const { days = 30, user_id, project_path } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
+	const { days = 30, user_id, project_path } = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  let filters = '';
-  if (user_id) {
-    filters += ` AND user_id = '${escapeString(user_id)}'`;
-  }
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
+	let filters = "";
+	if (user_id) {
+		filters += ` AND user_id = '${escapeString(user_id)}'`;
+	}
+	if (project_path) {
+		filters += ` AND project_path = '${escapeString(project_path)}'`;
+	}
 
-  const query = `
+	const query = `
     WITH total AS (
       SELECT SUM(total_interactions) as total_count
       FROM rudel.session_analytics
@@ -470,94 +487,106 @@ export async function getInteractionTimingDistribution(
     ORDER BY count DESC
   `;
 
-  return queryClickhouse<{ bucket: string; count: number; percentage: number }>(query);
+	return queryClickhouse<{ bucket: string; count: number; percentage: number }>(
+		query,
+	);
 }
 
 /**
  * Get flexible dimension analysis with optional split-by for stacked charts
  */
 export async function getSessionDimensionAnalysis(
-  orgId: string,
-  params: {
-    days?: number;
-    dimension: string;
-    metric: string;
-    split_by?: string;
-    limit?: number;
-    user_id?: string;
-    project_path?: string;
-  }
+	orgId: string,
+	params: {
+		days?: number;
+		dimension: string;
+		metric: string;
+		split_by?: string;
+		limit?: number;
+		user_id?: string;
+		project_path?: string;
+	},
 ) {
-  const { days = 7, dimension, metric, split_by, limit = 10, user_id, project_path } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const lim = Number(limit);
+	const {
+		days = 7,
+		dimension,
+		metric,
+		split_by,
+		limit = 10,
+		user_id,
+		project_path,
+	} = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
+	const lim = Number(limit);
 
-  // Validate dimension parameter
-  const validDimensions = [
-    'user_id',
-    'project_path',
-    'repository',
-    'session_archetype',
-    'model_used',
-    'has_commit',
-    'used_plan_mode',
-    'used_skills',
-    'used_slash_commands',
-    'used_subagents',
-  ];
+	// Validate dimension parameter
+	const validDimensions = [
+		"user_id",
+		"project_path",
+		"repository",
+		"session_archetype",
+		"model_used",
+		"has_commit",
+		"used_plan_mode",
+		"used_skills",
+		"used_slash_commands",
+		"used_subagents",
+	];
 
-  if (!validDimensions.includes(dimension)) {
-    throw new Error(`Invalid dimension: ${dimension}`);
-  }
+	if (!validDimensions.includes(dimension)) {
+		throw new Error(`Invalid dimension: ${dimension}`);
+	}
 
-  if (split_by && !validDimensions.includes(split_by)) {
-    throw new Error(`Invalid split_by dimension: ${split_by}`);
-  }
+	if (split_by && !validDimensions.includes(split_by)) {
+		throw new Error(`Invalid split_by dimension: ${split_by}`);
+	}
 
-  // Map metric to SQL expression
-  const metricExpressions: Record<string, string> = {
-    session_count: 'COUNT(*)',
-    avg_duration: 'round(AVG(actual_duration_min), 2)',
-    total_duration: 'round(SUM(actual_duration_min) / 60, 2)',
-    avg_interactions: 'round(AVG(total_interactions), 2)',
-    total_interactions: 'SUM(total_interactions)',
-    avg_response_time: 'round(AVG(avg_period_sec), 2)',
-    median_response_time: 'round(AVG(median_period_sec), 2)',
-    avg_tokens: 'round(AVG(total_tokens), 0)',
-    total_tokens: 'SUM(total_tokens)',
-    avg_success_score: 'round(AVG(success_score), 2)',
-    avg_errors: 'round(AVG(error_count), 2)',
-    total_errors: 'SUM(error_count)',
-  };
+	// Map metric to SQL expression
+	const metricExpressions: Record<string, string> = {
+		session_count: "COUNT(*)",
+		avg_duration: "round(AVG(actual_duration_min), 2)",
+		total_duration: "round(SUM(actual_duration_min) / 60, 2)",
+		avg_interactions: "round(AVG(total_interactions), 2)",
+		total_interactions: "SUM(total_interactions)",
+		avg_response_time: "round(AVG(avg_period_sec), 2)",
+		median_response_time: "round(AVG(median_period_sec), 2)",
+		avg_tokens: "round(AVG(total_tokens), 0)",
+		total_tokens: "SUM(total_tokens)",
+		avg_success_score: "round(AVG(success_score), 2)",
+		avg_errors: "round(AVG(error_count), 2)",
+		total_errors: "SUM(error_count)",
+	};
 
-  const metricExpression = metricExpressions[metric];
-  if (!metricExpression) {
-    throw new Error(`Invalid metric: ${metric}`);
-  }
+	const metricExpression = metricExpressions[metric];
+	if (!metricExpression) {
+		throw new Error(`Invalid metric: ${metric}`);
+	}
 
-  // Map dimension to SQL expression (for computed dimensions)
-  const dimensionExpressions: Record<string, string> = {
-    used_skills: 'if(length(skills) > 0, 1, 0)',
-    used_slash_commands: 'if(length(slash_commands) > 0, 1, 0)',
-    used_subagents: 'if(length(subagent_types) > 0, 1, 0)',
-  };
+	// Map dimension to SQL expression (for computed dimensions)
+	const dimensionExpressions: Record<string, string> = {
+		used_skills: "if(length(skills) > 0, 1, 0)",
+		used_slash_commands: "if(length(slash_commands) > 0, 1, 0)",
+		used_subagents: "if(length(subagent_types) > 0, 1, 0)",
+	};
 
-  const dimensionExpression = dimensionExpressions[dimension] || dimension;
-  const splitByExpression = split_by ? (dimensionExpressions[split_by] || split_by) : null;
+	const dimensionExpression = dimensionExpressions[dimension] || dimension;
+	const splitByExpression = split_by
+		? dimensionExpressions[split_by] || split_by
+		: null;
 
-  let filters = '';
-  if (user_id) {
-    filters += ` AND user_id = '${escapeString(user_id)}'`;
-  }
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
+	let filters = "";
+	if (user_id) {
+		filters += ` AND user_id = '${escapeString(user_id)}'`;
+	}
+	if (project_path) {
+		filters += ` AND project_path = '${escapeString(project_path)}'`;
+	}
 
-  let query: string;
+	let query: string;
 
-  if (split_by) {
-    query = `
+	if (split_by) {
+		query = `
       SELECT
         ${dimensionExpression} as dimension_value,
         ${splitByExpression} as split_value,
@@ -569,8 +598,8 @@ export async function getSessionDimensionAnalysis(
       GROUP BY dimension_value, split_value
       ORDER BY metric_value DESC
     `;
-  } else {
-    query = `
+	} else {
+		query = `
       SELECT
         ${dimensionExpression} as dimension_value,
         ${metricExpression} as metric_value
@@ -582,61 +611,68 @@ export async function getSessionDimensionAnalysis(
       ORDER BY metric_value DESC
       LIMIT ${lim}
     `;
-  }
+	}
 
-  const results = await queryClickhouse<any>(query);
+	interface DimensionRow {
+		dimension_value: string;
+		split_value?: string;
+		metric_value: number;
+	}
 
-  if (split_by) {
-    const grouped = new Map<string, Record<string, number>>();
-    const totalMetric = new Map<string, number>();
+	const results = await queryClickhouse<DimensionRow>(query);
 
-    for (const row of results) {
-      const dimVal = String(row.dimension_value);
-      const splitVal = String(row.split_value);
-      const metricVal = Number(row.metric_value);
+	if (split_by) {
+		const grouped = new Map<string, Record<string, number>>();
+		const totalMetric = new Map<string, number>();
 
-      if (!grouped.has(dimVal)) {
-        grouped.set(dimVal, {});
-        totalMetric.set(dimVal, 0);
-      }
+		for (const row of results) {
+			const dimVal = String(row.dimension_value);
+			const splitVal = String(row.split_value);
+			const metricVal = Number(row.metric_value);
 
-      grouped.get(dimVal)![splitVal] = metricVal;
-      totalMetric.set(dimVal, (totalMetric.get(dimVal) || 0) + metricVal);
-    }
+			if (!grouped.has(dimVal)) {
+				grouped.set(dimVal, {});
+				totalMetric.set(dimVal, 0);
+			}
 
-    const finalData = Array.from(grouped.entries())
-      .map(([dimension_value, split_values]) => ({
-        dimension_value,
-        split_values,
-        _total: totalMetric.get(dimension_value) || 0,
-      }))
-      .sort((a, b) => b._total - a._total)
-      .slice(0, lim)
-      .map(({ dimension_value, split_values }) => ({
-        dimension_value,
-        split_values,
-      }));
+			const group = grouped.get(dimVal);
+			if (group) group[splitVal] = metricVal;
+			totalMetric.set(dimVal, (totalMetric.get(dimVal) || 0) + metricVal);
+		}
 
-    return finalData;
-  }
+		const finalData = Array.from(grouped.entries())
+			.map(([dimension_value, split_values]) => ({
+				dimension_value,
+				split_values,
+				_total: totalMetric.get(dimension_value) || 0,
+			}))
+			.sort((a, b) => b._total - a._total)
+			.slice(0, lim)
+			.map(({ dimension_value, split_values }) => ({
+				dimension_value,
+				split_values,
+			}));
 
-  return results.map((row: any) => ({
-    dimension_value: String(row.dimension_value),
-    metric_value: Number(row.metric_value),
-  }));
+		return finalData;
+	}
+
+	return results.map((row) => ({
+		dimension_value: String(row.dimension_value),
+		metric_value: Number(row.metric_value),
+	}));
 }
 
 /**
  * Get detailed session information including conversation content
  */
 export async function getSessionDetail(
-  orgId: string,
-  sessionId: string
+	orgId: string,
+	sessionId: string,
 ): Promise<SessionDetail | null> {
-  const org = escapeString(orgId);
-  const sid = escapeString(sessionId);
+	const org = escapeString(orgId);
+	const sid = escapeString(sessionId);
 
-  const query = `
+	const query = `
     SELECT
       session_id,
       user_id,
@@ -665,17 +701,16 @@ export async function getSessionDetail(
     LIMIT 1
   `;
 
-  const results = await queryClickhouse<SessionDetail>(query);
+	const results = await queryClickhouse<SessionDetail>(query);
 
-  if (results.length === 0) {
-    return null;
-  }
-
-  const row = results[0]!;
-  return {
-    ...row,
-    repository: row.repository || null,
-    git_branch: row.git_branch || null,
-    git_sha: row.git_sha || null,
-  };
+	const [row] = results;
+	if (!row) {
+		return null;
+	}
+	return {
+		...row,
+		repository: row.repository || null,
+		git_branch: row.git_branch || null,
+		git_sha: row.git_sha || null,
+	};
 }

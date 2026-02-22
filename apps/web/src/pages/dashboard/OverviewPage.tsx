@@ -1,19 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-	Users,
-	FolderKanban,
 	Activity,
 	Bot,
+	FolderKanban,
 	Sparkles,
 	Terminal,
+	Users,
 } from "lucide-react";
+import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { DatePicker } from "@/components/analytics/DatePicker";
+import { InsightCard } from "@/components/analytics/InsightCard";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
-import { DatePicker } from "@/components/analytics/DatePicker";
-import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { InsightCard } from "@/components/analytics/InsightCard";
-import { UsageTrendChart } from "@/components/charts/UsageTrendChart";
 import { ModelTokensChart } from "@/components/charts/ModelTokensChart";
+import { UsageTrendChart } from "@/components/charts/UsageTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { orpc } from "@/lib/orpc";
 
@@ -125,9 +125,14 @@ export function OverviewPage() {
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 								{insights.map((insight, index) => (
 									<InsightCard
+										// biome-ignore lint/suspicious/noArrayIndexKey: static insights list
 										key={index}
 										insight={{
-											type: insight.type as "trend" | "performer" | "alert" | "info",
+											type: insight.type as
+												| "trend"
+												| "performer"
+												| "alert"
+												| "info",
 											severity: insight.severity,
 											message: insight.message,
 											link: insight.link || "/dashboard",
@@ -147,7 +152,10 @@ export function OverviewPage() {
 								Track key metrics over time - switch between metric pairs to see
 								different views
 							</p>
-							<UsageTrendChart data={usageTrendData} showRollingAverage={false} />
+							<UsageTrendChart
+								data={usageTrendData}
+								showRollingAverage={false}
+							/>
 						</AnalyticsCard>
 					)}
 

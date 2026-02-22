@@ -1,16 +1,16 @@
+import type { ModelTokensTrendData } from "@rudel/api-routes";
 import { useMemo } from "react";
 import {
-	BarChart,
 	Bar,
-	XAxis,
-	YAxis,
+	BarChart,
 	CartesianGrid,
-	Tooltip,
 	Legend,
 	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
-import type { ModelTokensTrendData } from "@rudel/api-routes";
 
 const MODEL_COLORS = [
 	"#6b7280",
@@ -33,9 +33,7 @@ function formatCompactNumber(num: number): string {
 
 function shortenModelName(model: string): string {
 	if (model === "Weighted") return "Weighted";
-	return model
-		.replace("claude-", "")
-		.replace(/-\d{8}$/, "");
+	return model.replace("claude-", "").replace(/-\d{8}$/, "");
 }
 
 function getModelWeight(model: string): number {
@@ -64,8 +62,8 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 			});
 			const entry = byDate.get(dateLabel) || { date: dateLabel, Weighted: 0 };
 			entry[row.model] = row.total_tokens;
-			entry["Weighted"] =
-				((entry["Weighted"] as number) || 0) +
+			entry.Weighted =
+				((entry.Weighted as number) || 0) +
 				row.total_tokens * getModelWeight(row.model);
 			byDate.set(dateLabel, entry);
 		}

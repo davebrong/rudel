@@ -1,13 +1,13 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-	AreaChart,
 	Area,
-	XAxis,
-	YAxis,
+	AreaChart,
 	CartesianGrid,
-	Tooltip,
 	Legend,
 	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
 
@@ -57,10 +57,10 @@ export function LearningsTrendChart({
 		if (!isCumulative) {
 			return data.map((item) => ({
 				...item,
-				displayDate: new Date(item.date as string).toLocaleDateString(
-					"en-US",
-					{ month: "short", day: "numeric" },
-				),
+				displayDate: new Date(item.date as string).toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+				}),
 			}));
 		}
 
@@ -74,10 +74,10 @@ export function LearningsTrendChart({
 		for (const item of data) {
 			const cumulativeItem: Record<string, unknown> = {
 				date: item.date,
-				displayDate: new Date(item.date as string).toLocaleDateString(
-					"en-US",
-					{ month: "short", day: "numeric" },
-				),
+				displayDate: new Date(item.date as string).toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+				}),
 			};
 
 			for (const key of seriesKeys) {
@@ -122,6 +122,7 @@ export function LearningsTrendChart({
 						Cumulative
 					</label>
 					<button
+						type="button"
 						id="cumulative-toggle"
 						role="switch"
 						aria-checked={isCumulative}

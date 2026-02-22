@@ -1,25 +1,25 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Activity, Clock, Code, Users, Zap } from "lucide-react";
+import { Activity, ArrowLeft, Clock, Code, Users, Zap } from "lucide-react";
+import { useMemo } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
-	BarChart,
 	Bar,
-	XAxis,
-	YAxis,
+	BarChart,
 	CartesianGrid,
-	Tooltip,
 	Legend,
 	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
 } from "recharts";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { StatCard } from "@/components/analytics/StatCard";
-import { PageHeader } from "@/components/analytics/PageHeader";
 import { DatePicker } from "@/components/analytics/DatePicker";
+import { PageHeader } from "@/components/analytics/PageHeader";
+import { StatCard } from "@/components/analytics/StatCard";
 import { useDateRange } from "@/contexts/DateRangeContext";
-import { orpc } from "@/lib/orpc";
-import { decodeProjectPath, formatUsername } from "@/lib/format";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { decodeProjectPath, formatUsername } from "@/lib/format";
+import { orpc } from "@/lib/orpc";
 
 export function ProjectDetailPage() {
 	const { projectPath: encodedProjectPath } = useParams<{
@@ -222,8 +222,18 @@ export function ProjectDetailPage() {
 								}}
 							/>
 							<Legend />
-							<Bar yAxisId="left" dataKey="sessions" fill="#3b82f6" name="Sessions" />
-							<Bar yAxisId="right" dataKey="hours" fill="#10b981" name="Hours" />
+							<Bar
+								yAxisId="left"
+								dataKey="sessions"
+								fill="#3b82f6"
+								name="Sessions"
+							/>
+							<Bar
+								yAxisId="right"
+								dataKey="hours"
+								fill="#10b981"
+								name="Hours"
+							/>
 						</BarChart>
 					</ResponsiveContainer>
 					{contributors && (
@@ -231,11 +241,21 @@ export function ProjectDetailPage() {
 							<table className="min-w-full divide-y divide-border">
 								<thead className="bg-surface">
 									<tr>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Developer</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Sessions</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Contribution</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Total Time</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Tokens</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+											Developer
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+											Sessions
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+											Contribution
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+											Total Time
+										</th>
+										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+											Tokens
+										</th>
 									</tr>
 								</thead>
 								<tbody className="bg-input divide-y divide-border">
@@ -274,15 +294,27 @@ export function ProjectDetailPage() {
 						<table className="min-w-full divide-y divide-border">
 							<thead className="bg-surface">
 								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Error Type</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Occurrences</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Affected Users</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Last Seen</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										Error Type
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										Occurrences
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										Affected Users
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										Last Seen
+									</th>
 								</tr>
 							</thead>
 							<tbody className="bg-input divide-y divide-border">
 								{errors.map((error, idx) => (
-									<tr key={idx} className="hover:bg-hover">
+									<tr
+										// biome-ignore lint/suspicious/noArrayIndexKey: static error list
+										key={idx}
+										className="hover:bg-hover"
+									>
 										<td className="px-6 py-4 text-sm font-medium text-foreground">
 											{error.error_pattern}
 										</td>

@@ -1,16 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Activity, Clock, Timer } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Timer, Activity } from "lucide-react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { StatCard } from "@/components/analytics/StatCard";
-import { PageHeader } from "@/components/analytics/PageHeader";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { MultiSelect } from "@/components/analytics/MultiSelect";
+import { PageHeader } from "@/components/analytics/PageHeader";
+import { StatCard } from "@/components/analytics/StatCard";
 import { DimensionAnalysisChart } from "@/components/charts/DimensionAnalysisChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
-import { formatUsername, calculateCost } from "@/lib/format";
 
 export function SessionsListPage() {
 	const { startDate, endDate, setStartDate, setEndDate, calculateDays } =
@@ -82,10 +82,7 @@ export function SessionsListPage() {
 		return map;
 	}, [userMappings]);
 
-	const userMapRecord = useMemo(
-		() => Object.fromEntries(userMap),
-		[userMap],
-	);
+	const userMapRecord = useMemo(() => Object.fromEntries(userMap), [userMap]);
 
 	const filteredSessions = useMemo(() => {
 		if (!sessions) return [];
@@ -95,8 +92,7 @@ export function SessionsListPage() {
 				(session.repository &&
 					selectedRepositories.includes(session.repository));
 			const userMatch =
-				selectedUsers.length === 0 ||
-				selectedUsers.includes(session.user_id);
+				selectedUsers.length === 0 || selectedUsers.includes(session.user_id);
 			return repoMatch && userMatch;
 		});
 	}, [sessions, selectedRepositories, selectedUsers]);
@@ -131,9 +127,7 @@ export function SessionsListPage() {
 					}
 				/>
 				<AnalyticsCard>
-					<p className="text-center text-muted">
-						Loading session analytics...
-					</p>
+					<p className="text-center text-muted">Loading session analytics...</p>
 				</AnalyticsCard>
 			</div>
 		);
@@ -191,10 +185,14 @@ export function SessionsListPage() {
 
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 					<div>
-						<label className="block text-sm font-medium text-subheading mb-2">
+						<label
+							htmlFor="sessions-metric-select"
+							className="block text-sm font-medium text-subheading mb-2"
+						>
 							Measure (Y-Axis)
 						</label>
 						<select
+							id="sessions-metric-select"
 							value={selectedMetric}
 							onChange={(e) => setSelectedMetric(e.target.value)}
 							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
@@ -209,10 +207,14 @@ export function SessionsListPage() {
 						</select>
 					</div>
 					<div>
-						<label className="block text-sm font-medium text-subheading mb-2">
+						<label
+							htmlFor="sessions-dimension-select"
+							className="block text-sm font-medium text-subheading mb-2"
+						>
 							Group By (X-Axis)
 						</label>
 						<select
+							id="sessions-dimension-select"
 							value={selectedDimension}
 							onChange={(e) => setSelectedDimension(e.target.value)}
 							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
@@ -228,10 +230,14 @@ export function SessionsListPage() {
 						</select>
 					</div>
 					<div>
-						<label className="block text-sm font-medium text-subheading mb-2">
+						<label
+							htmlFor="sessions-splitby-select"
+							className="block text-sm font-medium text-subheading mb-2"
+						>
 							Split By (Optional)
 						</label>
 						<select
+							id="sessions-splitby-select"
 							value={selectedSplitBy}
 							onChange={(e) => {
 								setSelectedSplitBy(e.target.value);
@@ -255,6 +261,7 @@ export function SessionsListPage() {
 							{showPercentage ? "Showing as %" : "Showing absolute values"}
 						</span>
 						<button
+							type="button"
 							onClick={() => setShowPercentage(!showPercentage)}
 							className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
 							style={{
@@ -369,8 +376,12 @@ export function SessionsListPage() {
 										{formatUsername(session.user_id, userMapRecord)}
 									</td>
 									<td className="px-6 py-4 text-sm text-foreground">
-										<div className="max-w-xs truncate" title={session.project_path}>
-											{session.project_path.split("/").pop() || session.project_path}
+										<div
+											className="max-w-xs truncate"
+											title={session.project_path}
+										>
+											{session.project_path.split("/").pop() ||
+												session.project_path}
 										</div>
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">

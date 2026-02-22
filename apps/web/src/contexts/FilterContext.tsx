@@ -1,9 +1,9 @@
 import {
 	createContext,
-	useContext,
-	useState,
-	useEffect,
 	type ReactNode,
+	useContext,
+	useEffect,
+	useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -27,9 +27,7 @@ const getInitialFilters = (searchParams: URLSearchParams) => {
 	if (devsParam || reposParam) {
 		return {
 			developers: devsParam ? devsParam.split(",").filter(Boolean) : [],
-			repositories: reposParam
-				? reposParam.split(",").filter(Boolean)
-				: [],
+			repositories: reposParam ? reposParam.split(",").filter(Boolean) : [],
 		};
 	}
 
@@ -69,8 +67,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 		setSelectedDevelopersInternal(filters.developers);
 		setSelectedRepositoriesInternal(filters.repositories);
 		setIsInitialized(true);
-		// biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
-	}, []);
+	}, [searchParams]);
 
 	useEffect(() => {
 		if (!isInitialized) return;

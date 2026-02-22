@@ -9,7 +9,7 @@ const LIGHT_DEFAULTS = {
 };
 
 export function useChartTheme() {
-	const { resolvedTheme } = useTheme();
+	const { resolvedTheme: _resolvedTheme } = useTheme();
 	const [chartTheme, setChartTheme] = useState(LIGHT_DEFAULTS);
 
 	useEffect(() => {
@@ -28,7 +28,7 @@ export function useChartTheme() {
 				styles.getPropertyValue("--chart-axis").trim() ||
 				LIGHT_DEFAULTS.axisStroke,
 		});
-	}, [resolvedTheme]);
+	}, []);
 
 	return chartTheme;
 }

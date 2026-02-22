@@ -1,19 +1,19 @@
+import type { DeveloperTrendDataPoint } from "@rudel/api-routes";
+import { Activity, Clock, TrendingUp, Zap } from "lucide-react";
 import { useState } from "react";
 import {
-	AreaChart,
 	Area,
-	LineChart,
+	AreaChart,
+	CartesianGrid,
+	Legend,
 	Line,
+	LineChart,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer,
 } from "recharts";
-import { Activity, Clock, Zap, TrendingUp } from "lucide-react";
 import { useChartTheme } from "@/hooks/useChartTheme";
-import type { DeveloperTrendDataPoint } from "@rudel/api-routes";
 
 interface DeveloperTrendChartProps {
 	data: DeveloperTrendDataPoint[];
@@ -115,6 +115,7 @@ export function DeveloperTrendChart({
 					const Icon = metric.icon;
 					return (
 						<button
+							type="button"
 							key={key}
 							onClick={() => setSelectedMetric(key as MetricType)}
 							className={`
@@ -165,7 +166,10 @@ export function DeveloperTrendChart({
 							formatter={(value, name) => {
 								if (!name || name === "date" || name === "displayDate")
 									return null;
-								return [currentMetric.formatter((value as number) ?? 0), formatUsername(String(name))];
+								return [
+									currentMetric.formatter((value as number) ?? 0),
+									formatUsername(String(name)),
+								];
 							}}
 							labelFormatter={(label) => label}
 						/>
@@ -215,7 +219,10 @@ export function DeveloperTrendChart({
 							formatter={(value, name) => {
 								if (!name || name === "date" || name === "displayDate")
 									return null;
-								return [currentMetric.formatter((value as number) ?? 0), formatUsername(String(name))];
+								return [
+									currentMetric.formatter((value as number) ?? 0),
+									formatUsername(String(name)),
+								];
 							}}
 							labelFormatter={(label) => label}
 						/>

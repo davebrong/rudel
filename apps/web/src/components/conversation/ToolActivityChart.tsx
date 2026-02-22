@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ToolActivityPoint {
@@ -22,10 +22,18 @@ const LANE_TOP_PAD = 8;
 const DOT_RADIUS = 4;
 const LEFT_MARGIN = 40; // match token chart
 
-const lanes: { category: ToolActivityPoint["category"]; label: string; y: number }[] = [
+const lanes: {
+	category: ToolActivityPoint["category"];
+	label: string;
+	y: number;
+}[] = [
 	{ category: "tool", label: "Tools", y: LANE_TOP_PAD + LANE_HEIGHT * 0.5 },
 	{ category: "skill", label: "Skills", y: LANE_TOP_PAD + LANE_HEIGHT * 1.5 },
-	{ category: "subagent", label: "Agents", y: LANE_TOP_PAD + LANE_HEIGHT * 2.5 },
+	{
+		category: "subagent",
+		label: "Agents",
+		y: LANE_TOP_PAD + LANE_HEIGHT * 2.5,
+	},
 ];
 
 export function ToolActivityChart({
@@ -94,14 +102,11 @@ export function ToolActivityChart({
 
 	const cursorX =
 		LEFT_MARGIN +
-		(totalMessages > 0 ? activeMessageIndex / totalMessages : 0) *
-			drawWidth;
+		(totalMessages > 0 ? activeMessageIndex / totalMessages : 0) * drawWidth;
 
 	return (
 		<div className={className}>
-			<div className="text-xs font-medium text-muted mb-2">
-				Tool Activity
-			</div>
+			<div className="text-xs font-medium text-muted mb-2">Tool Activity</div>
 
 			<div className="flex gap-3 text-[10px] text-muted mb-1">
 				<span>{counts.tools} tools</span>
@@ -113,11 +118,14 @@ export function ToolActivityChart({
 			</div>
 
 			<div ref={containerRef}>
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: chart click navigation */}
 				<svg
 					viewBox={`0 0 ${chartWidth} ${CHART_HEIGHT}`}
 					className="w-full cursor-pointer"
 					style={{ height: `${CHART_HEIGHT}px` }}
 					onClick={handleClick}
+					role="img"
+					aria-label="Tool activity chart showing tool, skill, and subagent usage"
 				>
 					{/* Lane labels + separators */}
 					{lanes.map((lane, idx) => (
@@ -156,15 +164,13 @@ export function ToolActivityChart({
 					{/* Activity dots */}
 					{data.map((d, i) => {
 						const x =
-							LEFT_MARGIN +
-							(d.messageIndex / totalMessages) * drawWidth;
-						const lane = lanes.find(
-							(l) => l.category === d.category,
-						);
+							LEFT_MARGIN + (d.messageIndex / totalMessages) * drawWidth;
+						const lane = lanes.find((l) => l.category === d.category);
 						if (!lane) return null;
 
 						return (
 							<circle
+								// biome-ignore lint/suspicious/noArrayIndexKey: static chart dot data
 								key={i}
 								cx={x}
 								cy={lane.y}

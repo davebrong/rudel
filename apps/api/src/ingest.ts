@@ -1,8 +1,8 @@
 import type { IngestSessionInput } from "@rudel/api-routes";
 import type { Ingestor } from "@rudel/ch-schema";
 import {
-	type RudelClaudeSessionsRow,
 	ingestRudelClaudeSessions,
+	type RudelClaudeSessionsRow,
 } from "@rudel/ch-schema";
 
 interface IngestContext {

@@ -1,33 +1,40 @@
-import { useState, useMemo, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
 import {
-	User,
+	CheckCircle2,
+	ChevronDown,
 	Clock,
+	Copy,
 	GitBranch,
 	GitCommitHorizontal,
-	ChevronDown,
-	Copy,
-	CheckCircle2,
+	User,
 } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import { ConversationView } from "@/components/conversation/ConversationView";
 import {
-	TokenUsageChart,
 	type TokenDataPoint,
+	TokenUsageChart,
 } from "@/components/conversation/TokenUsageChart";
 import {
 	ToolActivityChart,
 	type ToolActivityPoint,
 } from "@/components/conversation/ToolActivityChart";
+import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 import { formatRelativeTime } from "@/lib/time-utils";
-import { formatUsername, calculateCost } from "@/lib/format";
 
-const archetypeStyles: Record<string, { bg: string; text: string; label: string }> = {
+const archetypeStyles: Record<
+	string,
+	{ bg: string; text: string; label: string }
+> = {
 	quick_win: { bg: "bg-green-100", text: "text-green-800", label: "Quick Win" },
 	deep_work: { bg: "bg-blue-100", text: "text-blue-800", label: "Deep Work" },
 	struggle: { bg: "bg-red-100", text: "text-red-800", label: "Struggle" },
-	exploration: { bg: "bg-purple-100", text: "text-purple-800", label: "Exploration" },
+	exploration: {
+		bg: "bg-purple-100",
+		text: "text-purple-800",
+		label: "Exploration",
+	},
 	abandoned: { bg: "bg-gray-100", text: "text-gray-600", label: "Abandoned" },
 	standard: { bg: "bg-surface", text: "text-subheading", label: "Standard" },
 };
@@ -36,7 +43,9 @@ export function SessionDetailPage() {
 	const { sessionId } = useParams<{ sessionId: string }>();
 	const [copied, setCopied] = useState(false);
 	const [tokenData, setTokenData] = useState<TokenDataPoint[]>([]);
-	const [toolActivityData, setToolActivityData] = useState<ToolActivityPoint[]>([]);
+	const [toolActivityData, setToolActivityData] = useState<ToolActivityPoint[]>(
+		[],
+	);
 	const [totalMessages, setTotalMessages] = useState(0);
 	const [activeMessageIndex, setActiveMessageIndex] = useState(0);
 	const [scrollToIndex, setScrollToIndex] = useState<number | null>(null);
@@ -50,12 +59,9 @@ export function SessionDetailPage() {
 		[],
 	);
 
-	const handleToolActivityReady = useCallback(
-		(data: ToolActivityPoint[]) => {
-			setToolActivityData(data);
-		},
-		[],
-	);
+	const handleToolActivityReady = useCallback((data: ToolActivityPoint[]) => {
+		setToolActivityData(data);
+	}, []);
 
 	const handleClickMessage = useCallback((messageIndex: number) => {
 		setScrollToIndex(messageIndex);
@@ -65,7 +71,7 @@ export function SessionDetailPage() {
 
 	const { data: session, isLoading } = useQuery(
 		orpc.analytics.sessions.detail.queryOptions({
-			input: { sessionId: sessionId! },
+			input: { sessionId: sessionId as string },
 		}),
 	);
 
@@ -125,14 +131,19 @@ export function SessionDetailPage() {
 							<h1 className="text-2xl font-bold text-heading">
 								Session Details
 							</h1>
-							{session.session_archetype && (() => {
-								const style = archetypeStyles[session.session_archetype] ?? archetypeStyles.standard;
-								return (
-									<span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${style.bg} ${style.text}`}>
-										{style.label}
-									</span>
-								);
-							})()}
+							{session.session_archetype &&
+								(() => {
+									const style =
+										archetypeStyles[session.session_archetype] ??
+										archetypeStyles.standard;
+									return (
+										<span
+											className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${style.bg} ${style.text}`}
+										>
+											{style.label}
+										</span>
+									);
+								})()}
 						</div>
 						<div className="flex items-center gap-4 text-sm text-muted">
 							<div className="flex items-center gap-2">
@@ -140,6 +151,7 @@ export function SessionDetailPage() {
 									{session.session_id.slice(0, 8)}...
 								</span>
 								<button
+									type="button"
 									onClick={copySessionId}
 									className="p-1 hover:bg-hover rounded"
 									title="Copy session ID"
@@ -167,7 +179,9 @@ export function SessionDetailPage() {
 						<div className="text-right">
 							<p className="text-muted">Duration</p>
 							<p className="text-foreground font-medium">
-								{session.duration_min !== undefined ? `${session.duration_min} min` : "—"}
+								{session.duration_min !== undefined
+									? `${session.duration_min} min`
+									: "—"}
 							</p>
 						</div>
 						<div className="text-right">
@@ -179,25 +193,32 @@ export function SessionDetailPage() {
 						<div className="text-right">
 							<p className="text-muted">Tokens</p>
 							<p className="text-foreground font-medium">
-								{session.input_tokens.toLocaleString()} / {session.output_tokens.toLocaleString()}
+								{session.input_tokens.toLocaleString()} /{" "}
+								{session.output_tokens.toLocaleString()}
 							</p>
 						</div>
 						<div className="text-right">
 							<p className="text-muted">Cost</p>
 							<p className="text-foreground font-mono font-medium">
-								${calculateCost(session.input_tokens, session.output_tokens).toFixed(4)}
+								$
+								{calculateCost(
+									session.input_tokens,
+									session.output_tokens,
+								).toFixed(4)}
 							</p>
 						</div>
 						{session.success_score !== undefined && (
 							<div className="text-right">
 								<p className="text-muted">Score</p>
-								<p className={`font-semibold ${
-									session.success_score >= 70
-										? "text-status-success-icon"
-										: session.success_score >= 40
-											? "text-status-warning-icon"
-											: "text-status-error-icon"
-								}`}>
+								<p
+									className={`font-semibold ${
+										session.success_score >= 70
+											? "text-status-success-icon"
+											: session.success_score >= 40
+												? "text-status-warning-icon"
+												: "text-status-error-icon"
+									}`}
+								>
 									{session.success_score.toFixed(0)}/100
 								</p>
 							</div>
@@ -245,7 +266,10 @@ export function SessionDetailPage() {
 										{session.git_sha}
 									</span>
 									<button
-										onClick={() => navigator.clipboard.writeText(session.git_sha!)}
+										type="button"
+										onClick={() =>
+											navigator.clipboard.writeText(session.git_sha as string)
+										}
 										className="p-1 hover:bg-hover rounded"
 										title="Copy commit SHA"
 									>
@@ -294,16 +318,16 @@ export function SessionDetailPage() {
 
 			{/* Tab subheader */}
 			<div className="shrink-0 bg-surface border-y border-border px-8 flex">
-				<button className="px-4 py-2 text-sm font-medium text-foreground border-b-2 border-foreground">
+				<button
+					type="button"
+					className="px-4 py-2 text-sm font-medium text-foreground border-b-2 border-foreground"
+				>
 					Conversation
 				</button>
 			</div>
 
 			{/* Scrollable content — two-column layout */}
-			<div
-				ref={scrollContainerRef}
-				className="flex-1 overflow-y-auto"
-			>
+			<div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
 				<div className="flex">
 					{/* Conversation — left */}
 					<div className="flex-1 min-w-0 py-6 px-8">

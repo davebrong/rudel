@@ -15,7 +15,7 @@ export function formatUsername(
 	userId: string,
 	userMap?: Record<string, string>,
 ): string {
-	if (userMap && userMap[userId]) {
+	if (userMap?.[userId]) {
 		return userMap[userId];
 	}
 	return userId;

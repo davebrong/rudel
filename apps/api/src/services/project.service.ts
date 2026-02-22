@@ -1,135 +1,145 @@
-import { queryClickhouse, escapeString, buildDateFilter } from '../clickhouse.js';
+import {
+	buildDateFilter,
+	escapeString,
+	queryClickhouse,
+} from "../clickhouse.js";
 
 export interface ProjectInvestment {
-  repository: string | null;
-  project_path: string;
-  sessions: number;
-  unique_users: number;
-  total_duration_min: number;
-  total_tokens: number;
-  success_rate: number;
-  cost: number;
-  success_rate_trend: number;
+	repository: string | null;
+	project_path: string;
+	sessions: number;
+	unique_users: number;
+	total_duration_min: number;
+	total_tokens: number;
+	success_rate: number;
+	cost: number;
+	success_rate_trend: number;
 }
 
 export interface KnowledgeSilo {
-  project_path: string;
-  project_name?: string;
-  repository_name?: string;
-  sole_user: string;
-  sessions: number;
-  risk_level: 'high' | 'medium' | 'low';
+	project_path: string;
+	project_name?: string;
+	repository_name?: string;
+	sole_user: string;
+	sessions: number;
+	risk_level: "high" | "medium" | "low";
 }
 
 export interface ProjectActivity {
-  date: string;
-  project_path: string;
-  sessions: number;
-  unique_users: number;
+	date: string;
+	project_path: string;
+	sessions: number;
+	unique_users: number;
 }
 
 export interface ProjectSummary {
-  total_projects: number;
-  projects_with_silos: number;
-  avg_users_per_project: number;
-  most_active_project: string;
-  most_active_sessions: number;
+	total_projects: number;
+	projects_with_silos: number;
+	avg_users_per_project: number;
+	most_active_project: string;
+	most_active_sessions: number;
 }
 
 export interface ProjectDetails {
-  project_path: string;
-  total_sessions: number;
-  total_tokens: number;
-  contributors_count: number;
-  errors_count: number;
-  avg_session_duration_min: number;
-  success_rate: number;
-  total_duration_min: number;
-  cost: number;
+	project_path: string;
+	total_sessions: number;
+	total_tokens: number;
+	contributors_count: number;
+	errors_count: number;
+	avg_session_duration_min: number;
+	success_rate: number;
+	total_duration_min: number;
+	cost: number;
 }
 
 export interface ProjectContributor {
-  user_id: string;
-  username?: string;
-  sessions: number;
-  total_duration_min: number;
-  total_tokens: number;
-  first_session: string;
-  last_session: string;
-  contribution_percentage: number;
+	user_id: string;
+	username?: string;
+	sessions: number;
+	total_duration_min: number;
+	total_tokens: number;
+	first_session: string;
+	last_session: string;
+	contribution_percentage: number;
 }
 
 export interface ProjectFeatureUsage {
-  subagents_adoption_rate: number;
-  skills_adoption_rate: number;
-  slash_commands_adoption_rate: number;
-  top_subagents: Array<{ name: string; count: number }>;
-  top_skills: Array<{ name: string; count: number }>;
-  top_slash_commands: Array<{ name: string; count: number }>;
+	subagents_adoption_rate: number;
+	skills_adoption_rate: number;
+	slash_commands_adoption_rate: number;
+	top_subagents: Array<{ name: string; count: number }>;
+	top_skills: Array<{ name: string; count: number }>;
+	top_slash_commands: Array<{ name: string; count: number }>;
 }
 
 export interface ProjectError {
-  error_pattern: string;
-  occurrences: number;
-  affected_users: number;
-  first_seen: string;
-  last_seen: string;
+	error_pattern: string;
+	occurrences: number;
+	affected_users: number;
+	first_seen: string;
+	last_seen: string;
 }
 
 export interface ProjectTrendDataPoint {
-  date: string;
-  project_path: string;
-  project_name?: string;
-  sessions: number;
-  total_hours: number;
-  total_tokens: number;
-  avg_success_rate: number;
+	date: string;
+	project_path: string;
+	project_name?: string;
+	sessions: number;
+	total_hours: number;
+	total_tokens: number;
+	avg_success_rate: number;
 }
 
 /**
  * Extract project name from path (last segment)
  */
 function extractProjectName(projectPath: string): string {
-  if (!projectPath) return '';
-  const segments = projectPath.replace(/\\/g, '/').split('/').filter(Boolean);
-  return segments[segments.length - 1] || projectPath;
+	if (!projectPath) return "";
+	const segments = projectPath.replace(/\\/g, "/").split("/").filter(Boolean);
+	return segments[segments.length - 1] || projectPath;
 }
 
 /**
  * Extract repository name from path
  */
 function extractRepositoryName(projectPath: string): string {
-  return extractProjectName(projectPath);
+	return extractProjectName(projectPath);
 }
 
 /**
  * Get AI investment by project - where is time being spent?
  */
 export async function getProjectInvestment(
-  orgId: string,
-  params: {
-    days?: number;
-    limit?: number;
-    offset?: number;
-    project_path?: string;
-    project_paths?: string[];
-  } = {}
+	orgId: string,
+	params: {
+		days?: number;
+		limit?: number;
+		offset?: number;
+		project_path?: string;
+		project_paths?: string[];
+	} = {},
 ): Promise<ProjectInvestment[]> {
-  const { days = 30, limit = 20, offset = 0, project_path, project_paths } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const lim = Number(limit);
-  const off = Number(offset);
+	const {
+		days = 30,
+		limit = 20,
+		offset = 0,
+		project_path,
+		project_paths,
+	} = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
+	const lim = Number(limit);
+	const off = Number(offset);
 
-  let projectFilter = '';
-  if (project_path) {
-    projectFilter = `AND project_path = '${escapeString(project_path)}'`;
-  } else if (project_paths && project_paths.length > 0) {
-    const escaped = project_paths.map((p) => `'${escapeString(p)}'`).join(', ');
-    projectFilter = `AND project_path IN (${escaped})`;
-  }
+	let projectFilter = "";
+	if (project_path) {
+		projectFilter = `AND project_path = '${escapeString(project_path)}'`;
+	} else if (project_paths && project_paths.length > 0) {
+		const escaped = project_paths.map((p) => `'${escapeString(p)}'`).join(", ");
+		projectFilter = `AND project_path IN (${escaped})`;
+	}
 
-  const query = `
+	const query = `
     WITH current_period AS (
       SELECT
         repository,
@@ -181,27 +191,27 @@ export async function getProjectInvestment(
     OFFSET ${off}
   `;
 
-  const results = await queryClickhouse<ProjectInvestment>(query);
+	const results = await queryClickhouse<ProjectInvestment>(query);
 
-  return results.map((project) => ({
-    ...project,
-    repository: project.repository || null,
-  }));
+	return results.map((project) => ({
+		...project,
+		repository: project.repository || null,
+	}));
 }
 
 /**
  * Get knowledge silos - projects with only one developer
  */
 export async function getKnowledgeSilos(
-  orgId: string,
-  params: { days?: number; min_sessions?: number } = {}
+	orgId: string,
+	params: { days?: number; min_sessions?: number } = {},
 ): Promise<KnowledgeSilo[]> {
-  const { days = 30, min_sessions = 5 } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const minSess = Number(min_sessions);
+	const { days = 30, min_sessions = 5 } = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
+	const minSess = Number(min_sessions);
 
-  const query = `
+	const query = `
     SELECT
       project_path,
       any(user_id) as sole_user,
@@ -221,36 +231,36 @@ export async function getKnowledgeSilos(
     ORDER BY sessions DESC
   `;
 
-  const results = await queryClickhouse<KnowledgeSilo>(query);
+	const results = await queryClickhouse<KnowledgeSilo>(query);
 
-  return results.map((silo) => ({
-    ...silo,
-    project_name: extractProjectName(silo.project_path),
-    repository_name: extractRepositoryName(silo.project_path),
-  }));
+	return results.map((silo) => ({
+		...silo,
+		project_name: extractProjectName(silo.project_path),
+		repository_name: extractRepositoryName(silo.project_path),
+	}));
 }
 
 /**
  * Get project activity trend over time
  */
 export async function getProjectActivity(
-  orgId: string,
-  projectPath: string,
-  params: { days?: number; granularity?: 'day' | 'week' | 'month' } = {}
+	orgId: string,
+	projectPath: string,
+	params: { days?: number; granularity?: "day" | "week" | "month" } = {},
 ): Promise<ProjectActivity[]> {
-  const { days = 30, granularity = 'day' } = params;
-  const org = escapeString(orgId);
-  const pp = escapeString(projectPath);
-  const d = Number(days);
+	const { days = 30, granularity = "day" } = params;
+	const org = escapeString(orgId);
+	const pp = escapeString(projectPath);
+	const d = Number(days);
 
-  let dateGrouping = 'toDate(session_date)';
-  if (granularity === 'week') {
-    dateGrouping = 'toMonday(session_date)';
-  } else if (granularity === 'month') {
-    dateGrouping = 'toStartOfMonth(session_date)';
-  }
+	let dateGrouping = "toDate(session_date)";
+	if (granularity === "week") {
+		dateGrouping = "toMonday(session_date)";
+	} else if (granularity === "month") {
+		dateGrouping = "toStartOfMonth(session_date)";
+	}
 
-  const query = `
+	const query = `
     WITH project_repository AS (
       SELECT repository, any(project_path) as project_path
       FROM rudel.session_analytics
@@ -272,17 +282,20 @@ export async function getProjectActivity(
     ORDER BY date ASC
   `;
 
-  return queryClickhouse<ProjectActivity>(query);
+	return queryClickhouse<ProjectActivity>(query);
 }
 
 /**
  * Get project summary statistics
  */
-export async function getProjectSummary(orgId: string, days = 30): Promise<ProjectSummary> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+export async function getProjectSummary(
+	orgId: string,
+	days = 30,
+): Promise<ProjectSummary> {
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     WITH project_stats AS (
       SELECT
         project_path,
@@ -303,29 +316,31 @@ export async function getProjectSummary(orgId: string, days = 30): Promise<Proje
     FROM project_stats
   `;
 
-  const result = await queryClickhouse<ProjectSummary>(query);
-  return result[0] || {
-    total_projects: 0,
-    projects_with_silos: 0,
-    avg_users_per_project: 0,
-    most_active_project: '',
-    most_active_sessions: 0,
-  };
+	const result = await queryClickhouse<ProjectSummary>(query);
+	return (
+		result[0] || {
+			total_projects: 0,
+			projects_with_silos: 0,
+			avg_users_per_project: 0,
+			most_active_project: "",
+			most_active_sessions: 0,
+		}
+	);
 }
 
 /**
  * Get detailed metrics for a specific project
  */
 export async function getProjectDetails(
-  orgId: string,
-  projectPath: string,
-  days = 30
+	orgId: string,
+	projectPath: string,
+	days = 30,
 ): Promise<ProjectDetails | null> {
-  const org = escapeString(orgId);
-  const pp = escapeString(projectPath);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const pp = escapeString(projectPath);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     SELECT
       any(project_path) as project_path,
       COUNT(*) as total_sessions,
@@ -350,41 +365,43 @@ export async function getProjectDetails(
     AND organization_id = '${org}'
   `;
 
-  const results = await queryClickhouse<ProjectDetails & {
-    input_tokens_sum: number;
-    output_tokens_sum: number;
-  }>(query);
+	const results = await queryClickhouse<
+		ProjectDetails & {
+			input_tokens_sum: number;
+			output_tokens_sum: number;
+		}
+	>(query);
 
-  if (results.length === 0) return null;
-
-  const row = results[0]!;
-  const cost = (row.output_tokens_sum * 0.000015) + (row.input_tokens_sum * 0.000003);
-  return {
-    project_path: row.project_path,
-    total_sessions: row.total_sessions,
-    total_tokens: row.total_tokens,
-    contributors_count: row.contributors_count,
-    errors_count: row.errors_count,
-    avg_session_duration_min: row.avg_session_duration_min,
-    success_rate: row.success_rate,
-    total_duration_min: row.total_duration_min,
-    cost: parseFloat(cost.toFixed(4)),
-  };
+	const [row] = results;
+	if (!row) return null;
+	const cost =
+		row.output_tokens_sum * 0.000015 + row.input_tokens_sum * 0.000003;
+	return {
+		project_path: row.project_path,
+		total_sessions: row.total_sessions,
+		total_tokens: row.total_tokens,
+		contributors_count: row.contributors_count,
+		errors_count: row.errors_count,
+		avg_session_duration_min: row.avg_session_duration_min,
+		success_rate: row.success_rate,
+		total_duration_min: row.total_duration_min,
+		cost: parseFloat(cost.toFixed(4)),
+	};
 }
 
 /**
  * Get contributors to a specific project
  */
 export async function getProjectContributors(
-  orgId: string,
-  projectPath: string,
-  days = 30
+	orgId: string,
+	projectPath: string,
+	days = 30,
 ): Promise<ProjectContributor[]> {
-  const org = escapeString(orgId);
-  const pp = escapeString(projectPath);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const pp = escapeString(projectPath);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     WITH project_repository AS (
       SELECT repository
       FROM rudel.session_analytics
@@ -416,22 +433,22 @@ export async function getProjectContributors(
     ORDER BY sessions DESC
   `;
 
-  return queryClickhouse<ProjectContributor>(query);
+	return queryClickhouse<ProjectContributor>(query);
 }
 
 /**
  * Get feature usage for a specific project
  */
 export async function getProjectFeatureUsage(
-  orgId: string,
-  projectPath: string,
-  days = 30
+	orgId: string,
+	projectPath: string,
+	days = 30,
 ): Promise<ProjectFeatureUsage> {
-  const org = escapeString(orgId);
-  const pp = escapeString(projectPath);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const pp = escapeString(projectPath);
+	const d = Number(days);
 
-  const repoSubquery = `(
+	const repoSubquery = `(
     SELECT repository
     FROM rudel.session_analytics
     WHERE project_path = '${pp}'
@@ -440,7 +457,7 @@ export async function getProjectFeatureUsage(
     LIMIT 1
   )`;
 
-  const adoptionQuery = `
+	const adoptionQuery = `
     SELECT
       COUNT(*) as total_sessions,
       countIf(length(subagent_types) > 0) as subagents_sessions,
@@ -452,7 +469,7 @@ export async function getProjectFeatureUsage(
     AND organization_id = '${org}'
   `;
 
-  const topSubagentsQuery = `
+	const topSubagentsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN subagent_types as val
@@ -465,7 +482,7 @@ export async function getProjectFeatureUsage(
     LIMIT 10
   `;
 
-  const topSkillsQuery = `
+	const topSkillsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN skills as val
@@ -478,7 +495,7 @@ export async function getProjectFeatureUsage(
     LIMIT 10
   `;
 
-  const topSlashCommandsQuery = `
+	const topSlashCommandsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
@@ -491,56 +508,72 @@ export async function getProjectFeatureUsage(
     LIMIT 10
   `;
 
-  const [adoptionResults, topSubagents, topSkills, topSlashCommands] = await Promise.all([
-    queryClickhouse<{
-      total_sessions: number;
-      subagents_sessions: number;
-      skills_sessions: number;
-      slash_commands_sessions: number;
-    }>(adoptionQuery),
-    queryClickhouse<{ name: string; count: number }>(topSubagentsQuery),
-    queryClickhouse<{ name: string; count: number }>(topSkillsQuery),
-    queryClickhouse<{ name: string; count: number }>(topSlashCommandsQuery),
-  ]);
+	const [adoptionResults, topSubagents, topSkills, topSlashCommands] =
+		await Promise.all([
+			queryClickhouse<{
+				total_sessions: number;
+				subagents_sessions: number;
+				skills_sessions: number;
+				slash_commands_sessions: number;
+			}>(adoptionQuery),
+			queryClickhouse<{ name: string; count: number }>(topSubagentsQuery),
+			queryClickhouse<{ name: string; count: number }>(topSkillsQuery),
+			queryClickhouse<{ name: string; count: number }>(topSlashCommandsQuery),
+		]);
 
-  if (adoptionResults.length === 0) {
-    return {
-      subagents_adoption_rate: 0,
-      skills_adoption_rate: 0,
-      slash_commands_adoption_rate: 0,
-      top_subagents: [],
-      top_skills: [],
-      top_slash_commands: [],
-    };
-  }
+	if (adoptionResults.length === 0) {
+		return {
+			subagents_adoption_rate: 0,
+			skills_adoption_rate: 0,
+			slash_commands_adoption_rate: 0,
+			top_subagents: [],
+			top_skills: [],
+			top_slash_commands: [],
+		};
+	}
 
-  const stats = adoptionResults[0]!;
-  return {
-    subagents_adoption_rate:
-      stats.total_sessions > 0 ? (stats.subagents_sessions / stats.total_sessions) * 100 : 0,
-    skills_adoption_rate:
-      stats.total_sessions > 0 ? (stats.skills_sessions / stats.total_sessions) * 100 : 0,
-    slash_commands_adoption_rate:
-      stats.total_sessions > 0 ? (stats.slash_commands_sessions / stats.total_sessions) * 100 : 0,
-    top_subagents: topSubagents,
-    top_skills: topSkills,
-    top_slash_commands: topSlashCommands,
-  };
+	const [stats] = adoptionResults;
+	if (!stats)
+		return {
+			subagents_adoption_rate: 0,
+			skills_adoption_rate: 0,
+			slash_commands_adoption_rate: 0,
+			top_subagents: [],
+			top_skills: [],
+			top_slash_commands: [],
+		};
+	return {
+		subagents_adoption_rate:
+			stats.total_sessions > 0
+				? (stats.subagents_sessions / stats.total_sessions) * 100
+				: 0,
+		skills_adoption_rate:
+			stats.total_sessions > 0
+				? (stats.skills_sessions / stats.total_sessions) * 100
+				: 0,
+		slash_commands_adoption_rate:
+			stats.total_sessions > 0
+				? (stats.slash_commands_sessions / stats.total_sessions) * 100
+				: 0,
+		top_subagents: topSubagents,
+		top_skills: topSkills,
+		top_slash_commands: topSlashCommands,
+	};
 }
 
 /**
  * Get error patterns specific to a project
  */
 export async function getProjectErrors(
-  orgId: string,
-  projectPath: string,
-  days = 30
+	orgId: string,
+	projectPath: string,
+	days = 30,
 ): Promise<ProjectError[]> {
-  const org = escapeString(orgId);
-  const pp = escapeString(projectPath);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const pp = escapeString(projectPath);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     WITH project_repository AS (
       SELECT repository
       FROM rudel.session_analytics
@@ -583,23 +616,26 @@ export async function getProjectErrors(
     LIMIT 20
   `;
 
-  return queryClickhouse<ProjectError>(query);
+	return queryClickhouse<ProjectError>(query);
 }
 
 /**
  * Get project trend data for time series charts (split by project)
  */
 export async function getProjectTrends(
-  orgId: string,
-  days = 30,
-  groupBy: 'day' | 'week' = 'day'
+	orgId: string,
+	days = 30,
+	groupBy: "day" | "week" = "day",
 ): Promise<ProjectTrendDataPoint[]> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const dateFunc = groupBy === 'week' ? 'toMonday(toDate(session_date))' : 'toDate(session_date)';
+	const dateFunc =
+		groupBy === "week"
+			? "toMonday(toDate(session_date))"
+			: "toDate(session_date)";
 
-  const query = `
+	const query = `
     SELECT
       toString(${dateFunc}) as date,
       repository,
@@ -616,15 +652,17 @@ export async function getProjectTrends(
     ORDER BY date ASC, repository ASC
   `;
 
-  const results = await queryClickhouse<ProjectTrendDataPoint & { repository: string }>(query);
+	const results = await queryClickhouse<
+		ProjectTrendDataPoint & { repository: string }
+	>(query);
 
-  return results.map((item) => ({
-    date: item.date,
-    project_path: item.project_path,
-    project_name: item.repository,
-    sessions: item.sessions,
-    total_hours: item.total_hours,
-    total_tokens: item.total_tokens,
-    avg_success_rate: item.avg_success_rate,
-  }));
+	return results.map((item) => ({
+		date: item.date,
+		project_path: item.project_path,
+		project_name: item.repository,
+		sessions: item.sessions,
+		total_hours: item.total_hours,
+		total_tokens: item.total_tokens,
+		avg_success_rate: item.avg_success_rate,
+	}));
 }

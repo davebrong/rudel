@@ -1,15 +1,23 @@
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import {
+	Activity,
+	ArrowDown,
+	ArrowUp,
+	Clock,
+	Code,
+	Minus,
+	Users,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Activity, Clock, Code, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { StatCard } from "@/components/analytics/StatCard";
-import { PageHeader } from "@/components/analytics/PageHeader";
 import { DatePicker } from "@/components/analytics/DatePicker";
+import { PageHeader } from "@/components/analytics/PageHeader";
+import { StatCard } from "@/components/analytics/StatCard";
 import { DeveloperTrendChart } from "@/components/charts/DeveloperTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
-import { orpc } from "@/lib/orpc";
 import { formatUsername } from "@/lib/format";
+import { orpc } from "@/lib/orpc";
 
 export function DevelopersListPage() {
 	const navigate = useNavigate();
@@ -43,10 +51,7 @@ export function DevelopersListPage() {
 		return map;
 	}, [userMappings]);
 
-	const userMapRecord = useMemo(
-		() => Object.fromEntries(userMap),
-		[userMap],
-	);
+	const userMapRecord = useMemo(() => Object.fromEntries(userMap), [userMap]);
 
 	const sortedDevelopers = useMemo(() => {
 		if (!developers) return [];
@@ -142,6 +147,7 @@ export function DevelopersListPage() {
 							["sessions", "tokens", "success_rate", "last_active"] as const
 						).map((key) => (
 							<button
+								type="button"
 								key={key}
 								onClick={() => setSortBy(key)}
 								className={`px-3 py-1 text-sm rounded ${
@@ -200,9 +206,7 @@ export function DevelopersListPage() {
 								<tr
 									key={dev.user_id}
 									onClick={() =>
-										navigate(
-											`/dashboard/developers/${dev.user_id}`,
-										)
+										navigate(`/dashboard/developers/${dev.user_id}`)
 									}
 									className="hover:bg-hover cursor-pointer"
 								>

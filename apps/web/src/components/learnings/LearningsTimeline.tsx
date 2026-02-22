@@ -1,5 +1,5 @@
-import { BookOpen } from "lucide-react";
 import type { LearningEntry } from "@rudel/api-routes";
+import { BookOpen } from "lucide-react";
 import { TimelineItem } from "./TimelineItem";
 
 interface LearningsTimelineProps {
@@ -19,6 +19,7 @@ export function LearningsTimeline({
 			<div className="space-y-8">
 				{[...Array(3)].map((_, i) => (
 					<div
+						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
 						key={i}
 						className="relative pl-8 pb-8 border-l-2 border-border"
 					>

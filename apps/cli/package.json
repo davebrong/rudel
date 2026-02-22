@@ -2,6 +2,8 @@
 	"name": "rudel",
 	"version": "0.1.4",
 	"type": "module",
+	"description": "CLI for the Coding Agent Analytics Platform rudel.ai",
+	"homepage": "https://app.rudel.ai",
 	"bin": {
 		"rudel": "./dist/cli.js"
 	},

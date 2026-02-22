@@ -1,43 +1,35 @@
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Activity, ArrowLeft, Calendar, Clock, Code, Zap } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
-	ArrowLeft,
-	Activity,
-	Clock,
-	Code,
-	Calendar,
-	Zap,
-} from "lucide-react";
-import {
-	LineChart,
-	Line,
-	BarChart,
 	Bar,
+	BarChart,
+	CartesianGrid,
+	Legend,
+	Line,
+	LineChart,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer,
 } from "recharts";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { StatCard } from "@/components/analytics/StatCard";
-import { PageHeader } from "@/components/analytics/PageHeader";
 import { DatePicker } from "@/components/analytics/DatePicker";
+import { PageHeader } from "@/components/analytics/PageHeader";
+import { StatCard } from "@/components/analytics/StatCard";
 import { useDateRange } from "@/contexts/DateRangeContext";
-import { orpc } from "@/lib/orpc";
-import { formatUsername } from "@/lib/format";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import {
 	calculateRollingAverage,
 	calculateWeekOverWeek,
+	formatWoWChange,
+	getTrendColor,
 	getTrendDirection,
 	getTrendIcon,
-	getTrendColor,
-	formatWoWChange,
 } from "@/lib/analytics";
+import { formatUsername } from "@/lib/format";
+import { orpc } from "@/lib/orpc";
 
 export function DeveloperDetailPage() {
 	const { userId } = useParams<{ userId: string }>();
@@ -53,14 +45,14 @@ export function DeveloperDetailPage() {
 
 	const { data: details, isLoading: detailsLoading } = useQuery(
 		orpc.analytics.developers.details.queryOptions({
-			input: { userId: userId!, days },
+			input: { userId: userId as string, days },
 		}),
 	);
 
 	const { data: sessions } = useQuery(
 		orpc.analytics.developers.sessions.queryOptions({
 			input: {
-				userId: userId!,
+				userId: userId as string,
 				days,
 				limit: 100,
 				projectPath: projectFilter || undefined,
@@ -73,25 +65,25 @@ export function DeveloperDetailPage() {
 
 	const { data: projects } = useQuery(
 		orpc.analytics.developers.projects.queryOptions({
-			input: { userId: userId!, days },
+			input: { userId: userId as string, days },
 		}),
 	);
 
 	const { data: timeline } = useQuery(
 		orpc.analytics.developers.timeline.queryOptions({
-			input: { userId: userId!, days },
+			input: { userId: userId as string, days },
 		}),
 	);
 
 	const { data: features } = useQuery(
 		orpc.analytics.developers.features.queryOptions({
-			input: { userId: userId!, days },
+			input: { userId: userId as string, days },
 		}),
 	);
 
 	const { data: errors } = useQuery(
 		orpc.analytics.developers.errors.queryOptions({
-			input: { userId: userId!, days },
+			input: { userId: userId as string, days },
 		}),
 	);
 
@@ -131,7 +123,11 @@ export function DeveloperDetailPage() {
 
 	const { wowChange, trendColorClass, trendIcon } = useMemo(() => {
 		if (!timeline || timeline.length < 14) {
-			return { wowChange: 0, trendColorClass: "text-gray-500", trendIcon: "\u2192" };
+			return {
+				wowChange: 0,
+				trendColorClass: "text-gray-500",
+				trendIcon: "\u2192",
+			};
 		}
 		const sessionValues = timeline.map((d) => d.sessions);
 		const currentWeek = sessionValues.slice(-7);
@@ -388,8 +384,18 @@ export function DeveloperDetailPage() {
 								}}
 							/>
 							<Legend />
-							<Bar yAxisId="left" dataKey="sessions" fill="#3b82f6" name="Sessions" />
-							<Bar yAxisId="right" dataKey="hours" fill="#10b981" name="Hours" />
+							<Bar
+								yAxisId="left"
+								dataKey="sessions"
+								fill="#3b82f6"
+								name="Sessions"
+							/>
+							<Bar
+								yAxisId="right"
+								dataKey="hours"
+								fill="#10b981"
+								name="Hours"
+							/>
 						</BarChart>
 					</ResponsiveContainer>
 				</AnalyticsCard>
@@ -418,7 +424,11 @@ export function DeveloperDetailPage() {
 							</thead>
 							<tbody className="bg-input divide-y divide-border">
 								{errors.map((error, idx) => (
-									<tr key={idx} className="hover:bg-hover">
+									<tr
+										// biome-ignore lint/suspicious/noArrayIndexKey: static error list
+										key={idx}
+										className="hover:bg-hover"
+									>
 										<td className="px-6 py-4 text-sm font-medium text-foreground">
 											{error.error_pattern}
 										</td>

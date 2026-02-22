@@ -1,13 +1,20 @@
+import type { PieLabelRenderProps } from "recharts";
+
+interface TaskClassification {
+	task_type: string;
+	count: number;
+	percentage: number;
+	avg_confidence: number;
+}
+
 import {
-	PieChart,
-	Pie,
 	Cell,
-	ResponsiveContainer,
 	Legend,
+	Pie,
+	PieChart,
+	ResponsiveContainer,
 	Tooltip,
 } from "recharts";
-import type { TaskClassification } from "@rudel/api-routes";
-import type { PieLabelRenderProps } from "recharts";
 
 interface TaskClassificationChartProps {
 	data: TaskClassification[];
@@ -52,7 +59,8 @@ export function TaskClassificationChart({
 		const midAngle = Number(props.midAngle) || 0;
 		const innerRadius = Number(props.innerRadius) || 0;
 		const outerRadius = Number(props.outerRadius) || 0;
-		const percentage = Number((props as unknown as Record<string, unknown>).percentage) || 0;
+		const percentage =
+			Number((props as unknown as Record<string, unknown>).percentage) || 0;
 
 		const RADIAN = Math.PI / 180;
 		const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
@@ -75,16 +83,8 @@ export function TaskClassificationChart({
 		);
 	};
 
-	const CustomTooltip = ({
-		active,
-		payload,
-	}: Record<string, unknown>) => {
-		if (
-			active &&
-			payload &&
-			Array.isArray(payload) &&
-			payload.length
-		) {
+	const CustomTooltip = ({ active, payload }: Record<string, unknown>) => {
+		if (active && payload && Array.isArray(payload) && payload.length) {
 			const d = (payload[0] as Record<string, unknown>).payload as Record<
 				string,
 				unknown
@@ -138,6 +138,7 @@ export function TaskClassificationChart({
 					>
 						{chartData.map((entry, index) => (
 							<Cell
+								// biome-ignore lint/suspicious/noArrayIndexKey: static pie chart segments
 								key={`cell-${index}`}
 								fill={COLORS[entry.task_type] || COLORS.unknown}
 								className="hover:opacity-80 transition-opacity"
@@ -149,8 +150,8 @@ export function TaskClassificationChart({
 						verticalAlign="bottom"
 						height={36}
 						formatter={(value) => {
-							const d = chartData.find((d) => d.name === value);
-							return `${value} (${d?.value || 0})`;
+							const match = chartData.find((item) => item.name === value);
+							return `${value} (${match?.value || 0})`;
 						}}
 					/>
 				</PieChart>

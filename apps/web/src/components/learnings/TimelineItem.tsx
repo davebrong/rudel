@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-	Clock,
-	User,
-	FolderKanban,
-	ChevronDown,
-	ChevronUp,
-	ExternalLink,
-} from "lucide-react";
 import type { LearningEntry } from "@rudel/api-routes";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import {
+	ChevronDown,
+	ChevronUp,
+	Clock,
+	ExternalLink,
+	FolderKanban,
+	User,
+} from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { formatUsername } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 interface TimelineItemProps {
 	learning: LearningEntry;
@@ -22,16 +22,13 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
 
 	// Format date
-	const formattedDate = format(
-		new Date(learning.created_at),
-		"MMM dd, yyyy",
-	);
+	const formattedDate = format(new Date(learning.created_at), "MMM dd, yyyy");
 	const formattedTime = format(new Date(learning.created_at), "h:mm a");
 
 	// Truncate text for preview
 	const contentPreview =
 		learning.content.length > 300
-			? learning.content.slice(0, 300) + "..."
+			? `${learning.content.slice(0, 300)}...`
 			: learning.content;
 
 	// Extract project name from path
@@ -98,17 +95,12 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 								<div className="flex items-center gap-1">
 									<User className="w-3 h-3" />
 									<span className="font-medium">
-										{formatUsername(
-											learning.user_id,
-											userMap,
-										)}
+										{formatUsername(learning.user_id, userMap)}
 									</span>
 								</div>
 								<div className="flex items-center gap-1">
 									<FolderKanban className="w-3 h-3" />
-									<span className="font-mono">
-										{projectName}
-									</span>
+									<span className="font-mono">{projectName}</span>
 								</div>
 								{learning.repository && (
 									<span className="px-2 py-0.5 bg-muted rounded text-muted-foreground">
@@ -122,6 +114,7 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 								<div className="flex flex-wrap gap-1">
 									{learning.tags.map((tag, idx) => (
 										<span
+											// biome-ignore lint/suspicious/noArrayIndexKey: tags may duplicate
 											key={`${tag}-${idx}`}
 											className="px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 rounded"
 										>
@@ -152,6 +145,7 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 					{/* Expand/collapse button */}
 					{learning.content.length > 300 && (
 						<button
+							type="button"
 							onClick={() => setIsExpanded(!isExpanded)}
 							className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium mt-3"
 						>

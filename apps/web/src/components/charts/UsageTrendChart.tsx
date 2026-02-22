@@ -1,16 +1,16 @@
+import type { UsageTrendData } from "@rudel/api-routes";
 import { useState } from "react";
 import {
-	LineChart,
+	CartesianGrid,
+	Legend,
 	Line,
+	LineChart,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
-import type { UsageTrendData } from "@rudel/api-routes";
 
 interface UsageTrendChartProps {
 	data: UsageTrendData[];
@@ -59,7 +59,8 @@ export function UsageTrendChart({
 	showRollingAverage: _showRollingAverage = false,
 }: UsageTrendChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
-	const [selectedPair, setSelectedPair] = useState<MetricPair>("sessions-tokens");
+	const [selectedPair, setSelectedPair] =
+		useState<MetricPair>("sessions-tokens");
 
 	const currentPair = METRIC_PAIRS[selectedPair];
 
@@ -79,6 +80,7 @@ export function UsageTrendChart({
 					const isSelected = selectedPair === key;
 					return (
 						<button
+							type="button"
 							key={key}
 							onClick={() => setSelectedPair(key as MetricPair)}
 							className={`

@@ -31,8 +31,7 @@ export function MultiSelect({
 		}
 
 		document.addEventListener("mousedown", handleClickOutside);
-		return () =>
-			document.removeEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
 	const toggleOption = (option: string) => {
@@ -62,12 +61,7 @@ export function MultiSelect({
 				onClick={() => setIsOpen(!isOpen)}
 				className="w-full px-3 py-1.5 text-sm border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent flex items-center justify-between gap-2"
 			>
-				<span
-					className={cn(
-						"truncate",
-						selected.length === 0 && "text-muted",
-					)}
-				>
+				<span className={cn("truncate", selected.length === 0 && "text-muted")}>
 					{selected.length > 0 && (
 						<Check className="w-3 h-3 inline mr-1 text-status-success-icon" />
 					)}
@@ -115,9 +109,7 @@ export function MultiSelect({
 									<div
 										className={cn(
 											"w-4 h-4 border rounded flex items-center justify-center",
-											isSelected
-												? "bg-accent border-accent"
-												: "border-border",
+											isSelected ? "bg-accent border-accent" : "border-border",
 										)}
 									>
 										{isSelected && (

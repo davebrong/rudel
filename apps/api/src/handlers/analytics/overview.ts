@@ -1,11 +1,11 @@
 import { authMiddleware, os } from "../../middleware.js";
 import {
-	getOverviewKPIs,
-	getUsageTrendDetailed,
 	getModelTokensTrend,
 	getOverviewInsights,
-	getTeamSummaryWithComparison,
+	getOverviewKPIs,
 	getSuccessRateMetrics,
+	getTeamSummaryWithComparison,
+	getUsageTrendDetailed,
 } from "../../services/overview.service.js";
 
 const kpis = os.analytics.overview.kpis

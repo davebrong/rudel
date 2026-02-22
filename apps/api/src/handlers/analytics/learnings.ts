@@ -1,10 +1,10 @@
 import { authMiddleware, os } from "../../middleware.js";
 import {
+	getLearningProjects,
 	getLearningsFeed,
 	getLearningsFeedStats,
-	getLearningUsers,
-	getLearningProjects,
 	getLearningsTrend,
+	getLearningUsers,
 } from "../../services/learnings.service.js";
 
 const list = os.analytics.learnings.list

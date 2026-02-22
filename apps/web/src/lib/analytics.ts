@@ -57,18 +57,14 @@ export function detectAnomalies(
 			continue;
 		}
 
-		const percentChange = Math.abs(
-			((current - previous) / previous) * 100,
-		);
+		const percentChange = Math.abs(((current - previous) / previous) * 100);
 		result.push(percentChange > threshold);
 	}
 
 	return result;
 }
 
-export function getTrendDirection(
-	data: number[],
-): "up" | "down" | "stable" {
+export function getTrendDirection(data: number[]): "up" | "down" | "stable" {
 	if (!data || data.length < 2) return "stable";
 
 	const firstHalf = data.slice(0, Math.floor(data.length / 2));
@@ -76,8 +72,7 @@ export function getTrendDirection(
 
 	const firstAvg =
 		firstHalf.reduce((sum, val) => sum + val, 0) / firstHalf.length;
-	const lastAvg =
-		lastHalf.reduce((sum, val) => sum + val, 0) / lastHalf.length;
+	const lastAvg = lastHalf.reduce((sum, val) => sum + val, 0) / lastHalf.length;
 
 	const percentChange = ((lastAvg - firstAvg) / firstAvg) * 100;
 
@@ -102,9 +97,7 @@ export function getTrendColor(
 ): string {
 	if (direction === "stable") return "text-gray-500";
 
-	const isGood = isPositiveGood
-		? direction === "up"
-		: direction === "down";
+	const isGood = isPositiveGood ? direction === "up" : direction === "down";
 	return isGood ? "text-green-600" : "text-red-600";
 }
 

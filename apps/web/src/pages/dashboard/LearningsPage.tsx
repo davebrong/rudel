@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Users, FolderKanban } from "lucide-react";
+import { BookOpen, FolderKanban, Users } from "lucide-react";
+import { useMemo, useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { StatCard } from "@/components/analytics/StatCard";
-import { PageHeader } from "@/components/analytics/PageHeader";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { MultiSelect } from "@/components/analytics/MultiSelect";
+import { PageHeader } from "@/components/analytics/PageHeader";
+import { StatCard } from "@/components/analytics/StatCard";
 import { LearningsTrendChart } from "@/components/charts/LearningsTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { orpc } from "@/lib/orpc";
@@ -95,8 +95,7 @@ export function LearningsPage() {
 		if (!availableUsers) return;
 		const userIds = selectedNames.map((name) => {
 			const userId = availableUsers.find(
-				(id) =>
-					(userMap.get(id) || `${id.substring(0, 8)}...`) === name,
+				(id) => (userMap.get(id) || `${id.substring(0, 8)}...`) === name,
 			);
 			return userId || name;
 		});
@@ -106,9 +105,7 @@ export function LearningsPage() {
 	const handleProjectFilterChange = (selected: string[]) => {
 		if (!availableProjects) return;
 		const fullPaths = selected.map((name) => {
-			const path = availableProjects.find(
-				(p) => p.split("/").pop() === name,
-			);
+			const path = availableProjects.find((p) => p.split("/").pop() === name);
 			return path || name;
 		});
 		setSelectedProjects(fullPaths);
@@ -158,8 +155,7 @@ export function LearningsPage() {
 				<MultiSelect
 					options={userDisplayOptions}
 					selected={selectedUsers.map(
-						(userId) =>
-							userMap.get(userId) || `${userId.substring(0, 8)}...`,
+						(userId) => userMap.get(userId) || `${userId.substring(0, 8)}...`,
 					)}
 					onChange={handleUserFilterChange}
 					placeholder="All Users"
@@ -177,6 +173,7 @@ export function LearningsPage() {
 				/>
 				{(selectedUsers.length > 0 || selectedProjects.length > 0) && (
 					<button
+						type="button"
 						onClick={() => {
 							setSelectedUsers([]);
 							setSelectedProjects([]);

@@ -1,21 +1,8 @@
 import { join } from "node:path";
 import { RPCHandler } from "@orpc/server/fetch";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { createAuth } from "./auth.js";
 import { db } from "./db.js";
 import { router } from "./router.js";
-
-const migrationsFolder = join(
-	import.meta.dir,
-	"..",
-	"..",
-	"..",
-	"packages",
-	"sql-schema",
-	"db",
-	"migrations",
-);
-await migrate(db, { migrationsFolder });
 
 const socialProviders: Record<
 	string,

@@ -1,13 +1,13 @@
 import { ORPCError } from "@orpc/server";
 import { authMiddleware, os } from "../../middleware.js";
 import {
-	getDeveloperList,
 	getDeveloperDetails,
-	getDeveloperSessions,
-	getDeveloperProjects,
-	getDeveloperTimeline,
-	getDeveloperFeatureUsage,
 	getDeveloperErrors,
+	getDeveloperFeatureUsage,
+	getDeveloperList,
+	getDeveloperProjects,
+	getDeveloperSessions,
+	getDeveloperTimeline,
 	getDeveloperTrends,
 } from "../../services/developer.service.js";
 
@@ -20,7 +20,11 @@ const list = os.analytics.developers.list
 const details = os.analytics.developers.details
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
-		const result = await getDeveloperDetails(context.user.id, input.userId, input.days);
+		const result = await getDeveloperDetails(
+			context.user.id,
+			input.userId,
+			input.days,
+		);
 		if (!result) {
 			throw new ORPCError("NOT_FOUND");
 		}

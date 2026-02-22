@@ -77,12 +77,7 @@ export function InsightCard({ insight }: InsightCardProps) {
 				</div>
 
 				<div className="flex-1">
-					<p
-						className={cn(
-							"text-sm font-medium",
-							config.textColor,
-						)}
-					>
+					<p className={cn("text-sm font-medium", config.textColor)}>
 						{insight.message}
 					</p>
 				</div>

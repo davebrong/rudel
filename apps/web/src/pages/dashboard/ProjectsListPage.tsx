@@ -1,14 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
+import {
+	Clock,
+	DollarSign,
+	FolderKanban,
+	TrendingUp,
+	Users,
+	Zap,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { FolderKanban, Users, Clock, TrendingUp, DollarSign, Zap } from "lucide-react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { StatCard } from "@/components/analytics/StatCard";
-import { PageHeader } from "@/components/analytics/PageHeader";
 import { DatePicker } from "@/components/analytics/DatePicker";
+import { PageHeader } from "@/components/analytics/PageHeader";
+import { StatCard } from "@/components/analytics/StatCard";
 import { ProjectTrendChart } from "@/components/charts/ProjectTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
-import { orpc } from "@/lib/orpc";
 import { encodeProjectPath } from "@/lib/format";
+import { orpc } from "@/lib/orpc";
 
 export function ProjectsListPage() {
 	const navigate = useNavigate();
@@ -83,17 +90,49 @@ export function ProjectsListPage() {
 			/>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
-				<StatCard title="Active Projects" value={totalProjects} icon={FolderKanban} iconColor="text-blue-600" />
-				<StatCard title="Total Sessions" value={totalSessions.toLocaleString()} icon={TrendingUp} iconColor="text-green-600" />
-				<StatCard title="Total Time" value={totalHours.toFixed(0)} icon={Clock} iconColor="text-purple-600" />
-				<StatCard title="Total Tokens" value={formatTokens(totalTokens)} icon={Zap} iconColor="text-amber-600" />
-				<StatCard title="Total Cost" value={`$${totalCost.toFixed(2)}`} icon={DollarSign} iconColor="text-emerald-600" />
-				<StatCard title="Avg Users" value={avgUsersPerProject} icon={Users} iconColor="text-indigo-600" />
+				<StatCard
+					title="Active Projects"
+					value={totalProjects}
+					icon={FolderKanban}
+					iconColor="text-blue-600"
+				/>
+				<StatCard
+					title="Total Sessions"
+					value={totalSessions.toLocaleString()}
+					icon={TrendingUp}
+					iconColor="text-green-600"
+				/>
+				<StatCard
+					title="Total Time"
+					value={totalHours.toFixed(0)}
+					icon={Clock}
+					iconColor="text-purple-600"
+				/>
+				<StatCard
+					title="Total Tokens"
+					value={formatTokens(totalTokens)}
+					icon={Zap}
+					iconColor="text-amber-600"
+				/>
+				<StatCard
+					title="Total Cost"
+					value={`$${totalCost.toFixed(2)}`}
+					icon={DollarSign}
+					iconColor="text-emerald-600"
+				/>
+				<StatCard
+					title="Avg Users"
+					value={avgUsersPerProject}
+					icon={Users}
+					iconColor="text-indigo-600"
+				/>
 			</div>
 
 			{trendData && trendData.length > 0 && (
 				<AnalyticsCard className="mb-8">
-					<h2 className="text-xl font-bold text-heading mb-4">Project Trends</h2>
+					<h2 className="text-xl font-bold text-heading mb-4">
+						Project Trends
+					</h2>
 					<p className="text-sm text-muted mb-6">
 						Activity metrics over time split by project (top 10)
 					</p>
@@ -108,13 +147,27 @@ export function ProjectsListPage() {
 						<table className="min-w-full divide-y divide-border">
 							<thead className="bg-surface">
 								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Project</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Sessions</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Time</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Tokens</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Success Rate</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Cost</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Trend</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+										Project
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+										Sessions
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+										Time
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+										Tokens
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+										Success Rate
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+										Cost
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+										Trend
+									</th>
 								</tr>
 							</thead>
 							<tbody className="bg-input divide-y divide-border">
@@ -128,7 +181,8 @@ export function ProjectsListPage() {
 												? "text-status-warning-icon"
 												: "text-status-error-icon";
 									const trend = project.success_rate_trend || 0;
-									const trendIconStr = trend > 0 ? "\u2191" : trend < 0 ? "\u2193" : "-";
+									const trendIconStr =
+										trend > 0 ? "\u2191" : trend < 0 ? "\u2193" : "-";
 									const trendColor =
 										trend > 0
 											? "text-status-success-icon"
@@ -138,6 +192,7 @@ export function ProjectsListPage() {
 
 									return (
 										<tr
+											// biome-ignore lint/suspicious/noArrayIndexKey: static project list
 											key={index}
 											onClick={() =>
 												navigate(`/dashboard/projects/${encodedPath}`)
@@ -156,13 +211,17 @@ export function ProjectsListPage() {
 											<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
 												{formatTokens(project.total_tokens || 0)}
 											</td>
-											<td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${successRateColor}`}>
+											<td
+												className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${successRateColor}`}
+											>
 												{successRate.toFixed(0)}%
 											</td>
 											<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
 												${(project.cost || 0).toFixed(2)}
 											</td>
-											<td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${trendColor}`}>
+											<td
+												className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${trendColor}`}
+											>
 												{trendIconStr} {Math.abs(trend).toFixed(1)}%
 											</td>
 										</tr>
@@ -172,7 +231,9 @@ export function ProjectsListPage() {
 						</table>
 					</div>
 				) : (
-					<p className="text-center text-muted py-8">No project data available</p>
+					<p className="text-center text-muted py-8">
+						No project data available
+					</p>
 				)}
 			</AnalyticsCard>
 		</div>

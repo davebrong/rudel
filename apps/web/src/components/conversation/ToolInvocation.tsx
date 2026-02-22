@@ -1,5 +1,5 @@
+import { AlertCircle, ChevronDown, ChevronRight, Terminal } from "lucide-react";
 import { useState } from "react";
-import { ChevronRight, ChevronDown, Terminal, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CodeBlock } from "./CodeBlock";
 
@@ -40,9 +40,7 @@ export function ToolInvocation({
 			})
 			.join(", ");
 
-		return keys.length > 2
-			? `${summary}, +${keys.length - 2} more`
-			: summary;
+		return keys.length > 2 ? `${summary}, +${keys.length - 2} more` : summary;
 	};
 
 	// Format result content
@@ -62,7 +60,7 @@ export function ToolInvocation({
 		return JSON.stringify(result.content, null, 2);
 	};
 
-	const hasResult = result && result.content;
+	const hasResult = result?.content;
 	const isError = result?.is_error;
 
 	return (
@@ -76,6 +74,7 @@ export function ToolInvocation({
 			)}
 		>
 			<button
+				type="button"
 				onClick={() => setIsExpanded(!isExpanded)}
 				className="w-full px-4 py-3 flex items-center gap-2 text-left hover:bg-muted/50 transition-colors min-w-0"
 			>
@@ -92,9 +91,7 @@ export function ToolInvocation({
 				<span
 					className={cn(
 						"font-mono text-sm font-semibold",
-						isError
-							? "text-red-700 dark:text-red-300"
-							: "text-foreground",
+						isError ? "text-red-700 dark:text-red-300" : "text-foreground",
 					)}
 				>
 					{toolName}
@@ -111,10 +108,7 @@ export function ToolInvocation({
 						<h4 className="text-xs font-semibold text-muted-foreground mb-2">
 							Input Parameters
 						</h4>
-						<CodeBlock
-							code={JSON.stringify(input, null, 2)}
-							language="json"
-						/>
+						<CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
 					</div>
 
 					{/* Tool Result */}

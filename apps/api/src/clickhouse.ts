@@ -3,10 +3,7 @@ import { createClient } from "@clickhouse/client-web";
 export interface ClickHouseExecutor {
 	execute(sql: string): Promise<void>;
 	query<T>(sql: string): Promise<T[]>;
-	insert<T extends Record<string, unknown>>(params: {
-		table: string;
-		values: T[];
-	}): Promise<void>;
+	insert(params: { table: string; values: object[] }): Promise<void>;
 }
 
 export function createClickHouseExecutor(config: {
@@ -82,10 +79,7 @@ export function escapeString(value: string): string {
 	return value.replace(/'/g, "\\'");
 }
 
-export function buildDateFilter(
-	days: number,
-	column = "session_date",
-): string {
+export function buildDateFilter(days: number, column = "session_date"): string {
 	return `${column} >= now64(3) - INTERVAL ${Number(days)} DAY AND ${column} <= now64(3)`;
 }
 

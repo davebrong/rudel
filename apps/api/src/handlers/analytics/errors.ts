@@ -1,7 +1,7 @@
 import { authMiddleware, os } from "../../middleware.js";
 import {
-	getTopRecurringErrors,
 	getErrorTrends,
+	getTopRecurringErrors,
 } from "../../services/error.service.js";
 
 const topRecurring = os.analytics.errors.topRecurring

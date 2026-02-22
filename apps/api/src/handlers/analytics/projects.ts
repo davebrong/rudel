@@ -1,12 +1,12 @@
 import { ORPCError } from "@orpc/server";
 import { authMiddleware, os } from "../../middleware.js";
 import {
+	getProjectContributors,
+	getProjectDetails,
+	getProjectErrors,
+	getProjectFeatureUsage,
 	getProjectInvestment,
 	getProjectTrends,
-	getProjectDetails,
-	getProjectContributors,
-	getProjectFeatureUsage,
-	getProjectErrors,
 } from "../../services/project.service.js";
 
 const investment = os.analytics.projects.investment
@@ -24,7 +24,11 @@ const trends = os.analytics.projects.trends
 const details = os.analytics.projects.details
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
-		const result = await getProjectDetails(context.user.id, input.projectPath, input.days);
+		const result = await getProjectDetails(
+			context.user.id,
+			input.projectPath,
+			input.days,
+		);
 		if (!result) {
 			throw new ORPCError("NOT_FOUND");
 		}

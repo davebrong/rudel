@@ -100,9 +100,7 @@ const baseExecutor = createClickHouseExecutor({
 const executor: typeof baseExecutor = {
 	...baseExecutor,
 	async insert(params) {
-		const rows = params.values
-			.map((r: Record<string, unknown>) => JSON.stringify(r))
-			.join("\n");
+		const rows = params.values.map((r) => JSON.stringify(r)).join("\n");
 		await baseExecutor.execute(
 			`INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
 		);

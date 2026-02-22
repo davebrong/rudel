@@ -188,34 +188,36 @@ export function DatePicker({
 					<div className="p-4 w-64">
 						<div className="space-y-3">
 							<div>
-								<label className="block text-xs font-medium text-muted mb-1">
+								<label
+									htmlFor="date-picker-start"
+									className="block text-xs font-medium text-muted mb-1"
+								>
 									Start date
 								</label>
 								<input
+									id="date-picker-start"
 									type="date"
 									value={tempStartDate}
-									onChange={(e) =>
-										setTempStartDate(e.target.value)
-									}
+									onChange={(e) => setTempStartDate(e.target.value)}
 									max={tempEndDate}
 									className="w-full px-3 py-2 text-sm border border-border rounded-md bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 								/>
 							</div>
 
 							<div>
-								<label className="block text-xs font-medium text-muted mb-1">
+								<label
+									htmlFor="date-picker-end"
+									className="block text-xs font-medium text-muted mb-1"
+								>
 									End date
 								</label>
 								<input
+									id="date-picker-end"
 									type="date"
 									value={tempEndDate}
-									onChange={(e) =>
-										setTempEndDate(e.target.value)
-									}
+									onChange={(e) => setTempEndDate(e.target.value)}
 									min={tempStartDate}
-									max={
-										new Date().toISOString().split("T")[0]
-									}
+									max={new Date().toISOString().split("T")[0]}
 									className="w-full px-3 py-2 text-sm border border-border rounded-md bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 								/>
 							</div>

@@ -90,9 +90,7 @@ export function Sidebar() {
 					collapsed ? "justify-center" : "justify-between px-4",
 				)}
 			>
-				{!collapsed && (
-					<p className="text-xs text-muted">Rudel v1.0</p>
-				)}
+				{!collapsed && <p className="text-xs text-muted">Rudel v1.0</p>}
 				<div
 					className={cn(
 						"flex items-center",
@@ -104,11 +102,7 @@ export function Sidebar() {
 						type="button"
 						onClick={() => setCollapsed(!collapsed)}
 						className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors"
-						title={
-							collapsed
-								? "Expand sidebar"
-								: "Collapse sidebar"
-						}
+						title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
 					>
 						{collapsed ? (
 							<ChevronsRight className="h-4 w-4" />

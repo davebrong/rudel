@@ -1,4 +1,4 @@
-import { schema, table, materializedView } from "@chkit/core";
+import { materializedView, schema, table } from "@chkit/core";
 
 const rudel_session_analytics = table({
 	database: "rudel",

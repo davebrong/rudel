@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export interface TokenDataPoint {
@@ -103,16 +103,13 @@ export function TokenUsageChart({
 
 	const cursorX =
 		LEFT_MARGIN +
-		(totalMessages > 0 ? activeMessageIndex / totalMessages : 0) *
-			drawWidth;
+		(totalMessages > 0 ? activeMessageIndex / totalMessages : 0) * drawWidth;
 
 	const barWidth = Math.max(2, (drawWidth / totalMessages) * 0.8);
 
 	return (
 		<div className={className}>
-			<div className="text-xs font-medium text-muted mb-2">
-				Token Usage
-			</div>
+			<div className="text-xs font-medium text-muted mb-2">Token Usage</div>
 
 			<div className="flex justify-between text-[10px] text-muted mb-1">
 				<span>In: {totalInput.toLocaleString()}</span>
@@ -120,11 +117,14 @@ export function TokenUsageChart({
 			</div>
 
 			<div ref={containerRef}>
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: chart click navigation */}
 				<svg
 					viewBox={`0 0 ${chartWidth} ${CHART_HEIGHT}`}
 					className="w-full cursor-pointer"
 					style={{ height: `${CHART_HEIGHT}px` }}
 					onClick={handleClick}
+					role="img"
+					aria-label="Token usage chart showing input and output tokens per message"
 				>
 					{/* Y-axis labels */}
 					<text
@@ -169,13 +169,12 @@ export function TokenUsageChart({
 					{/* Input bars (above axis) */}
 					{data.map((d, i) => {
 						const x =
-							LEFT_MARGIN +
-							(d.messageIndex / totalMessages) * drawWidth;
-						const barH =
-							(d.inputTokens / maxInput) * BAR_HALF_HEIGHT;
+							LEFT_MARGIN + (d.messageIndex / totalMessages) * drawWidth;
+						const barH = (d.inputTokens / maxInput) * BAR_HALF_HEIGHT;
 
 						return (
 							<rect
+								// biome-ignore lint/suspicious/noArrayIndexKey: static chart bar data
 								key={`in-${i}`}
 								x={x - barWidth / 2}
 								y={AXIS_Y - barH}
@@ -190,13 +189,12 @@ export function TokenUsageChart({
 					{/* Output bars (below axis) */}
 					{data.map((d, i) => {
 						const x =
-							LEFT_MARGIN +
-							(d.messageIndex / totalMessages) * drawWidth;
-						const barH =
-							(d.outputTokens / maxOutput) * BAR_HALF_HEIGHT;
+							LEFT_MARGIN + (d.messageIndex / totalMessages) * drawWidth;
+						const barH = (d.outputTokens / maxOutput) * BAR_HALF_HEIGHT;
 
 						return (
 							<rect
+								// biome-ignore lint/suspicious/noArrayIndexKey: static chart bar data
 								key={`out-${i}`}
 								x={x - barWidth / 2}
 								y={AXIS_Y}

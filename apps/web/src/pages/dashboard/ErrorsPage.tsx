@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, Users, AlertTriangle, Clock } from "lucide-react";
+import { AlertCircle, AlertTriangle, Clock, Users } from "lucide-react";
+import { useMemo, useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
-import { StatCard } from "@/components/analytics/StatCard";
-import { PageHeader } from "@/components/analytics/PageHeader";
 import { DatePicker } from "@/components/analytics/DatePicker";
+import { PageHeader } from "@/components/analytics/PageHeader";
+import { StatCard } from "@/components/analytics/StatCard";
 import { ErrorTrendChart } from "@/components/charts/ErrorTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { orpc } from "@/lib/orpc";
@@ -60,8 +60,7 @@ export function ErrorsPage() {
 		return map;
 	}, [userMappings]);
 
-	const totalErrors =
-		errors?.reduce((sum, e) => sum + e.occurrences, 0) ?? 0;
+	const totalErrors = errors?.reduce((sum, e) => sum + e.occurrences, 0) ?? 0;
 	const highSeverityCount =
 		errors?.filter((e) => e.severity === "high").length ?? 0;
 	const affectedUsersTotal =
@@ -177,6 +176,7 @@ export function ErrorsPage() {
 					<div className="space-y-4">
 						{errors.map((err, index) => (
 							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: static list of errors
 								key={index}
 								className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
 							>
@@ -242,6 +242,8 @@ export function ErrorsPage() {
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
+								role="img"
+								aria-label="No errors"
 							>
 								<path
 									strokeLinecap="round"
@@ -299,8 +301,7 @@ export function ErrorsPage() {
 									Knowledge Sharing
 								</h3>
 								<p className="text-sm text-subheading mb-3">
-									{errors.filter((e) => e.affected_users > 1).length} error
-									type
+									{errors.filter((e) => e.affected_users > 1).length} error type
 									{errors.filter((e) => e.affected_users > 1).length !== 1
 										? "s"
 										: ""}{" "}

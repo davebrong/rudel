@@ -171,7 +171,7 @@ export function parseConversations(content: string): ConversationEntry[] {
 	let failCount = 0;
 
 	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]!;
+		const line = lines[i] as string;
 		try {
 			const json: unknown = JSON.parse(line);
 			const parsed = ConversationSchema.safeParse(json);

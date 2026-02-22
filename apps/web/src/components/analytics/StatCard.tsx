@@ -50,12 +50,7 @@ export function StatCard({
 				</div>
 				<div className="flex flex-col items-end gap-1 shrink-0">
 					{Icon && (
-						<div
-							className={cn(
-								"p-1.5 rounded-md bg-surface",
-								iconColor,
-							)}
-						>
+						<div className={cn("p-1.5 rounded-md bg-surface", iconColor)}>
 							<Icon className="h-3.5 w-3.5" />
 						</div>
 					)}

@@ -1,9 +1,9 @@
 import {
 	createContext,
-	useContext,
-	useState,
-	useEffect,
 	type ReactNode,
+	useContext,
+	useEffect,
+	useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -66,8 +66,7 @@ export function DateRangeProvider({ children }: { children: ReactNode }) {
 		setStartDateInternal(dates.start);
 		setEndDateInternal(dates.end);
 		setIsInitialized(true);
-		// biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
-	}, []);
+	}, [searchParams]);
 
 	useEffect(() => {
 		if (!isInitialized) return;

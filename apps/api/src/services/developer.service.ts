@@ -1,121 +1,128 @@
-import { queryClickhouse, escapeString, buildDateFilter } from '../clickhouse.js';
+import {
+	buildDateFilter,
+	escapeString,
+	queryClickhouse,
+} from "../clickhouse.js";
 
 export interface DeveloperSummary {
-  user_id: string;
-  username?: string;
-  total_sessions: number;
-  active_days: number;
-  total_tokens: number;
-  total_duration_min: number;
-  avg_session_duration_min: number;
-  last_active_date: string;
-  success_rate: number;
-  cost: number;
-  success_rate_trend: number;
-  input_tokens: number;
-  output_tokens: number;
+	user_id: string;
+	username?: string;
+	total_sessions: number;
+	active_days: number;
+	total_tokens: number;
+	total_duration_min: number;
+	avg_session_duration_min: number;
+	last_active_date: string;
+	success_rate: number;
+	cost: number;
+	success_rate_trend: number;
+	input_tokens: number;
+	output_tokens: number;
 }
 
 export interface DeveloperDetails {
-  user_id: string;
-  username?: string;
-  total_sessions: number;
-  active_days: number;
-  total_tokens: number;
-  input_tokens: number;
-  output_tokens: number;
-  total_duration_min: number;
-  avg_session_duration_min: number;
-  last_active_date: string;
-  success_rate: number;
-  cost: number;
-  success_rate_trend: number;
-  distinct_projects: number;
-  error_count: number;
+	user_id: string;
+	username?: string;
+	total_sessions: number;
+	active_days: number;
+	total_tokens: number;
+	input_tokens: number;
+	output_tokens: number;
+	total_duration_min: number;
+	avg_session_duration_min: number;
+	last_active_date: string;
+	success_rate: number;
+	cost: number;
+	success_rate_trend: number;
+	distinct_projects: number;
+	error_count: number;
 }
 
 export interface DeveloperSession {
-  session_id: string;
-  session_date: string;
-  project_path: string;
-  project_name?: string;
-  duration_min: number;
-  input_tokens: number;
-  output_tokens: number;
-  total_tokens: number;
-  has_subagents: boolean;
-  has_skills: boolean;
-  has_slash_commands: boolean;
-  has_errors: boolean;
-  likely_success: boolean;
+	session_id: string;
+	session_date: string;
+	project_path: string;
+	project_name?: string;
+	duration_min: number;
+	input_tokens: number;
+	output_tokens: number;
+	total_tokens: number;
+	has_subagents: boolean;
+	has_skills: boolean;
+	has_slash_commands: boolean;
+	has_errors: boolean;
+	likely_success: boolean;
 }
 
 export interface DeveloperProject {
-  project_path: string;
-  project_name?: string;
-  sessions: number;
-  total_duration_min: number;
-  total_tokens: number;
-  first_session: string;
-  last_session: string;
+	project_path: string;
+	project_name?: string;
+	sessions: number;
+	total_duration_min: number;
+	total_tokens: number;
+	first_session: string;
+	last_session: string;
 }
 
 export interface DeveloperProjectTimeline {
-  date: string;
-  project_path: string;
-  sessions: number;
-  total_duration_min: number;
-  total_tokens: number;
+	date: string;
+	project_path: string;
+	sessions: number;
+	total_duration_min: number;
+	total_tokens: number;
 }
 
 export interface DeveloperError {
-  error_pattern: string;
-  occurrences: number;
-  last_seen: string;
+	error_pattern: string;
+	occurrences: number;
+	last_seen: string;
 }
 
 export interface DeveloperTimeline {
-  date: string;
-  sessions: number;
-  total_duration_min: number;
-  total_tokens: number;
+	date: string;
+	sessions: number;
+	total_duration_min: number;
+	total_tokens: number;
 }
 
 export interface DeveloperFeatureUsage {
-  subagents_adoption_rate: number;
-  skills_adoption_rate: number;
-  slash_commands_adoption_rate: number;
-  top_subagents: Array<{ name: string; count: number }>;
-  top_skills: Array<{ name: string; count: number }>;
-  top_slash_commands: Array<{ name: string; count: number }>;
+	subagents_adoption_rate: number;
+	skills_adoption_rate: number;
+	slash_commands_adoption_rate: number;
+	top_subagents: Array<{ name: string; count: number }>;
+	top_skills: Array<{ name: string; count: number }>;
+	top_slash_commands: Array<{ name: string; count: number }>;
 }
 
 export interface DeveloperTrendDataPoint {
-  date: string;
-  user_id: string;
-  sessions: number;
-  total_hours: number;
-  total_tokens: number;
-  avg_success_rate: number;
+	date: string;
+	user_id: string;
+	sessions: number;
+	total_hours: number;
+	total_tokens: number;
+	avg_success_rate: number;
 }
 
 /**
  * Extract project name from path (last segment)
  */
 function extractProjectName(projectPath: string): string {
-  if (!projectPath) return '';
-  const segments = projectPath.replace(/\\/g, '/').split('/').filter(Boolean);
-  return segments[segments.length - 1] || projectPath;
+	if (!projectPath) return "";
+	const segments = projectPath.replace(/\\/g, "/").split("/").filter(Boolean);
+	return segments[segments.length - 1] || projectPath;
 }
 
 /**
  * Get list of all developers with summary stats
  */
-export async function getDeveloperList(orgId: string, days = 30): Promise<DeveloperSummary[]> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+export async function getDeveloperList(
+	orgId: string,
+	days = 30,
+): Promise<DeveloperSummary[]> {
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     WITH current_period AS (
       SELECT
         user_id,
@@ -161,22 +168,22 @@ export async function getDeveloperList(orgId: string, days = 30): Promise<Develo
     ORDER BY c.total_sessions DESC
   `;
 
-  return queryClickhouse<DeveloperSummary>(query);
+	return queryClickhouse<DeveloperSummary>(query);
 }
 
 /**
  * Get detailed metrics for a specific developer
  */
 export async function getDeveloperDetails(
-  orgId: string,
-  userId: string,
-  days = 30
+	orgId: string,
+	userId: string,
+	days = 30,
 ): Promise<DeveloperDetails | null> {
-  const org = escapeString(orgId);
-  const uid = escapeString(userId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const uid = escapeString(userId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     WITH current_period AS (
       SELECT
         user_id,
@@ -227,61 +234,62 @@ export async function getDeveloperDetails(
     LEFT JOIN previous_period p ON c.user_id = p.user_id
   `;
 
-  const results = await queryClickhouse<DeveloperDetails>(query);
-  if (results.length === 0) return null;
+	const results = await queryClickhouse<DeveloperDetails>(query);
+	const [first] = results;
+	if (!first) return null;
 
-  return results[0]!;
+	return first;
 }
 
 /**
  * Get session history for a developer with filtering
  */
 export async function getDeveloperSessions(
-  orgId: string,
-  userId: string,
-  params: {
-    days?: number;
-    project_path?: string;
-    outcome?: 'success' | 'all';
-    limit?: number;
-    offset?: number;
-    sort_by?: 'date' | 'duration' | 'tokens';
-    sort_order?: 'asc' | 'desc';
-  } = {}
+	orgId: string,
+	userId: string,
+	params: {
+		days?: number;
+		project_path?: string;
+		outcome?: "success" | "all";
+		limit?: number;
+		offset?: number;
+		sort_by?: "date" | "duration" | "tokens";
+		sort_order?: "asc" | "desc";
+	} = {},
 ): Promise<DeveloperSession[]> {
-  const {
-    days = 30,
-    project_path,
-    outcome,
-    limit = 50,
-    offset = 0,
-    sort_by = 'date',
-    sort_order = 'desc',
-  } = params;
+	const {
+		days = 30,
+		project_path,
+		outcome,
+		limit = 50,
+		offset = 0,
+		sort_by = "date",
+		sort_order = "desc",
+	} = params;
 
-  const org = escapeString(orgId);
-  const uid = escapeString(userId);
-  const d = Number(days);
-  const lim = Number(limit);
-  const off = Number(offset);
+	const org = escapeString(orgId);
+	const uid = escapeString(userId);
+	const d = Number(days);
+	const lim = Number(limit);
+	const off = Number(offset);
 
-  let filters = '';
-  if (project_path) {
-    filters += ` AND project_path = '${escapeString(project_path)}'`;
-  }
-  if (outcome === 'success') {
-    filters += ` AND actual_duration_min BETWEEN 5 AND 240`;
-  }
+	let filters = "";
+	if (project_path) {
+		filters += ` AND project_path = '${escapeString(project_path)}'`;
+	}
+	if (outcome === "success") {
+		filters += ` AND actual_duration_min BETWEEN 5 AND 240`;
+	}
 
-  const sortColumn =
-    sort_by === 'duration'
-      ? 'actual_duration_min'
-      : sort_by === 'tokens'
-      ? 'total_tokens'
-      : 'session_date';
-  const sortDirection = sort_order === 'asc' ? 'ASC' : 'DESC';
+	const sortColumn =
+		sort_by === "duration"
+			? "actual_duration_min"
+			: sort_by === "tokens"
+				? "total_tokens"
+				: "session_date";
+	const sortDirection = sort_order === "asc" ? "ASC" : "DESC";
 
-  const query = `
+	const query = `
     SELECT
       session_id,
       toString(session_date) as session_date,
@@ -305,27 +313,27 @@ export async function getDeveloperSessions(
     OFFSET ${off}
   `;
 
-  const results = await queryClickhouse<DeveloperSession>(query);
+	const results = await queryClickhouse<DeveloperSession>(query);
 
-  return results.map((session) => ({
-    ...session,
-    project_name: extractProjectName(session.project_path),
-  }));
+	return results.map((session) => ({
+		...session,
+		project_name: extractProjectName(session.project_path),
+	}));
 }
 
 /**
  * Get projects worked on by a developer
  */
 export async function getDeveloperProjects(
-  orgId: string,
-  userId: string,
-  days = 30
+	orgId: string,
+	userId: string,
+	days = 30,
 ): Promise<DeveloperProject[]> {
-  const org = escapeString(orgId);
-  const uid = escapeString(userId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const uid = escapeString(userId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     SELECT
       project_path,
       COUNT(*) as sessions,
@@ -342,27 +350,27 @@ export async function getDeveloperProjects(
     ORDER BY sessions DESC
   `;
 
-  const results = await queryClickhouse<DeveloperProject>(query);
+	const results = await queryClickhouse<DeveloperProject>(query);
 
-  return results.map((project) => ({
-    ...project,
-    project_name: extractProjectName(project.project_path),
-  }));
+	return results.map((project) => ({
+		...project,
+		project_name: extractProjectName(project.project_path),
+	}));
 }
 
 /**
  * Get errors encountered by a developer
  */
 export async function getDeveloperErrors(
-  orgId: string,
-  userId: string,
-  days = 30
+	orgId: string,
+	userId: string,
+	days = 30,
 ): Promise<DeveloperError[]> {
-  const org = escapeString(orgId);
-  const uid = escapeString(userId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const uid = escapeString(userId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     WITH error_extracts AS (
       SELECT
         session_id,
@@ -396,22 +404,22 @@ export async function getDeveloperErrors(
     LIMIT 20
   `;
 
-  return queryClickhouse<DeveloperError>(query);
+	return queryClickhouse<DeveloperError>(query);
 }
 
 /**
  * Get daily activity timeline for a developer
  */
 export async function getDeveloperTimeline(
-  orgId: string,
-  userId: string,
-  days = 30
+	orgId: string,
+	userId: string,
+	days = 30,
 ): Promise<DeveloperTimeline[]> {
-  const org = escapeString(orgId);
-  const uid = escapeString(userId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const uid = escapeString(userId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     SELECT
       toString(toDate(session_date)) as date,
       COUNT(*) as sessions,
@@ -427,22 +435,22 @@ export async function getDeveloperTimeline(
     ORDER BY date ASC
   `;
 
-  return queryClickhouse<DeveloperTimeline>(query);
+	return queryClickhouse<DeveloperTimeline>(query);
 }
 
 /**
  * Get feature usage stats for a developer
  */
 export async function getDeveloperFeatureUsage(
-  orgId: string,
-  userId: string,
-  days = 30
+	orgId: string,
+	userId: string,
+	days = 30,
 ): Promise<DeveloperFeatureUsage> {
-  const org = escapeString(orgId);
-  const uid = escapeString(userId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const uid = escapeString(userId);
+	const d = Number(days);
 
-  const adoptionQuery = `
+	const adoptionQuery = `
     SELECT
       COUNT(*) as total_sessions,
       countIf(length(subagent_types) > 0) as subagents_sessions,
@@ -454,7 +462,7 @@ export async function getDeveloperFeatureUsage(
       AND organization_id = '${org}'
   `;
 
-  const topSubagentsQuery = `
+	const topSubagentsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN subagent_types as val
@@ -467,7 +475,7 @@ export async function getDeveloperFeatureUsage(
     LIMIT 10
   `;
 
-  const topSkillsQuery = `
+	const topSkillsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN skills as val
@@ -480,7 +488,7 @@ export async function getDeveloperFeatureUsage(
     LIMIT 10
   `;
 
-  const topSlashCommandsQuery = `
+	const topSlashCommandsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
@@ -493,57 +501,76 @@ export async function getDeveloperFeatureUsage(
     LIMIT 10
   `;
 
-  const [adoptionResults, topSubagents, topSkills, topSlashCommands] = await Promise.all([
-    queryClickhouse<{
-      total_sessions: number;
-      subagents_sessions: number;
-      skills_sessions: number;
-      slash_commands_sessions: number;
-    }>(adoptionQuery),
-    queryClickhouse<{ name: string; count: number }>(topSubagentsQuery),
-    queryClickhouse<{ name: string; count: number }>(topSkillsQuery),
-    queryClickhouse<{ name: string; count: number }>(topSlashCommandsQuery),
-  ]);
+	const [adoptionResults, topSubagents, topSkills, topSlashCommands] =
+		await Promise.all([
+			queryClickhouse<{
+				total_sessions: number;
+				subagents_sessions: number;
+				skills_sessions: number;
+				slash_commands_sessions: number;
+			}>(adoptionQuery),
+			queryClickhouse<{ name: string; count: number }>(topSubagentsQuery),
+			queryClickhouse<{ name: string; count: number }>(topSkillsQuery),
+			queryClickhouse<{ name: string; count: number }>(topSlashCommandsQuery),
+		]);
 
-  if (adoptionResults.length === 0) {
-    return {
-      subagents_adoption_rate: 0,
-      skills_adoption_rate: 0,
-      slash_commands_adoption_rate: 0,
-      top_subagents: [],
-      top_skills: [],
-      top_slash_commands: [],
-    };
-  }
+	if (adoptionResults.length === 0) {
+		return {
+			subagents_adoption_rate: 0,
+			skills_adoption_rate: 0,
+			slash_commands_adoption_rate: 0,
+			top_subagents: [],
+			top_skills: [],
+			top_slash_commands: [],
+		};
+	}
 
-  const stats = adoptionResults[0]!;
-  return {
-    subagents_adoption_rate:
-      stats.total_sessions > 0 ? (stats.subagents_sessions / stats.total_sessions) * 100 : 0,
-    skills_adoption_rate:
-      stats.total_sessions > 0 ? (stats.skills_sessions / stats.total_sessions) * 100 : 0,
-    slash_commands_adoption_rate:
-      stats.total_sessions > 0 ? (stats.slash_commands_sessions / stats.total_sessions) * 100 : 0,
-    top_subagents: topSubagents,
-    top_skills: topSkills,
-    top_slash_commands: topSlashCommands,
-  };
+	const [stats] = adoptionResults;
+	if (!stats)
+		return {
+			subagents_adoption_rate: 0,
+			skills_adoption_rate: 0,
+			slash_commands_adoption_rate: 0,
+			top_subagents: [],
+			top_skills: [],
+			top_slash_commands: [],
+		};
+	return {
+		subagents_adoption_rate:
+			stats.total_sessions > 0
+				? (stats.subagents_sessions / stats.total_sessions) * 100
+				: 0,
+		skills_adoption_rate:
+			stats.total_sessions > 0
+				? (stats.skills_sessions / stats.total_sessions) * 100
+				: 0,
+		slash_commands_adoption_rate:
+			stats.total_sessions > 0
+				? (stats.slash_commands_sessions / stats.total_sessions) * 100
+				: 0,
+		top_subagents: topSubagents,
+		top_skills: topSkills,
+		top_slash_commands: topSlashCommands,
+	};
 }
 
 /**
  * Get developer trend data for time series charts (split by developer)
  */
 export async function getDeveloperTrends(
-  orgId: string,
-  days = 30,
-  groupBy: 'day' | 'week' = 'day'
+	orgId: string,
+	days = 30,
+	groupBy: "day" | "week" = "day",
 ): Promise<DeveloperTrendDataPoint[]> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const dateFunc = groupBy === 'week' ? 'toMonday(toDate(session_date))' : 'toDate(session_date)';
+	const dateFunc =
+		groupBy === "week"
+			? "toMonday(toDate(session_date))"
+			: "toDate(session_date)";
 
-  const query = `
+	const query = `
     SELECT
       toString(${dateFunc}) as date,
       user_id,
@@ -558,22 +585,22 @@ export async function getDeveloperTrends(
     ORDER BY date ASC, user_id ASC
   `;
 
-  return queryClickhouse<DeveloperTrendDataPoint>(query);
+	return queryClickhouse<DeveloperTrendDataPoint>(query);
 }
 
 /**
  * Get project activity over time for a developer (time series)
  */
 export async function getDeveloperProjectTimeline(
-  orgId: string,
-  userId: string,
-  days = 30
+	orgId: string,
+	userId: string,
+	days = 30,
 ): Promise<DeveloperProjectTimeline[]> {
-  const org = escapeString(orgId);
-  const uid = escapeString(userId);
-  const d = Number(days);
+	const org = escapeString(orgId);
+	const uid = escapeString(userId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     SELECT
       toString(toDate(session_date)) as date,
       project_path,
@@ -589,10 +616,10 @@ export async function getDeveloperProjectTimeline(
     ORDER BY date ASC, project_path ASC
   `;
 
-  const results = await queryClickhouse<DeveloperProjectTimeline>(query);
+	const results = await queryClickhouse<DeveloperProjectTimeline>(query);
 
-  return results.map((item) => ({
-    ...item,
-    project_name: extractProjectName(item.project_path),
-  })) as DeveloperProjectTimeline[];
+	return results.map((item) => ({
+		...item,
+		project_name: extractProjectName(item.project_path),
+	})) as DeveloperProjectTimeline[];
 }

@@ -1,20 +1,21 @@
+import type { DimensionAnalysisDataPoint } from "@rudel/api-routes";
 import { memo, useMemo } from "react";
 import {
-	BarChart,
 	Bar,
-	XAxis,
-	YAxis,
+	BarChart,
 	CartesianGrid,
-	Tooltip,
 	Legend,
 	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
-import type { DimensionAnalysisDataPoint } from "@rudel/api-routes";
 import { formatUsername } from "@/lib/format";
 
 function formatCompactNumber(value: number): string {
-	if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+	if (value >= 1000000)
+		return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
 	if (value >= 1000) return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}K`;
 	return value.toString();
 }
@@ -105,8 +106,8 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 			return { chartData: [], dataKeys: [] };
 		}
 
-		let chartData: Record<string, unknown>[];
-		let dataKeys: string[];
+		let chartData: Record<string, unknown>[] = [];
+		let dataKeys: string[] = [];
 
 		if (split_by && data[0].split_values) {
 			const allSplitValues = new Set<string>();
@@ -148,9 +149,7 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 				return row;
 			});
 
-			chartData.sort(
-				(a, b) => (b._total as number) - (a._total as number),
-			);
+			chartData.sort((a, b) => (b._total as number) - (a._total as number));
 		} else {
 			dataKeys = [formatMetricLabel(metric)];
 			chartData = data.map((item) => ({
@@ -177,16 +176,19 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 		);
 	}
 
-	const CustomTooltip = ({ active, payload, label }: Record<string, unknown>) => {
-		if (
-			active &&
-			payload &&
-			Array.isArray(payload) &&
-			payload.length
-		) {
-			const payloadData = (payload[0] as Record<string, unknown>)?.payload as Record<string, unknown> | undefined;
+	const CustomTooltip = ({
+		active,
+		payload,
+		label,
+	}: Record<string, unknown>) => {
+		if (active && payload && Array.isArray(payload) && payload.length) {
+			const payloadData = (payload[0] as Record<string, unknown>)?.payload as
+				| Record<string, unknown>
+				| undefined;
 			const fullName = payloadData?._fullName || label;
-			const originalValues = payloadData?._originalValues as Record<string, number> | undefined;
+			const originalValues = payloadData?._originalValues as
+				| Record<string, number>
+				| undefined;
 
 			return (
 				<div className="bg-input p-3 border border-border rounded shadow-lg">
@@ -198,15 +200,17 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 							const displayValue =
 								originalValues &&
 								originalValues[entry.name as string] !== undefined
-									? formatNumberWithCommas(
-											originalValues[entry.name as string],
-										)
+									? formatNumberWithCommas(originalValues[entry.name as string])
 									: typeof entry.value === "number"
 										? formatNumberWithCommas(entry.value)
 										: entry.value;
 
 							return (
-								<p key={index} style={{ color: entry.color as string }}>
+								<p
+									// biome-ignore lint/suspicious/noArrayIndexKey: tooltip payload items
+									key={index}
+									style={{ color: entry.color as string }}
+								>
 									{entry.name as string}: {displayValue as string}
 									{showPercentage &&
 										originalValues &&
@@ -264,17 +268,18 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 					/>
 					<Tooltip content={<CustomTooltip />} />
 					{split_by && <Legend wrapperStyle={{ paddingTop: "20px" }} />}
-					{split_by
-						? dataKeys.map((key, index) => (
-								<Bar
-									key={key}
-									dataKey={key}
-									stackId="stack"
-									fill={CHART_COLORS[index % CHART_COLORS.length]}
-								/>
-							))
-						: <Bar dataKey={formatMetricLabel(metric)} fill="#3b82f6" />
-					}
+					{split_by ? (
+						dataKeys.map((key, index) => (
+							<Bar
+								key={key}
+								dataKey={key}
+								stackId="stack"
+								fill={CHART_COLORS[index % CHART_COLORS.length]}
+							/>
+						))
+					) : (
+						<Bar dataKey={formatMetricLabel(metric)} fill="#3b82f6" />
+					)}
 				</BarChart>
 			</ResponsiveContainer>
 		</div>

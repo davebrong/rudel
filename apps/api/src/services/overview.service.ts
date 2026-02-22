@@ -1,45 +1,52 @@
-import { queryClickhouse, escapeString, buildDateFilter } from '../clickhouse.js';
+import {
+	buildDateFilter,
+	escapeString,
+	queryClickhouse,
+} from "../clickhouse.js";
 
 export interface OverviewKPIs {
-  distinct_users: number;
-  distinct_sessions: number;
-  distinct_projects: number;
-  distinct_subagents: number;
-  distinct_skills: number;
-  distinct_slash_commands: number;
+	distinct_users: number;
+	distinct_sessions: number;
+	distinct_projects: number;
+	distinct_subagents: number;
+	distinct_skills: number;
+	distinct_slash_commands: number;
 }
 
 export interface UsageTrendData {
-  date: string;
-  sessions: number;
-  active_users: number;
-  total_hours: number;
-  total_tokens: number;
+	date: string;
+	sessions: number;
+	active_users: number;
+	total_hours: number;
+	total_tokens: number;
 }
 
 export interface ModelTokensTrendData {
-  date: string;
-  model: string;
-  total_tokens: number;
-  input_tokens: number;
-  output_tokens: number;
+	date: string;
+	model: string;
+	total_tokens: number;
+	input_tokens: number;
+	output_tokens: number;
 }
 
 export interface Insight {
-  type: 'trend' | 'performer' | 'alert' | 'info';
-  severity: 'positive' | 'warning' | 'negative' | 'info';
-  message: string;
-  link: string;
+	type: "trend" | "performer" | "alert" | "info";
+	severity: "positive" | "warning" | "negative" | "info";
+	message: string;
+	link: string;
 }
 
 /**
  * Get overview KPI counts: distinct users, sessions, projects, subagents, skills, slash commands
  */
-export async function getOverviewKPIs(orgId: string, days = 7): Promise<OverviewKPIs> {
-  const org = escapeString(orgId);
-  const dateFilter = buildDateFilter(days);
+export async function getOverviewKPIs(
+	orgId: string,
+	days = 7,
+): Promise<OverviewKPIs> {
+	const org = escapeString(orgId);
+	const dateFilter = buildDateFilter(days);
 
-  const query = `
+	const query = `
     SELECT
       uniq(user_id) as distinct_users,
       count() as distinct_sessions,
@@ -52,25 +59,30 @@ export async function getOverviewKPIs(orgId: string, days = 7): Promise<Overview
       AND organization_id = '${org}'
   `;
 
-  const result = await queryClickhouse<OverviewKPIs>(query);
-  return result[0] || {
-    distinct_users: 0,
-    distinct_sessions: 0,
-    distinct_projects: 0,
-    distinct_subagents: 0,
-    distinct_skills: 0,
-    distinct_slash_commands: 0,
-  };
+	const result = await queryClickhouse<OverviewKPIs>(query);
+	return (
+		result[0] || {
+			distinct_users: 0,
+			distinct_sessions: 0,
+			distinct_projects: 0,
+			distinct_subagents: 0,
+			distinct_skills: 0,
+			distinct_slash_commands: 0,
+		}
+	);
 }
 
 /**
  * Get token usage broken down by model and day
  */
-export async function getModelTokensTrend(orgId: string, days = 30): Promise<ModelTokensTrendData[]> {
-  const org = escapeString(orgId);
-  const dateFilter = buildDateFilter(days);
+export async function getModelTokensTrend(
+	orgId: string,
+	days = 30,
+): Promise<ModelTokensTrendData[]> {
+	const org = escapeString(orgId);
+	const dateFilter = buildDateFilter(days);
 
-  const query = `
+	const query = `
     SELECT
       toDate(session_date) as date,
       model_used as model,
@@ -86,17 +98,20 @@ export async function getModelTokensTrend(orgId: string, days = 30): Promise<Mod
     ORDER BY date ASC, total_tokens DESC
   `;
 
-  return queryClickhouse<ModelTokensTrendData>(query);
+	return queryClickhouse<ModelTokensTrendData>(query);
 }
 
 /**
  * Get detailed usage trend data aggregated by day
  */
-export async function getUsageTrendDetailed(orgId: string, days = 30): Promise<UsageTrendData[]> {
-  const org = escapeString(orgId);
-  const dateFilter = buildDateFilter(days);
+export async function getUsageTrendDetailed(
+	orgId: string,
+	days = 30,
+): Promise<UsageTrendData[]> {
+	const org = escapeString(orgId);
+	const dateFilter = buildDateFilter(days);
 
-  const query = `
+	const query = `
     SELECT
       toDate(session_date) as date,
       count() as sessions,
@@ -110,17 +125,20 @@ export async function getUsageTrendDetailed(orgId: string, days = 30): Promise<U
     ORDER BY date ASC
   `;
 
-  return queryClickhouse<UsageTrendData>(query);
+	return queryClickhouse<UsageTrendData>(query);
 }
 
 /**
  * Generate rule-based insights from current data
  */
-export async function getOverviewInsights(orgId: string, days = 7): Promise<Insight[]> {
-  const org = escapeString(orgId);
-  const insights: Insight[] = [];
+export async function getOverviewInsights(
+	orgId: string,
+	days = 7,
+): Promise<Insight[]> {
+	const org = escapeString(orgId);
+	const insights: Insight[] = [];
 
-  const currentPeriodQuery = `
+	const currentPeriodQuery = `
     SELECT
       count() as total_sessions,
       uniq(user_id) as total_users,
@@ -130,8 +148,8 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
       AND organization_id = '${org}'
   `;
 
-  const previousDays = Number(days) * 2;
-  const previousPeriodQuery = `
+	const previousDays = Number(days) * 2;
+	const previousPeriodQuery = `
     SELECT
       count() as total_sessions,
       uniq(user_id) as total_users,
@@ -142,34 +160,43 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
       AND organization_id = '${org}'
   `;
 
-  const [currentData, previousData] = await Promise.all([
-    queryClickhouse<any>(currentPeriodQuery),
-    queryClickhouse<any>(previousPeriodQuery),
-  ]);
+	interface PeriodStats {
+		total_sessions: number;
+		total_users: number;
+		avg_duration_min: number;
+	}
 
-  const current = currentData[0];
-  const previous = previousData[0] || { total_sessions: 0 };
+	const [currentData, previousData] = await Promise.all([
+		queryClickhouse<PeriodStats>(currentPeriodQuery),
+		queryClickhouse<PeriodStats>(previousPeriodQuery),
+	]);
 
-  // Insight 1: Session trend analysis
-  if (current && previous) {
-    const sessionChange = previous.total_sessions > 0
-      ? ((current.total_sessions - previous.total_sessions) / previous.total_sessions) * 100
-      : 0;
+	const current = currentData[0];
+	const previous = previousData[0] || { total_sessions: 0 };
 
-    if (Math.abs(sessionChange) >= 10) {
-      const direction = sessionChange > 0 ? 'up' : 'down';
-      const severity = sessionChange > 0 ? 'positive' : 'warning';
-      insights.push({
-        type: 'trend',
-        severity,
-        message: `Team activity ${direction} ${Math.abs(sessionChange).toFixed(1)}% this week`,
-        link: '/dashboard/team',
-      });
-    }
-  }
+	// Insight 1: Session trend analysis
+	if (current && previous) {
+		const sessionChange =
+			previous.total_sessions > 0
+				? ((current.total_sessions - previous.total_sessions) /
+						previous.total_sessions) *
+					100
+				: 0;
 
-  // Insight 2: Top performer identification
-  const topPerformerQuery = `
+		if (Math.abs(sessionChange) >= 10) {
+			const direction = sessionChange > 0 ? "up" : "down";
+			const severity = sessionChange > 0 ? "positive" : "warning";
+			insights.push({
+				type: "trend",
+				severity,
+				message: `Team activity ${direction} ${Math.abs(sessionChange).toFixed(1)}% this week`,
+				link: "/dashboard/team",
+			});
+		}
+	}
+
+	// Insight 2: Top performer identification
+	const topPerformerQuery = `
     SELECT
       user_id,
       count() as sessions,
@@ -182,23 +209,28 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
     LIMIT 1
   `;
 
-  const topPerformer = await queryClickhouse<any>(topPerformerQuery);
-  if (topPerformer.length > 0) {
-    const performer = topPerformer[0];
-    const { getUserMapping } = await import('./user.service.js');
-    const userMapping = await getUserMapping(orgId, performer.user_id, days);
-    const displayName = userMapping?.username || performer.user_id.substring(0, 8) + '...';
+	const topPerformer = await queryClickhouse<{
+		user_id: string;
+		sessions: number;
+		total_hours: number;
+	}>(topPerformerQuery);
+	if (topPerformer.length > 0 && topPerformer[0]) {
+		const performer = topPerformer[0];
+		const { getUserMapping } = await import("./user.service.js");
+		const userMapping = await getUserMapping(orgId, performer.user_id, days);
+		const displayName =
+			userMapping?.username || `${performer.user_id.substring(0, 8)}...`;
 
-    insights.push({
-      type: 'performer',
-      severity: 'info',
-      message: `Top contributor: ${displayName} (${performer.sessions} sessions, ${performer.total_hours}h)`,
-      link: `/dashboard/developers/${performer.user_id}`,
-    });
-  }
+		insights.push({
+			type: "performer",
+			severity: "info",
+			message: `Top contributor: ${displayName} (${performer.sessions} sessions, ${performer.total_hours}h)`,
+			link: `/dashboard/developers/${performer.user_id}`,
+		});
+	}
 
-  // Insight 3: Knowledge silos detection
-  const knowledgeSilosQuery = `
+	// Insight 3: Knowledge silos detection
+	const knowledgeSilosQuery = `
     SELECT
       project_path,
       uniq(user_id) as unique_users,
@@ -211,34 +243,38 @@ export async function getOverviewInsights(orgId: string, days = 7): Promise<Insi
     ORDER BY sessions DESC
   `;
 
-  const silos = await queryClickhouse<any>(knowledgeSilosQuery);
-  if (silos.length > 0) {
-    insights.push({
-      type: 'alert',
-      severity: 'warning',
-      message: `${silos.length} project${silos.length > 1 ? 's' : ''} with only one developer - risk of knowledge silos`,
-      link: '/dashboard/projects',
-    });
-  }
+	const silos = await queryClickhouse<{
+		project_path: string;
+		unique_users: number;
+		sessions: number;
+	}>(knowledgeSilosQuery);
+	if (silos.length > 0) {
+		insights.push({
+			type: "alert",
+			severity: "warning",
+			message: `${silos.length} project${silos.length > 1 ? "s" : ""} with only one developer - risk of knowledge silos`,
+			link: "/dashboard/projects",
+		});
+	}
 
-  return insights.slice(0, 3);
+	return insights.slice(0, 3);
 }
 
 export interface TeamSummaryPeriodData {
-  total_sessions: number;
-  active_users: number;
-  avg_duration_min: number;
-  avg_sessions_per_user: number;
+	total_sessions: number;
+	active_users: number;
+	avg_duration_min: number;
+	avg_sessions_per_user: number;
 }
 
 /**
  * Get team summary with previous period comparison
  */
 export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
-  const org = escapeString(orgId);
-  const previousDays = Number(days) * 2;
+	const org = escapeString(orgId);
+	const previousDays = Number(days) * 2;
 
-  const currentQuery = `
+	const currentQuery = `
     SELECT
       count() as total_sessions,
       uniq(user_id) as active_users,
@@ -249,7 +285,7 @@ export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
       AND organization_id = '${org}'
   `;
 
-  const previousQuery = `
+	const previousQuery = `
     SELECT
       count() as total_sessions,
       uniq(user_id) as active_users,
@@ -261,44 +297,56 @@ export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
       AND organization_id = '${org}'
   `;
 
-  const [currentData, previousData] = await Promise.all([
-    queryClickhouse<TeamSummaryPeriodData>(currentQuery),
-    queryClickhouse<TeamSummaryPeriodData>(previousQuery),
-  ]);
+	const [currentData, previousData] = await Promise.all([
+		queryClickhouse<TeamSummaryPeriodData>(currentQuery),
+		queryClickhouse<TeamSummaryPeriodData>(previousQuery),
+	]);
 
-  const defaultPeriod: TeamSummaryPeriodData = {
-    total_sessions: 0,
-    active_users: 0,
-    avg_duration_min: 0,
-    avg_sessions_per_user: 0,
-  };
+	const defaultPeriod: TeamSummaryPeriodData = {
+		total_sessions: 0,
+		active_users: 0,
+		avg_duration_min: 0,
+		avg_sessions_per_user: 0,
+	};
 
-  const current = currentData[0] || defaultPeriod;
-  const previous = previousData[0] || defaultPeriod;
+	const current = currentData[0] || defaultPeriod;
+	const previous = previousData[0] || defaultPeriod;
 
-  const calculateChange = (curr: number, prev: number) => {
-    if (!prev || prev === 0) return 0;
-    return ((curr - prev) / prev) * 100;
-  };
+	const calculateChange = (curr: number, prev: number) => {
+		if (!prev || prev === 0) return 0;
+		return ((curr - prev) / prev) * 100;
+	};
 
-  const changes = {
-    total_sessions: calculateChange(current.total_sessions || 0, previous.total_sessions || 0),
-    active_users: calculateChange(current.active_users || 0, previous.active_users || 0),
-    avg_duration_min: calculateChange(current.avg_duration_min || 0, previous.avg_duration_min || 0),
-    avg_sessions_per_user: calculateChange(current.avg_sessions_per_user || 0, previous.avg_sessions_per_user || 0),
-  };
+	const changes = {
+		total_sessions: calculateChange(
+			current.total_sessions || 0,
+			previous.total_sessions || 0,
+		),
+		active_users: calculateChange(
+			current.active_users || 0,
+			previous.active_users || 0,
+		),
+		avg_duration_min: calculateChange(
+			current.avg_duration_min || 0,
+			previous.avg_duration_min || 0,
+		),
+		avg_sessions_per_user: calculateChange(
+			current.avg_sessions_per_user || 0,
+			previous.avg_sessions_per_user || 0,
+		),
+	};
 
-  return { current, previous, changes };
+	return { current, previous, changes };
 }
 
 /**
  * Get session success rate metrics with comparison
  */
 export async function getSuccessRateMetrics(orgId: string, days = 7) {
-  const org = escapeString(orgId);
-  const previousDays = Number(days) * 2;
+	const org = escapeString(orgId);
+	const previousDays = Number(days) * 2;
 
-  const currentQuery = `
+	const currentQuery = `
     SELECT
       count() as total_sessions,
       round(avg(success_score), 1) as avg_success_score,
@@ -308,7 +356,7 @@ export async function getSuccessRateMetrics(orgId: string, days = 7) {
       AND organization_id = '${org}'
   `;
 
-  const previousQuery = `
+	const previousQuery = `
     SELECT
       count() as total_sessions,
       round(avg(success_score), 1) as avg_success_score,
@@ -319,44 +367,52 @@ export async function getSuccessRateMetrics(orgId: string, days = 7) {
       AND organization_id = '${org}'
   `;
 
-  const [currentData, previousData] = await Promise.all([
-    queryClickhouse<any>(currentQuery),
-    queryClickhouse<any>(previousQuery),
-  ]);
+	interface SuccessRateStats {
+		total_sessions: number;
+		avg_success_score: number;
+		high_quality_sessions: number;
+	}
 
-  const current = currentData[0] || {
-    total_sessions: 0,
-    avg_success_score: 0,
-    high_quality_sessions: 0,
-  };
+	const [currentData, previousData] = await Promise.all([
+		queryClickhouse<SuccessRateStats>(currentQuery),
+		queryClickhouse<SuccessRateStats>(previousQuery),
+	]);
 
-  const previous = previousData[0] || {
-    total_sessions: 0,
-    avg_success_score: 0,
-    high_quality_sessions: 0,
-  };
+	const current: SuccessRateStats = currentData[0] || {
+		total_sessions: 0,
+		avg_success_score: 0,
+		high_quality_sessions: 0,
+	};
 
-  const currentSuccessRate = current.total_sessions > 0
-    ? (current.high_quality_sessions / current.total_sessions) * 100
-    : 0;
+	const previous: SuccessRateStats = previousData[0] || {
+		total_sessions: 0,
+		avg_success_score: 0,
+		high_quality_sessions: 0,
+	};
 
-  const previousSuccessRate = previous.total_sessions > 0
-    ? (previous.high_quality_sessions / previous.total_sessions) * 100
-    : 0;
+	const currentSuccessRate =
+		current.total_sessions > 0
+			? (current.high_quality_sessions / current.total_sessions) * 100
+			: 0;
 
-  return {
-    current: {
-      high_quality_sessions: current.high_quality_sessions,
-      total_sessions: current.total_sessions,
-      success_rate: currentSuccessRate,
-    },
-    previous: {
-      high_quality_sessions: previous.high_quality_sessions,
-      total_sessions: previous.total_sessions,
-      success_rate: previousSuccessRate,
-    },
-    changes: {
-      success_rate: currentSuccessRate - previousSuccessRate,
-    },
-  };
+	const previousSuccessRate =
+		previous.total_sessions > 0
+			? (previous.high_quality_sessions / previous.total_sessions) * 100
+			: 0;
+
+	return {
+		current: {
+			high_quality_sessions: current.high_quality_sessions,
+			total_sessions: current.total_sessions,
+			success_rate: currentSuccessRate,
+		},
+		previous: {
+			high_quality_sessions: previous.high_quality_sessions,
+			total_sessions: previous.total_sessions,
+			success_rate: previousSuccessRate,
+		},
+		changes: {
+			success_rate: currentSuccessRate - previousSuccessRate,
+		},
+	};
 }

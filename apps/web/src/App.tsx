@@ -4,16 +4,16 @@ import { LoginForm } from "./components/auth/login-form";
 import { SignupForm } from "./components/auth/signup-form";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { authClient } from "./lib/auth-client";
-import { OverviewPage } from "./pages/dashboard/OverviewPage";
-import { DevelopersListPage } from "./pages/dashboard/DevelopersListPage";
 import { DeveloperDetailPage } from "./pages/dashboard/DeveloperDetailPage";
-import { ProjectsListPage } from "./pages/dashboard/ProjectsListPage";
-import { ProjectDetailPage } from "./pages/dashboard/ProjectDetailPage";
-import { SessionsListPage } from "./pages/dashboard/SessionsListPage";
-import { SessionDetailPage } from "./pages/dashboard/SessionDetailPage";
-import { ROIPage } from "./pages/dashboard/ROIPage";
+import { DevelopersListPage } from "./pages/dashboard/DevelopersListPage";
 import { ErrorsPage } from "./pages/dashboard/ErrorsPage";
 import { LearningsPage } from "./pages/dashboard/LearningsPage";
+import { OverviewPage } from "./pages/dashboard/OverviewPage";
+import { ProjectDetailPage } from "./pages/dashboard/ProjectDetailPage";
+import { ProjectsListPage } from "./pages/dashboard/ProjectsListPage";
+import { ROIPage } from "./pages/dashboard/ROIPage";
+import { SessionDetailPage } from "./pages/dashboard/SessionDetailPage";
+import { SessionsListPage } from "./pages/dashboard/SessionsListPage";
 
 type Page = "login" | "signup";
 
@@ -60,9 +60,7 @@ function App() {
 	if (cliRedirecting) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
-				<p className="text-muted-foreground">
-					Completing CLI login...
-				</p>
+				<p className="text-muted-foreground">Completing CLI login...</p>
 			</div>
 		);
 	}
@@ -85,20 +83,11 @@ function App() {
 			<Route path="/dashboard" element={<DashboardLayout />}>
 				<Route index element={<OverviewPage />} />
 				<Route path="developers" element={<DevelopersListPage />} />
-				<Route
-					path="developers/:userId"
-					element={<DeveloperDetailPage />}
-				/>
+				<Route path="developers/:userId" element={<DeveloperDetailPage />} />
 				<Route path="projects" element={<ProjectsListPage />} />
-				<Route
-					path="projects/:projectPath"
-					element={<ProjectDetailPage />}
-				/>
+				<Route path="projects/:projectPath" element={<ProjectDetailPage />} />
 				<Route path="sessions" element={<SessionsListPage />} />
-				<Route
-					path="sessions/:sessionId"
-					element={<SessionDetailPage />}
-				/>
+				<Route path="sessions/:sessionId" element={<SessionDetailPage />} />
 				<Route path="roi" element={<ROIPage />} />
 				<Route path="errors" element={<ErrorsPage />} />
 				<Route path="learnings" element={<LearningsPage />} />

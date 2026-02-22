@@ -4,8 +4,8 @@ import {
 	getSessionAnalytics,
 	getSessionAnalyticsSummary,
 	getSessionAnalyticsSummaryComparison,
-	getSessionDimensionAnalysis,
 	getSessionDetail,
+	getSessionDimensionAnalysis,
 } from "../../services/session-analytics.service.js";
 
 const sortByMap: Record<string, "date" | "duration" | "interactions"> = {
@@ -57,10 +57,16 @@ const summaryComparison = os.analytics.sessions.summaryComparison
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
 		try {
-			const result = await getSessionAnalyticsSummaryComparison(context.user.id, {
-				days: input.days,
-			});
-			console.log("[summaryComparison] OK:", JSON.stringify(result).slice(0, 300));
+			const result = await getSessionAnalyticsSummaryComparison(
+				context.user.id,
+				{
+					days: input.days,
+				},
+			);
+			console.log(
+				"[summaryComparison] OK:",
+				JSON.stringify(result).slice(0, 300),
+			);
 			return result;
 		} catch (e) {
 			console.error("[summaryComparison] ERROR:", e);

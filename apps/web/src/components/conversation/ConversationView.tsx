@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import { parseConversations } from "@/lib/conversation-schema";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ConversationEntry } from "@/lib/conversation-schema";
+import { parseConversations } from "@/lib/conversation-schema";
+import { isSlashCommandMessage } from "@/lib/parse-slash-command";
 import { cn } from "@/lib/utils";
 import { ConversationMessage } from "./ConversationMessage";
 import type { TokenDataPoint } from "./TokenUsageChart";
 import type { ToolActivityPoint } from "./ToolActivityChart";
-import { isSlashCommandMessage } from "@/lib/parse-slash-command";
 
 interface ConversationViewProps {
 	content: string;
@@ -22,19 +22,15 @@ function extractTokenData(entries: ConversationEntry[]): TokenDataPoint[] {
 	const points: TokenDataPoint[] = [];
 
 	for (let i = 0; i < entries.length; i++) {
-		const entry = entries[i]!;
+		const entry = entries[i] as ConversationEntry;
 		const entryAny = entry as Record<string, unknown>;
 
 		if (
 			("role" in entry && entry.role === "assistant") ||
 			("type" in entry && entryAny.type === "assistant")
 		) {
-			const message = entryAny.message as
-				| Record<string, unknown>
-				| undefined;
-			const usage = message?.usage as
-				| Record<string, unknown>
-				| undefined;
+			const message = entryAny.message as Record<string, unknown> | undefined;
+			const usage = message?.usage as Record<string, unknown> | undefined;
 
 			if (usage) {
 				points.push({
@@ -56,7 +52,7 @@ function extractToolActivity(
 	const points: ToolActivityPoint[] = [];
 
 	for (let i = 0; i < entries.length; i++) {
-		const entry = entries[i]!;
+		const entry = entries[i] as ConversationEntry;
 		const entryAny = entry as Record<string, unknown>;
 
 		const isUser =
@@ -75,24 +71,18 @@ function extractToolActivity(
 			const hasNonZeroExit =
 				typeof toolResult.code === "number" && toolResult.code !== 0;
 			const hasStderr =
-				typeof toolResult.stderr === "string" &&
-				toolResult.stderr.length > 0;
+				typeof toolResult.stderr === "string" && toolResult.stderr.length > 0;
 			const wasInterrupted = toolResult.interrupted === true;
 
 			const content =
-				(entryAny.message as Record<string, unknown> | undefined)
-					?.content || entryAny.content;
+				(entryAny.message as Record<string, unknown> | undefined)?.content ||
+				entryAny.content;
 			const contentHasError =
 				Array.isArray(content) &&
-				content.some(
-					(item: Record<string, unknown>) => item?.is_error,
-				);
+				content.some((item: Record<string, unknown>) => item?.is_error);
 
 			const isError =
-				hasNonZeroExit ||
-				hasStderr ||
-				wasInterrupted ||
-				contentHasError;
+				hasNonZeroExit || hasStderr || wasInterrupted || contentHasError;
 
 			// Check if this is a subagent (Task tool)
 			if (toolType === "Task") {
@@ -115,15 +105,11 @@ function extractToolActivity(
 		// User messages with slash command content → skill
 		if (isUser) {
 			const content =
-				(entryAny.message as Record<string, unknown> | undefined)
-					?.content ||
+				(entryAny.message as Record<string, unknown> | undefined)?.content ||
 				entryAny.content ||
 				entryAny.text ||
 				"";
-			if (
-				typeof content === "string" &&
-				isSlashCommandMessage(content)
-			) {
+			if (typeof content === "string" && isSlashCommandMessage(content)) {
 				points.push({
 					messageIndex: i,
 					category: "skill",
@@ -135,9 +121,7 @@ function extractToolActivity(
 
 		// Assistant messages — scan content for tool_use items to capture Task/subagent launches
 		if (isAssistant) {
-			const message = entryAny.message as
-				| Record<string, unknown>
-				| undefined;
+			const message = entryAny.message as Record<string, unknown> | undefined;
 			const content = (message?.content || entryAny.content) as
 				| unknown[]
 				| undefined;
@@ -146,14 +130,11 @@ function extractToolActivity(
 				for (const block of content) {
 					const b = block as Record<string, unknown>;
 					if (b?.type === "tool_use" && b?.name === "Task") {
-						const input = b.input as
-							| Record<string, unknown>
-							| undefined;
+						const input = b.input as Record<string, unknown> | undefined;
 						points.push({
 							messageIndex: i,
 							category: "subagent",
-							name:
-								(input?.subagent_type as string) || "Task",
+							name: (input?.subagent_type as string) || "Task",
 							isError: false,
 						});
 					}
@@ -187,15 +168,13 @@ export function ConversationView({
 		}
 
 		try {
-			const lines = content
-				.split("\n")
-				.filter((line) => line.trim() !== "");
+			const lines = content.split("\n").filter((line) => line.trim() !== "");
 
 			const parsed = parseConversations(content);
 
 			if (parsed.length === 0 && lines.length > 0) {
 				try {
-					JSON.parse(lines[0]!);
+					JSON.parse(lines[0] as string);
 					setParseError(
 						`Failed to parse ${lines.length} conversation entries. Check console for details.`,
 					);
@@ -217,13 +196,8 @@ export function ConversationView({
 				}
 			}
 		} catch (error) {
-			console.error(
-				"[ConversationView] Error parsing conversations:",
-				error,
-			);
-			setParseError(
-				error instanceof Error ? error.message : "Unknown error",
-			);
+			console.error("[ConversationView] Error parsing conversations:", error);
+			setParseError(error instanceof Error ? error.message : "Unknown error");
 		}
 	}, [content, onTokenDataReady, onToolActivityReady]);
 
@@ -271,7 +245,7 @@ export function ConversationView({
 		return () => {
 			observerRef.current?.disconnect();
 		};
-	}, [onActiveMessageChange, scrollContainerRef, conversations]);
+	}, [onActiveMessageChange, scrollContainerRef]);
 
 	// Scroll to message when scrollToMessageIndex changes
 	useEffect(() => {
@@ -313,9 +287,7 @@ export function ConversationView({
 	if (conversations.length === 0) {
 		return (
 			<div className={cn("py-8 text-center", className)}>
-				<p className="text-muted-foreground">
-					No conversation data available
-				</p>
+				<p className="text-muted-foreground">No conversation data available</p>
 			</div>
 		);
 	}
@@ -324,9 +296,7 @@ export function ConversationView({
 		if ("role" in entry) return true;
 		if ("type" in entry) {
 			const type = (entry as Record<string, unknown>).type;
-			return (
-				type === "user" || type === "assistant" || type === "system"
-			);
+			return type === "user" || type === "assistant" || type === "system";
 		}
 		return false;
 	});
@@ -352,14 +322,12 @@ export function ConversationView({
 			</div>
 			{conversations.map((entry, idx) => (
 				<div
+					// biome-ignore lint/suspicious/noArrayIndexKey: stable conversation order
 					key={idx}
 					ref={(el) => registerMessageRef(idx, el)}
 					data-message-index={idx}
 				>
-					<ConversationMessage
-						entry={entry}
-						messageIndex={idx}
-					/>
+					<ConversationMessage entry={entry} messageIndex={idx} />
 				</div>
 			))}
 		</div>

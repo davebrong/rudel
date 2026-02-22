@@ -2,8 +2,8 @@ import type {
 	Content,
 	TextContent,
 	ThinkingContent,
-	ToolUseContent,
 	ToolResultContent,
+	ToolUseContent,
 } from "@/lib/conversation-schema";
 import { cn } from "@/lib/utils";
 import { CodeBlock } from "./CodeBlock";
@@ -27,9 +27,9 @@ function parseTextContent(
 	// Match code blocks with language specifier: ```language\ncode\n```
 	const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
 	let lastIndex = 0;
-	let match;
+	let match: RegExpExecArray | null = codeBlockRegex.exec(text);
 
-	while ((match = codeBlockRegex.exec(text)) !== null) {
+	while (match !== null) {
 		// Add text before code block
 		if (match.index > lastIndex) {
 			const textContent = text.slice(lastIndex, match.index).trim();
@@ -40,10 +40,11 @@ function parseTextContent(
 
 		// Add code block
 		const language = match[1] || "text";
-		const code = match[2]!;
+		const code = match[2] as string;
 		parts.push({ type: "code", content: code, language });
 
 		lastIndex = match.index + match[0].length;
+		match = codeBlockRegex.exec(text);
 	}
 
 	// Add remaining text
@@ -81,12 +82,17 @@ export function MessageContent({ content, className }: MessageContentProps) {
 				{parts.map((part, idx) =>
 					part.type === "code" ? (
 						<CodeBlock
+							// biome-ignore lint/suspicious/noArrayIndexKey: static parsed content blocks
 							key={idx}
 							code={part.content}
 							language={part.language}
 						/>
 					) : (
-						<div key={idx} className="prose prose-sm max-w-none">
+						<div
+							// biome-ignore lint/suspicious/noArrayIndexKey: static parsed content blocks
+							key={idx}
+							className="prose prose-sm max-w-none"
+						>
 							<p className="whitespace-pre-wrap text-foreground leading-relaxed">
 								{part.content}
 							</p>
@@ -128,16 +134,22 @@ export function MessageContent({ content, className }: MessageContentProps) {
 						const parts = parseTextContent(textBlock.text);
 
 						return (
-							<div key={idx} className="space-y-3">
+							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: content blocks have no stable id
+								key={idx}
+								className="space-y-3"
+							>
 								{parts.map((part, partIdx) =>
 									part.type === "code" ? (
 										<CodeBlock
+											// biome-ignore lint/suspicious/noArrayIndexKey: static parsed content blocks
 											key={partIdx}
 											code={part.content}
 											language={part.language}
 										/>
 									) : (
 										<div
+											// biome-ignore lint/suspicious/noArrayIndexKey: static parsed content blocks
 											key={partIdx}
 											className="prose prose-sm max-w-none"
 										>
@@ -155,6 +167,7 @@ export function MessageContent({ content, className }: MessageContentProps) {
 						const thinkingBlock = block as ThinkingContent;
 						return (
 							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: content blocks have no stable id
 								key={idx}
 								className="border-l-4 border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950 p-4 rounded-r"
 							>
@@ -174,6 +187,7 @@ export function MessageContent({ content, className }: MessageContentProps) {
 
 						return (
 							<ToolInvocation
+								// biome-ignore lint/suspicious/noArrayIndexKey: content blocks have no stable id
 								key={idx}
 								toolName={toolUse.name}
 								input={toolUse.input}
@@ -199,16 +213,13 @@ export function MessageContent({ content, className }: MessageContentProps) {
 									? toolResult.content
 									: Array.isArray(toolResult.content)
 										? toolResult.content
-												.map(
-													(item) =>
-														item.text ||
-														JSON.stringify(item),
-												)
+												.map((item) => item.text || JSON.stringify(item))
 												.join("\n")
 										: JSON.stringify(toolResult.content);
 
 							return (
 								<div
+									// biome-ignore lint/suspicious/noArrayIndexKey: content blocks have no stable id
 									key={idx}
 									className={cn(
 										"border rounded-lg p-4",
@@ -225,14 +236,9 @@ export function MessageContent({ content, className }: MessageContentProps) {
 												: "text-muted-foreground",
 										)}
 									>
-										{toolResult.is_error
-											? "Tool Error"
-											: "Tool Result"}
+										{toolResult.is_error ? "Tool Error" : "Tool Result"}
 									</p>
-									<CodeBlock
-										code={resultContent}
-										language="text"
-									/>
+									<CodeBlock code={resultContent} language="text" />
 								</div>
 							);
 						}

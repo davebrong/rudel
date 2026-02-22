@@ -72,7 +72,10 @@ async function runLogin(flags: {
 
 	// Open browser
 	if (process.platform === "win32") {
-		Bun.spawn(["cmd", "/c", "start", "", loginUrl], { stdout: "ignore", stderr: "ignore" });
+		Bun.spawn(["cmd", "/c", "start", "", loginUrl], {
+			stdout: "ignore",
+			stderr: "ignore",
+		});
 	} else {
 		const opener = process.platform === "darwin" ? "open" : "xdg-open";
 		Bun.spawn([opener, loginUrl], { stdout: "ignore", stderr: "ignore" });

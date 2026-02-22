@@ -1,4 +1,8 @@
-import { queryClickhouse, escapeString, buildDateFilter } from '../clickhouse.js';
+import {
+	buildDateFilter,
+	escapeString,
+	queryClickhouse,
+} from "../clickhouse.js";
 
 // Pricing constants: input=$3/M tokens, output=$15/M tokens
 const INPUT_PRICE_PER_MILLION = 3.0;
@@ -6,131 +10,136 @@ const OUTPUT_PRICE_PER_MILLION = 15.0;
 const DEFAULT_DEV_HOURLY_RATE = 100;
 
 // ROI calculation constants
-const CODE_PERCENTAGE = 0.65;  // 65% of output tokens are actual code
-const TOKENS_PER_LOC = 15;     // Average tokens per line of code
-const LOC_PER_HOUR = 30;       // Developer baseline: 30 lines per hour without Claude
+const CODE_PERCENTAGE = 0.65; // 65% of output tokens are actual code
+const TOKENS_PER_LOC = 15; // Average tokens per line of code
+const LOC_PER_HOUR = 30; // Developer baseline: 30 lines per hour without Claude
 
 export interface ROIMetrics {
-  total_cost: number;
-  total_cost_change_pct: number;
-  cost_per_session: number;
-  cost_per_session_change_pct: number;
-  cost_per_commit: number;
-  cost_per_commit_change_pct: number;
-  total_tokens: number;
-  input_tokens: number;
-  output_tokens: number;
-  token_utilization_rate: number;
-  total_sessions: number;
-  total_commits: number;
-  total_hours: number;
-  active_developers: number;
-  avg_success_score: number;
-  commits_per_dollar: number;
-  sessions_per_dollar: number;
-  productivity_improvement_pct: number;
-  estimated_loc_generated: number;
-  dev_hours_saved: number;
-  dev_hours_saved_change_pct: number;
-  dollar_value_saved: number;
-  roi_percentage: number;
-  current_period_start: string;
-  current_period_end: string;
-  previous_period_start: string;
-  previous_period_end: string;
+	total_cost: number;
+	total_cost_change_pct: number;
+	cost_per_session: number;
+	cost_per_session_change_pct: number;
+	cost_per_commit: number;
+	cost_per_commit_change_pct: number;
+	total_tokens: number;
+	input_tokens: number;
+	output_tokens: number;
+	token_utilization_rate: number;
+	total_sessions: number;
+	total_commits: number;
+	total_hours: number;
+	active_developers: number;
+	avg_success_score: number;
+	commits_per_dollar: number;
+	sessions_per_dollar: number;
+	productivity_improvement_pct: number;
+	estimated_loc_generated: number;
+	dev_hours_saved: number;
+	dev_hours_saved_change_pct: number;
+	dollar_value_saved: number;
+	roi_percentage: number;
+	current_period_start: string;
+	current_period_end: string;
+	previous_period_start: string;
+	previous_period_end: string;
 }
 
 export interface ROITrend {
-  week_start: string;
-  total_cost: number;
-  total_sessions: number;
-  total_commits: number;
-  active_developers: number;
-  avg_success_score: number;
-  total_tokens: number;
-  output_tokens: number;
-  productivity_score: number;
+	week_start: string;
+	total_cost: number;
+	total_sessions: number;
+	total_commits: number;
+	active_developers: number;
+	avg_success_score: number;
+	total_tokens: number;
+	output_tokens: number;
+	productivity_score: number;
 }
 
 export interface DeveloperCostBreakdown {
-  user_id: string;
-  sessions: number;
-  total_tokens: number;
-  cost: number;
-  cost_percentage: number;
-  avg_success_score: number;
+	user_id: string;
+	sessions: number;
+	total_tokens: number;
+	cost: number;
+	cost_percentage: number;
+	avg_success_score: number;
 }
 
 export interface ProjectCostBreakdown {
-  project_path: string;
-  sessions: number;
-  total_tokens: number;
-  cost: number;
-  cost_percentage: number;
-  avg_success_score: number;
+	project_path: string;
+	sessions: number;
+	total_tokens: number;
+	cost: number;
+	cost_percentage: number;
+	avg_success_score: number;
 }
 
 interface ROIMetricsQueryResult {
-  total_sessions: number;
-  total_input_tokens: number;
-  total_output_tokens: number;
-  total_tokens: number;
-  total_hours: number;
-  avg_success_score: number;
-  active_developers: number;
-  total_commits: number;
-  total_cost: number;
-  cost_per_session: number;
-  cost_per_commit: number;
-  prev_total_cost: number;
-  prev_cost_per_session: number;
-  prev_cost_per_commit: number;
-  prev_total_commits: number;
-  prev_total_output_tokens: number;
-  current_period_start: string;
-  current_period_end: string;
-  previous_period_start: string;
-  previous_period_end: string;
+	total_sessions: number;
+	total_input_tokens: number;
+	total_output_tokens: number;
+	total_tokens: number;
+	total_hours: number;
+	avg_success_score: number;
+	active_developers: number;
+	total_commits: number;
+	total_cost: number;
+	cost_per_session: number;
+	cost_per_commit: number;
+	prev_total_cost: number;
+	prev_cost_per_session: number;
+	prev_cost_per_commit: number;
+	prev_total_commits: number;
+	prev_total_output_tokens: number;
+	current_period_start: string;
+	current_period_end: string;
+	previous_period_start: string;
+	previous_period_end: string;
 }
 
 interface TrendQueryResult {
-  week_start: string;
-  total_sessions: number;
-  total_commits: number;
-  total_cost: number;
-  avg_success_score: number;
-  active_developers: number;
-  total_tokens: number;
-  total_output_tokens: number;
+	week_start: string;
+	total_sessions: number;
+	total_commits: number;
+	total_cost: number;
+	avg_success_score: number;
+	active_developers: number;
+	total_tokens: number;
+	total_output_tokens: number;
 }
 
 interface DeveloperBreakdownQueryResult {
-  user_id: string;
-  total_sessions: number;
-  total_cost: number;
-  total_commits: number;
-  total_hours: number;
-  avg_success_score: number;
-  success_rate: number;
+	user_id: string;
+	total_sessions: number;
+	total_tokens: number;
+	total_cost: number;
+	total_commits: number;
+	total_hours: number;
+	avg_success_score: number;
+	success_rate: number;
 }
 
 interface ProjectBreakdownQueryResult {
-  project_path: string;
-  total_sessions: number;
-  total_cost: number;
-  total_commits: number;
-  total_hours: number;
-  avg_success_score: number;
+	project_path: string;
+	total_sessions: number;
+	total_tokens: number;
+	total_cost: number;
+	total_commits: number;
+	total_hours: number;
+	avg_success_score: number;
 }
 
 /**
  * Get comprehensive ROI metrics with period-over-period comparison
  */
-export async function getROIMetrics(orgId: string, days = 7): Promise<ROIMetrics> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+export async function getROIMetrics(
+	orgId: string,
+	days = 7,
+): Promise<ROIMetrics> {
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     WITH current_period AS (
       SELECT
         COUNT(*) as total_sessions,
@@ -195,95 +204,120 @@ export async function getROIMetrics(orgId: string, days = 7): Promise<ROIMetrics
     CROSS JOIN previous_period p
   `;
 
-  const result = await queryClickhouse<ROIMetricsQueryResult>(query);
+	const result = await queryClickhouse<ROIMetricsQueryResult>(query);
 
-  if (!result || result.length === 0) {
-    throw new Error('No data available for ROI metrics');
-  }
+	if (!result || result.length === 0) {
+		throw new Error("No data available for ROI metrics");
+	}
 
-  const data = result[0]!;
+	const data = result[0] as ROIMetricsQueryResult;
 
-  // Calculate percentage changes
-  const totalCostChangePct = data.prev_total_cost > 0
-    ? ((data.total_cost - data.prev_total_cost) / data.prev_total_cost) * 100
-    : 0;
+	// Calculate percentage changes
+	const totalCostChangePct =
+		data.prev_total_cost > 0
+			? ((data.total_cost - data.prev_total_cost) / data.prev_total_cost) * 100
+			: 0;
 
-  const costPerSessionChangePct = data.prev_cost_per_session > 0
-    ? ((data.cost_per_session - data.prev_cost_per_session) / data.prev_cost_per_session) * 100
-    : 0;
+	const costPerSessionChangePct =
+		data.prev_cost_per_session > 0
+			? ((data.cost_per_session - data.prev_cost_per_session) /
+					data.prev_cost_per_session) *
+				100
+			: 0;
 
-  const costPerCommitChangePct = data.prev_cost_per_commit > 0 && data.cost_per_commit > 0
-    ? ((data.cost_per_commit - data.prev_cost_per_commit) / data.prev_cost_per_commit) * 100
-    : 0;
+	const costPerCommitChangePct =
+		data.prev_cost_per_commit > 0 && data.cost_per_commit > 0
+			? ((data.cost_per_commit - data.prev_cost_per_commit) /
+					data.prev_cost_per_commit) *
+				100
+			: 0;
 
-  // Calculate productivity improvement
-  const currentCommitsPerDollar = data.total_cost > 0 ? data.total_commits / data.total_cost : 0;
-  const prevCommitsPerDollar = data.prev_total_cost > 0 ? data.prev_total_commits / data.prev_total_cost : 0;
-  const productivityImprovementPct = prevCommitsPerDollar > 0
-    ? ((currentCommitsPerDollar - prevCommitsPerDollar) / prevCommitsPerDollar) * 100
-    : 0;
+	// Calculate productivity improvement
+	const currentCommitsPerDollar =
+		data.total_cost > 0 ? data.total_commits / data.total_cost : 0;
+	const prevCommitsPerDollar =
+		data.prev_total_cost > 0
+			? data.prev_total_commits / data.prev_total_cost
+			: 0;
+	const productivityImprovementPct =
+		prevCommitsPerDollar > 0
+			? ((currentCommitsPerDollar - prevCommitsPerDollar) /
+					prevCommitsPerDollar) *
+				100
+			: 0;
 
-  // Token utilization rate (compared to baseline of 10M tokens per week)
-  const baselineTokensPerWeek = 10_000_000;
-  const tokenUtilizationRate = (data.total_tokens / baselineTokensPerWeek) * 100;
+	// Token utilization rate (compared to baseline of 10M tokens per week)
+	const baselineTokensPerWeek = 10_000_000;
+	const tokenUtilizationRate =
+		(data.total_tokens / baselineTokensPerWeek) * 100;
 
-  // Developer hours saved
-  const currentLOC = (data.total_output_tokens * CODE_PERCENTAGE) / TOKENS_PER_LOC;
-  const previousLOC = (data.prev_total_output_tokens * CODE_PERCENTAGE) / TOKENS_PER_LOC;
+	// Developer hours saved
+	const currentLOC =
+		(data.total_output_tokens * CODE_PERCENTAGE) / TOKENS_PER_LOC;
+	const previousLOC =
+		(data.prev_total_output_tokens * CODE_PERCENTAGE) / TOKENS_PER_LOC;
 
-  const currentHoursSaved = currentLOC / LOC_PER_HOUR;
-  const previousHoursSaved = previousLOC / LOC_PER_HOUR;
+	const currentHoursSaved = currentLOC / LOC_PER_HOUR;
+	const previousHoursSaved = previousLOC / LOC_PER_HOUR;
 
-  const currentValueCreated = currentHoursSaved * DEFAULT_DEV_HOURLY_RATE;
-  const currentDollarValueSaved = currentValueCreated - data.total_cost;
+	const currentValueCreated = currentHoursSaved * DEFAULT_DEV_HOURLY_RATE;
+	const currentDollarValueSaved = currentValueCreated - data.total_cost;
 
-  const roiPercentage = data.total_cost > 0
-    ? (currentDollarValueSaved / data.total_cost) * 100
-    : 0;
+	const roiPercentage =
+		data.total_cost > 0 ? (currentDollarValueSaved / data.total_cost) * 100 : 0;
 
-  const devHoursSavedChangePct = previousHoursSaved > 0
-    ? ((currentHoursSaved - previousHoursSaved) / previousHoursSaved) * 100
-    : 0;
+	const devHoursSavedChangePct =
+		previousHoursSaved > 0
+			? ((currentHoursSaved - previousHoursSaved) / previousHoursSaved) * 100
+			: 0;
 
-  return {
-    total_cost: Number(data.total_cost) || 0,
-    total_cost_change_pct: Number(totalCostChangePct.toFixed(2)),
-    cost_per_session: Number(data.cost_per_session) || 0,
-    cost_per_session_change_pct: Number(costPerSessionChangePct.toFixed(2)),
-    cost_per_commit: Number(data.cost_per_commit) || 0,
-    cost_per_commit_change_pct: Number(costPerCommitChangePct.toFixed(2)),
-    total_tokens: Number(data.total_tokens) || 0,
-    input_tokens: Number(data.total_input_tokens) || 0,
-    output_tokens: Number(data.total_output_tokens) || 0,
-    token_utilization_rate: Number(tokenUtilizationRate.toFixed(2)),
-    total_sessions: Number(data.total_sessions) || 0,
-    total_commits: Number(data.total_commits) || 0,
-    total_hours: Number(data.total_hours) || 0,
-    active_developers: Number(data.active_developers) || 0,
-    avg_success_score: Number(data.avg_success_score) || 0,
-    commits_per_dollar: parseFloat(currentCommitsPerDollar.toFixed(2)),
-    sessions_per_dollar: data.total_cost > 0 ? parseFloat((data.total_sessions / data.total_cost).toFixed(2)) : 0,
-    productivity_improvement_pct: parseFloat(productivityImprovementPct.toFixed(2)),
-    estimated_loc_generated: parseFloat(currentLOC.toFixed(0)),
-    dev_hours_saved: parseFloat(currentHoursSaved.toFixed(2)),
-    dev_hours_saved_change_pct: parseFloat(devHoursSavedChangePct.toFixed(2)),
-    dollar_value_saved: parseFloat(currentDollarValueSaved.toFixed(2)),
-    roi_percentage: parseFloat(roiPercentage.toFixed(2)),
-    current_period_start: data.current_period_start,
-    current_period_end: data.current_period_end,
-    previous_period_start: data.previous_period_start,
-    previous_period_end: data.previous_period_end,
-  };
+	return {
+		total_cost: Number(data.total_cost) || 0,
+		total_cost_change_pct: Number(totalCostChangePct.toFixed(2)),
+		cost_per_session: Number(data.cost_per_session) || 0,
+		cost_per_session_change_pct: Number(costPerSessionChangePct.toFixed(2)),
+		cost_per_commit: Number(data.cost_per_commit) || 0,
+		cost_per_commit_change_pct: Number(costPerCommitChangePct.toFixed(2)),
+		total_tokens: Number(data.total_tokens) || 0,
+		input_tokens: Number(data.total_input_tokens) || 0,
+		output_tokens: Number(data.total_output_tokens) || 0,
+		token_utilization_rate: Number(tokenUtilizationRate.toFixed(2)),
+		total_sessions: Number(data.total_sessions) || 0,
+		total_commits: Number(data.total_commits) || 0,
+		total_hours: Number(data.total_hours) || 0,
+		active_developers: Number(data.active_developers) || 0,
+		avg_success_score: Number(data.avg_success_score) || 0,
+		commits_per_dollar: parseFloat(currentCommitsPerDollar.toFixed(2)),
+		sessions_per_dollar:
+			data.total_cost > 0
+				? parseFloat((data.total_sessions / data.total_cost).toFixed(2))
+				: 0,
+		productivity_improvement_pct: parseFloat(
+			productivityImprovementPct.toFixed(2),
+		),
+		estimated_loc_generated: parseFloat(currentLOC.toFixed(0)),
+		dev_hours_saved: parseFloat(currentHoursSaved.toFixed(2)),
+		dev_hours_saved_change_pct: parseFloat(devHoursSavedChangePct.toFixed(2)),
+		dollar_value_saved: parseFloat(currentDollarValueSaved.toFixed(2)),
+		roi_percentage: parseFloat(roiPercentage.toFixed(2)),
+		current_period_start: data.current_period_start,
+		current_period_end: data.current_period_end,
+		previous_period_start: data.previous_period_start,
+		previous_period_end: data.previous_period_end,
+	};
 }
 
 /**
  * Get weekly ROI trends for charting
  */
-export async function getROITrends(orgId: string, days = 56): Promise<ROITrend[]> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+export async function getROITrends(
+	orgId: string,
+	days = 56,
+): Promise<ROITrend[]> {
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     SELECT
       toMonday(session_date) as week_start,
       COUNT(*) as total_sessions,
@@ -302,33 +336,37 @@ export async function getROITrends(orgId: string, days = 56): Promise<ROITrend[]
     ORDER BY week_start ASC
   `;
 
-  const result = await queryClickhouse<TrendQueryResult>(query);
+	const result = await queryClickhouse<TrendQueryResult>(query);
 
-  return result.map((row) => {
-    const productivityScore = row.total_cost > 0 ? (row.total_commits / row.total_cost) * 100 : 0;
+	return result.map((row) => {
+		const productivityScore =
+			row.total_cost > 0 ? (row.total_commits / row.total_cost) * 100 : 0;
 
-    return {
-      week_start: row.week_start,
-      total_cost: Number(row.total_cost) || 0,
-      total_sessions: Number(row.total_sessions) || 0,
-      total_commits: Number(row.total_commits) || 0,
-      active_developers: Number(row.active_developers) || 0,
-      avg_success_score: Number(row.avg_success_score) || 0,
-      total_tokens: Number(row.total_tokens) || 0,
-      output_tokens: Number(row.total_output_tokens) || 0,
-      productivity_score: parseFloat(productivityScore.toFixed(2)),
-    };
-  });
+		return {
+			week_start: row.week_start,
+			total_cost: Number(row.total_cost) || 0,
+			total_sessions: Number(row.total_sessions) || 0,
+			total_commits: Number(row.total_commits) || 0,
+			active_developers: Number(row.active_developers) || 0,
+			avg_success_score: Number(row.avg_success_score) || 0,
+			total_tokens: Number(row.total_tokens) || 0,
+			output_tokens: Number(row.total_output_tokens) || 0,
+			productivity_score: parseFloat(productivityScore.toFixed(2)),
+		};
+	});
 }
 
 /**
  * Get cost breakdown by developer
  */
-export async function getDeveloperCostBreakdown(orgId: string, days = 30): Promise<DeveloperCostBreakdown[]> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+export async function getDeveloperCostBreakdown(
+	orgId: string,
+	days = 30,
+): Promise<DeveloperCostBreakdown[]> {
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     SELECT
       user_id,
       COUNT(*) as total_sessions,
@@ -345,33 +383,42 @@ export async function getDeveloperCostBreakdown(orgId: string, days = 30): Promi
     ORDER BY total_cost DESC
   `;
 
-  const result = await queryClickhouse<DeveloperBreakdownQueryResult>(query);
+	const result = await queryClickhouse<DeveloperBreakdownQueryResult>(query);
 
-  // Calculate total cost across all developers for cost_percentage
-  const grandTotalCost = result.reduce((sum, row) => sum + (Number(row.total_cost) || 0), 0);
+	// Calculate total cost across all developers for cost_percentage
+	const grandTotalCost = result.reduce(
+		(sum, row) => sum + (Number(row.total_cost) || 0),
+		0,
+	);
 
-  return result.map((row) => {
-    const cost = Number(row.total_cost) || 0;
+	return result.map((row) => {
+		const cost = Number(row.total_cost) || 0;
 
-    return {
-      user_id: row.user_id,
-      sessions: Number(row.total_sessions) || 0,
-      total_tokens: Number((row as any).total_tokens) || 0,
-      cost,
-      cost_percentage: grandTotalCost > 0 ? parseFloat(((cost / grandTotalCost) * 100).toFixed(2)) : 0,
-      avg_success_score: Number(row.avg_success_score) || 0,
-    };
-  });
+		return {
+			user_id: row.user_id,
+			sessions: Number(row.total_sessions) || 0,
+			total_tokens: Number(row.total_tokens) || 0,
+			cost,
+			cost_percentage:
+				grandTotalCost > 0
+					? parseFloat(((cost / grandTotalCost) * 100).toFixed(2))
+					: 0,
+			avg_success_score: Number(row.avg_success_score) || 0,
+		};
+	});
 }
 
 /**
  * Get cost breakdown by project
  */
-export async function getProjectCostBreakdown(orgId: string, days = 30): Promise<ProjectCostBreakdown[]> {
-  const org = escapeString(orgId);
-  const d = Number(days);
+export async function getProjectCostBreakdown(
+	orgId: string,
+	days = 30,
+): Promise<ProjectCostBreakdown[]> {
+	const org = escapeString(orgId);
+	const d = Number(days);
 
-  const query = `
+	const query = `
     SELECT
       project_path,
       COUNT(*) as total_sessions,
@@ -389,21 +436,27 @@ export async function getProjectCostBreakdown(orgId: string, days = 30): Promise
     ORDER BY total_cost DESC
   `;
 
-  const result = await queryClickhouse<ProjectBreakdownQueryResult>(query);
+	const result = await queryClickhouse<ProjectBreakdownQueryResult>(query);
 
-  // Calculate total cost across all projects for cost_percentage
-  const grandTotalCost = result.reduce((sum, row) => sum + (Number(row.total_cost) || 0), 0);
+	// Calculate total cost across all projects for cost_percentage
+	const grandTotalCost = result.reduce(
+		(sum, row) => sum + (Number(row.total_cost) || 0),
+		0,
+	);
 
-  return result.map((row) => {
-    const cost = Number(row.total_cost) || 0;
+	return result.map((row) => {
+		const cost = Number(row.total_cost) || 0;
 
-    return {
-      project_path: row.project_path,
-      sessions: Number(row.total_sessions) || 0,
-      total_tokens: Number((row as any).total_tokens) || 0,
-      cost,
-      cost_percentage: grandTotalCost > 0 ? parseFloat(((cost / grandTotalCost) * 100).toFixed(2)) : 0,
-      avg_success_score: Number(row.avg_success_score) || 0,
-    };
-  });
+		return {
+			project_path: row.project_path,
+			sessions: Number(row.total_sessions) || 0,
+			total_tokens: Number(row.total_tokens) || 0,
+			cost,
+			cost_percentage:
+				grandTotalCost > 0
+					? parseFloat(((cost / grandTotalCost) * 100).toFixed(2))
+					: 0,
+			avg_success_score: Number(row.avg_success_score) || 0,
+		};
+	});
 }

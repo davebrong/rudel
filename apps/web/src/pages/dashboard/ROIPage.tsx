@@ -1,29 +1,29 @@
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-	DollarSign,
-	TrendingUp,
-	TrendingDown,
-	Target,
 	Activity,
+	DollarSign,
+	Target,
+	TrendingDown,
+	TrendingUp,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
-	LineChart,
+	CartesianGrid,
 	Line,
+	LineChart,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	ResponsiveContainer,
 } from "recharts";
+import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
-import { DatePicker } from "@/components/analytics/DatePicker";
-import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { useDateRange } from "@/contexts/DateRangeContext";
-import { orpc } from "@/lib/orpc";
-import { formatUsername } from "@/lib/format";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { formatUsername } from "@/lib/format";
+import { orpc } from "@/lib/orpc";
 
 export function ROIPage() {
 	const { startDate, endDate, setStartDate, setEndDate, calculateDays } =
@@ -244,6 +244,7 @@ export function ROIPage() {
 						</div>
 						<div className="mt-4">
 							<button
+								type="button"
 								onClick={resetToDefaults}
 								className="px-4 py-2 text-sm font-medium text-accent bg-accent-light border border-accent-light rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
 							>
@@ -338,7 +339,9 @@ export function ROIPage() {
 										</span>
 									</div>
 									<div className="flex justify-between border-t-2 border-border pt-2 mt-2">
-										<span className="text-foreground font-bold">Net Value:</span>
+										<span className="text-foreground font-bold">
+											Net Value:
+										</span>
 										<span className="font-bold text-accent text-lg">
 											${formatCompact(calculatedROI.dollarValueSaved)}
 										</span>

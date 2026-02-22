@@ -1,17 +1,17 @@
+import type { ErrorTrendDataPoint } from "@rudel/api-routes";
 import { useMemo } from "react";
 import {
-	LineChart,
-	Line,
-	AreaChart,
 	Area,
+	AreaChart,
+	CartesianGrid,
+	Legend,
+	Line,
+	LineChart,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	Legend,
-	ResponsiveContainer,
 } from "recharts";
-import type { ErrorTrendDataPoint } from "@rudel/api-routes";
 import { useChartTheme } from "@/hooks/useChartTheme";
 
 interface ErrorTrendChartProps {
@@ -85,11 +85,7 @@ export function ErrorTrendChart({
 		const maxDate = new Date(allDates[allDates.length - 1]);
 		const dateRange: string[] = [];
 
-		for (
-			let d = new Date(minDate);
-			d <= maxDate;
-			d.setDate(d.getDate() + 1)
-		) {
+		for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
 			dateRange.push(d.toISOString().split("T")[0]);
 		}
 
@@ -111,8 +107,8 @@ export function ErrorTrendChart({
 
 		for (const item of data) {
 			const dateKey = item.date;
-			if (dateMap.has(dateKey)) {
-				const dateData = dateMap.get(dateKey)!;
+			const dateData = dateMap.get(dateKey);
+			if (dateData) {
 				dateData[item.dimension] = item[metric];
 			}
 		}
@@ -133,8 +129,14 @@ export function ErrorTrendChart({
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-4">
 				<div className="flex items-center gap-2">
-					<label className="text-sm font-medium text-muted">Metric:</label>
+					<label
+						htmlFor="error-metric-select"
+						className="text-sm font-medium text-muted"
+					>
+						Metric:
+					</label>
 					<select
+						id="error-metric-select"
 						value={metric}
 						onChange={(e) => onMetricChange(e.target.value as typeof metric)}
 						className="px-3 py-2 border border-border rounded-md text-sm bg-input focus:outline-none focus:ring-2 focus:ring-accent w-56"
@@ -148,12 +150,16 @@ export function ErrorTrendChart({
 				</div>
 
 				<div className="flex items-center gap-2">
-					<label className="text-sm font-medium text-muted">Split:</label>
+					<label
+						htmlFor="error-split-select"
+						className="text-sm font-medium text-muted"
+					>
+						Split:
+					</label>
 					<select
+						id="error-split-select"
 						value={splitBy}
-						onChange={(e) =>
-							onSplitByChange(e.target.value as typeof splitBy)
-						}
+						onChange={(e) => onSplitByChange(e.target.value as typeof splitBy)}
 						className="px-3 py-2 border border-border rounded-md text-sm bg-input focus:outline-none focus:ring-2 focus:ring-accent w-40"
 					>
 						{Object.entries(SPLIT_LABELS).map(([key, label]) => (

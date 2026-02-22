@@ -1,45 +1,49 @@
-import { queryClickhouse, escapeString, buildDateFilter } from '../clickhouse.js';
+import {
+	buildDateFilter,
+	escapeString,
+	queryClickhouse,
+} from "../clickhouse.js";
 
 export interface RecurringError {
-  error_pattern: string;
-  occurrences: number;
-  affected_sessions: number;
-  affected_users: number;
-  last_seen: string;
-  severity: 'high' | 'medium' | 'low';
-  repositories: string[];
+	error_pattern: string;
+	occurrences: number;
+	affected_sessions: number;
+	affected_users: number;
+	last_seen: string;
+	severity: "high" | "medium" | "low";
+	repositories: string[];
 }
 
 export interface CrossDeveloperError {
-  error_pattern: string;
-  developers_affected: number;
-  total_occurrences: number;
-  affected_user_ids: string[];
-  avg_session_duration_min: number;
+	error_pattern: string;
+	developers_affected: number;
+	total_occurrences: number;
+	affected_user_ids: string[];
+	avg_session_duration_min: number;
 }
 
 export interface ErrorTrendDataPoint {
-  date: string;
-  dimension: string;
-  avg_errors_per_interaction: number;
-  avg_errors_per_session: number;
-  total_errors: number;
+	date: string;
+	dimension: string;
+	avg_errors_per_interaction: number;
+	avg_errors_per_session: number;
+	total_errors: number;
 }
 
 /**
  * Get top recurring errors across all sessions
  */
 export async function getTopRecurringErrors(
-  orgId: string,
-  params: { days?: number; min_occurrences?: number; limit?: number } = {}
+	orgId: string,
+	params: { days?: number; min_occurrences?: number; limit?: number } = {},
 ): Promise<RecurringError[]> {
-  const { days = 7, min_occurrences = 2, limit = 15 } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const minOcc = Number(min_occurrences);
-  const lim = Number(limit);
+	const { days = 7, min_occurrences = 2, limit = 15 } = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
+	const minOcc = Number(min_occurrences);
+	const lim = Number(limit);
 
-  const query = `
+	const query = `
     WITH error_sessions AS (
       SELECT
         session_id,
@@ -85,23 +89,23 @@ export async function getTopRecurringErrors(
     LIMIT ${lim}
   `;
 
-  return queryClickhouse<RecurringError>(query);
+	return queryClickhouse<RecurringError>(query);
 }
 
 /**
  * Get errors affecting multiple developers
  */
 export async function getCrossDeveloperErrors(
-  orgId: string,
-  params: { days?: number; min_developers?: number; limit?: number } = {}
+	orgId: string,
+	params: { days?: number; min_developers?: number; limit?: number } = {},
 ): Promise<CrossDeveloperError[]> {
-  const { days = 7, min_developers = 2, limit = 10 } = params;
-  const org = escapeString(orgId);
-  const d = Number(days);
-  const minDevs = Number(min_developers);
-  const lim = Number(limit);
+	const { days = 7, min_developers = 2, limit = 10 } = params;
+	const org = escapeString(orgId);
+	const d = Number(days);
+	const minDevs = Number(min_developers);
+	const lim = Number(limit);
 
-  const query = `
+	const query = `
     SELECT
       CASE
         WHEN content ILIKE '%Error:%' THEN 'TypeError'
@@ -129,27 +133,27 @@ export async function getCrossDeveloperErrors(
     LIMIT ${lim}
   `;
 
-  return queryClickhouse<CrossDeveloperError>(query);
+	return queryClickhouse<CrossDeveloperError>(query);
 }
 
 /**
  * Get error metrics trends over time with various split options
  */
 export async function getErrorTrends(
-  orgId: string,
-  params: {
-    start_date: string;
-    end_date: string;
-    split_by: 'repository' | 'user_id' | 'model' | 'error_type';
-  }
+	orgId: string,
+	params: {
+		start_date: string;
+		end_date: string;
+		split_by: "repository" | "user_id" | "model" | "error_type";
+	},
 ): Promise<ErrorTrendDataPoint[]> {
-  const { start_date, end_date, split_by } = params;
-  const org = escapeString(orgId);
-  const sd = escapeString(start_date);
-  const ed = escapeString(end_date);
+	const { start_date, end_date, split_by } = params;
+	const org = escapeString(orgId);
+	const sd = escapeString(start_date);
+	const ed = escapeString(end_date);
 
-  if (split_by === 'error_type') {
-    const query = `
+	if (split_by === "error_type") {
+		const query = `
       WITH error_sessions AS (
         SELECT
           toDate(session_date) as date,
@@ -196,11 +200,11 @@ export async function getErrorTrends(
       ORDER BY date, dimension
     `;
 
-    return queryClickhouse<ErrorTrendDataPoint>(query);
-  }
+		return queryClickhouse<ErrorTrendDataPoint>(query);
+	}
 
-  if (split_by === 'model') {
-    const query = `
+	if (split_by === "model") {
+		const query = `
       WITH error_sessions AS (
         SELECT
           toDate(sa.session_date) as date,
@@ -235,13 +239,13 @@ export async function getErrorTrends(
       ORDER BY date, dimension
     `;
 
-    return queryClickhouse<ErrorTrendDataPoint>(query);
-  }
+		return queryClickhouse<ErrorTrendDataPoint>(query);
+	}
 
-  // For repository and user_id splits
-  const dimension_field = split_by === 'repository' ? 'repository' : split_by;
+	// For repository and user_id splits
+	const dimension_field = split_by === "repository" ? "repository" : split_by;
 
-  const query = `
+	const query = `
     WITH error_sessions AS (
       SELECT
         toDate(session_date) as date,
@@ -281,5 +285,5 @@ export async function getErrorTrends(
     ORDER BY date, dimension
   `;
 
-  return queryClickhouse<ErrorTrendDataPoint>(query);
+	return queryClickhouse<ErrorTrendDataPoint>(query);
 }
