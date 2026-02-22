@@ -29,19 +29,17 @@ COPY --from=install /app/packages/api-routes/node_modules ./packages/api-routes/
 
 COPY apps/api ./apps/api
 COPY packages/api-routes ./packages/api-routes
+COPY packages/sql-schema ./packages/sql-schema
+COPY packages/ch-schema ./packages/ch-schema
 COPY packages/typescript-config ./packages/typescript-config
 COPY package.json ./
 
 # Copy built frontend into the API's public directory
 COPY --from=build /app/apps/web/dist ./apps/api/public
 
-# Create data directory for SQLite
-RUN mkdir -p /data
-
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV STATIC_DIR=public
-ENV DATABASE_PATH=/data/auth.sqlite
 
 EXPOSE 3000
 

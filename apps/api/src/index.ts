@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { RPCHandler } from "@orpc/server/fetch";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { createAuth } from "./auth.js";
 import { db } from "./db.js";
 import { router } from "./router.js";
@@ -15,7 +15,7 @@ const migrationsFolder = join(
 	"db",
 	"migrations",
 );
-migrate(db, { migrationsFolder });
+await migrate(db, { migrationsFolder });
 
 const socialProviders: Record<
 	string,
@@ -67,7 +67,7 @@ function corsHeaders(origin: string | null): Record<string, string> {
 
 const port = process.env.PORT ?? 4010;
 
-Bun.serve({
+const server = Bun.serve({
 	port,
 	async fetch(request) {
 		const origin = request.headers.get("Origin");
@@ -142,4 +142,4 @@ async function getContext(request: Request) {
 	};
 }
 
-console.log(`API server listening on http://localhost:${port}`);
+console.log(`API server listening on http://localhost:${server.port}`);

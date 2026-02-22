@@ -12,13 +12,12 @@
 		"test:env": "doppler run --project rudel --config ci -- bun run test",
 		"verify": "doppler run --project rudel --config ci -- turbo run lint check-types test build",
 		"release:cli": "bun run ./scripts/release-cli.ts",
-		"deploy": "turbo run build --filter=@rudel/web && wrangler deploy"
+		"deploy": "turbo run build"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.0",
 		"turbo": "^2.8.9",
-		"typescript": "5.9.2",
-		"wrangler": "^4"
+		"typescript": "5.9.2"
 	},
 	"engines": {
 		"node": ">=18"
@@ -31,5 +30,8 @@
 	"overrides": {
 		"@chkit/core": "0.1.0-beta.7",
 		"@chkit/clickhouse": "0.1.0-beta.7"
+	},
+	"dependencies": {
+		"postgres": "^3.4.8"
 	}
 }

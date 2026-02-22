@@ -6,22 +6,22 @@ import type { IngestRequest } from "../lib/types.js";
 import { uploadSession } from "../lib/uploader.js";
 import {
 	signUpTestUser,
-	startTestWorker,
-	type TestWorker,
-} from "./helpers/wrangler-server.js";
+	startTestServer,
+	type TestServer,
+} from "./helpers/bun-server.js";
 
-let worker: TestWorker;
+let server: TestServer;
 let bearerToken: string;
 let tempDir: string;
 
 beforeAll(async () => {
 	tempDir = await mkdtemp(join(tmpdir(), "rudel-api-test-"));
-	worker = await startTestWorker();
-	bearerToken = await signUpTestUser(worker.baseUrl);
+	server = await startTestServer();
+	bearerToken = await signUpTestUser(server.baseUrl);
 }, 60_000);
 
 afterAll(async () => {
-	await worker?.stop();
+	await server?.stop();
 	if (tempDir) {
 		await rm(tempDir, { recursive: true, force: true }).catch(() => {});
 	}
@@ -43,14 +43,14 @@ describe("CLI upload to local API", () => {
 			subagents: [{ agentId: "sub-1", content: "subagent content" }],
 		};
 
-		// Retry up to 3 times — wrangler dev + ClickHouse can be slow to accept
-		// the first request after startup (race condition with D1/CH readiness).
+		// Retry up to 3 times — ClickHouse can be slow to accept
+		// the first request after startup.
 		let result = { success: false, error: "not attempted" } as Awaited<
 			ReturnType<typeof uploadSession>
 		>;
 		for (let attempt = 0; attempt < 3; attempt++) {
 			result = await uploadSession(request, {
-				endpoint: worker.rpcUrl,
+				endpoint: server.rpcUrl,
 				token: bearerToken,
 			});
 			if (result.success) break;
@@ -74,7 +74,7 @@ describe("CLI upload to local API", () => {
 		await mkdir(credDir, { recursive: true });
 		await writeFile(
 			join(credDir, "credentials.json"),
-			JSON.stringify({ token: bearerToken, apiBaseUrl: worker.baseUrl }),
+			JSON.stringify({ token: bearerToken, apiBaseUrl: server.baseUrl }),
 		);
 
 		const sessionFile = join(projectDir, "e2e-test-session.jsonl");
@@ -95,7 +95,7 @@ describe("CLI upload to local API", () => {
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
 		const proc = Bun.spawn(
-			["bun", cliPath, "upload", sessionFile, "--endpoint", worker.rpcUrl],
+			["bun", cliPath, "upload", sessionFile, "--endpoint", server.rpcUrl],
 			{
 				stdin: "ignore",
 				stdout: "pipe",
@@ -133,7 +133,7 @@ describe("CLI upload to local API", () => {
 		};
 
 		const result = await uploadSession(request, {
-			endpoint: worker.rpcUrl,
+			endpoint: server.rpcUrl,
 			token: "invalid-token",
 		});
 
