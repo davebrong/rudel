@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "melbourne",
+      "dependencies": {
+        "postgres": "^3.4.8",
+      },
       "devDependencies": {
         "@biomejs/biome": "^2.4.0",
         "turbo": "^2.8.9",
