@@ -1,0 +1,9 @@
+why is the root lint command running lint directly, it should run lint with turbo @package.json
+
+---
+
+okay now run `bun lint` and check it works
+
+---
+
+[Request interrupted by user]
