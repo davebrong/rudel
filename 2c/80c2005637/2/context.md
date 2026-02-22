@@ -1,0 +1,28 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+Start the webserver (apps/web - bun dev) and api server (apps/api -  bun dev:env) in the backgorund. and the use chrome to navigate on this website: http://localhost:4011 and login with email: marc.hoeffl@gmail.com and pw: hundhund\
+And then see if the app loads
+
+### Prompt 2
+
+yes run ` bun run ch:migrate:prd`
+
+### Prompt 3
+
+<task-notification>
+<task-id>b28e10d</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-marc-Workspace-rudel/tasks/b28e10d.output</output-file>
+<status>killed</status>
+<summary>Background command "Start web dev server" was stopped</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-marc-Workspace-rudel/tasks/b28e10d.output
+
+### Prompt 4
+
+[Request interrupted by user]
+
