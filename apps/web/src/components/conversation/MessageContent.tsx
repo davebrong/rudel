@@ -213,7 +213,10 @@ export function MessageContent({ content, className }: MessageContentProps) {
 									? toolResult.content
 									: Array.isArray(toolResult.content)
 										? toolResult.content
-												.map((item) => item.text || JSON.stringify(item))
+												.map(
+													(item: { text?: string }) =>
+														item.text || JSON.stringify(item),
+												)
 												.join("\n")
 										: JSON.stringify(toolResult.content);
 
