@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "98f1202dc2d5",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/ui-profile-social-link",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "CLAUDE.md",
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/analytics/Breadcrumb.tsx",
+    "apps/web/src/components/analytics/Sidebar.tsx",
+    "apps/web/src/pages/dashboard/ProfilePage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/98/f1202dc2d5/0/metadata.json",
+      "transcript": "/98/f1202dc2d5/0/full.jsonl",
+      "context": "/98/f1202dc2d5/0/context.md",
+      "content_hash": "/98/f1202dc2d5/0/content_hash.txt",
+      "prompt": "/98/f1202dc2d5/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 99,
+    "cache_creation_tokens": 128768,
+    "cache_read_tokens": 3248845,
+    "output_tokens": 726,
+    "api_call_count": 60
+  }
+}
