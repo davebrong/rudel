@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const HOOK_COMMAND = "rudel hooks claude session-end";
 
@@ -29,9 +29,33 @@ interface ClaudeSettings {
 	[key: string]: unknown;
 }
 
+function findClaudeDir(): string {
+	let dir = resolve(process.cwd());
+
+	// Walk up looking for an existing .claude directory
+	while (dir !== dirname(dir)) {
+		const candidate = join(dir, ".claude");
+		if (existsSync(candidate)) {
+			return candidate;
+		}
+		dir = dirname(dir);
+	}
+
+	// Fall back to git repo root
+	try {
+		const gitRoot = execSync("git rev-parse --show-toplevel", {
+			encoding: "utf-8",
+			stdio: ["pipe", "pipe", "pipe"],
+		}).trim();
+		return join(gitRoot, ".claude");
+	} catch {
+		// Not in a git repo — fall back to cwd
+		return join(resolve(process.cwd()), ".claude");
+	}
+}
+
 export function getClaudeSettingsPath(): string {
-	const root = findGitRoot();
-	return join(root, ".claude", "settings.json");
+	return join(findClaudeDir(), "settings.json");
 }
 
 export function readClaudeSettings(): ClaudeSettings {
@@ -43,10 +67,7 @@ export function readClaudeSettings(): ClaudeSettings {
 
 export function writeClaudeSettings(settings: ClaudeSettings): void {
 	const path = getClaudeSettingsPath();
-	const dir = join(path, "..");
-	if (!existsSync(dir)) {
-		mkdirSync(dir, { recursive: true });
-	}
+	mkdirSync(dirname(path), { recursive: true });
 	writeFileSync(path, `${JSON.stringify(settings, null, 2)}\n`);
 }
 
