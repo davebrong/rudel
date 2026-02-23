@@ -1,0 +1,510 @@
+import { z } from "zod";
+
+// ── Common inputs ──────────────────────────────────────────────────
+
+export const DaysInputSchema = z.object({
+	days: z.number().int().positive().default(7),
+});
+
+export const PaginatedDaysInputSchema = DaysInputSchema.extend({
+	limit: z.number().int().positive().default(100),
+	offset: z.number().int().nonnegative().default(0),
+});
+
+export const DateRangeInputSchema = z.object({
+	startDate: z.string(),
+	endDate: z.string(),
+});
+
+// ── Overview ───────────────────────────────────────────────────────
+
+export const OverviewKPIsSchema = z.object({
+	distinct_users: z.number(),
+	distinct_sessions: z.number(),
+	distinct_projects: z.number(),
+	distinct_subagents: z.number(),
+	distinct_skills: z.number(),
+	distinct_slash_commands: z.number(),
+});
+
+export const UsageTrendDataSchema = z.object({
+	date: z.string(),
+	sessions: z.number(),
+	active_users: z.number(),
+	total_hours: z.number(),
+	total_tokens: z.number(),
+});
+
+export const ModelTokensTrendDataSchema = z.object({
+	date: z.string(),
+	model: z.string(),
+	total_tokens: z.number(),
+	input_tokens: z.number(),
+	output_tokens: z.number(),
+});
+
+export const InsightSchema = z.object({
+	type: z.string(),
+	severity: z.enum(["positive", "warning", "negative", "info"]),
+	message: z.string(),
+	link: z.string().optional(),
+});
+
+export const TeamSummaryComparisonSchema = z.object({
+	current: z.object({
+		total_sessions: z.number(),
+		active_users: z.number(),
+		avg_duration_min: z.number(),
+		avg_sessions_per_user: z.number(),
+	}),
+	previous: z.object({
+		total_sessions: z.number(),
+		active_users: z.number(),
+		avg_duration_min: z.number(),
+		avg_sessions_per_user: z.number(),
+	}),
+	changes: z.object({
+		total_sessions: z.number(),
+		active_users: z.number(),
+		avg_duration_min: z.number(),
+		avg_sessions_per_user: z.number(),
+	}),
+});
+
+export const SuccessRateSchema = z.object({
+	current: z.object({
+		high_quality_sessions: z.number(),
+		total_sessions: z.number(),
+		success_rate: z.number(),
+	}),
+	previous: z.object({
+		high_quality_sessions: z.number(),
+		total_sessions: z.number(),
+		success_rate: z.number(),
+	}),
+	changes: z.object({
+		success_rate: z.number(),
+	}),
+});
+
+// ── Developers ─────────────────────────────────────────────────────
+
+export const DeveloperSummarySchema = z.object({
+	user_id: z.string(),
+	total_sessions: z.number(),
+	active_days: z.number(),
+	total_tokens: z.number(),
+	input_tokens: z.number(),
+	output_tokens: z.number(),
+	total_duration_min: z.number(),
+	avg_session_duration_min: z.number(),
+	last_active_date: z.string(),
+	success_rate: z.number(),
+	cost: z.number(),
+	success_rate_trend: z.number(),
+});
+
+export const DeveloperDetailsSchema = DeveloperSummarySchema.extend({
+	distinct_projects: z.number(),
+	error_count: z.number(),
+});
+
+export const DeveloperSessionSchema = z.object({
+	session_id: z.string(),
+	session_date: z.string(),
+	project_path: z.string(),
+	duration_min: z.number(),
+	total_tokens: z.number(),
+	has_subagents: z.boolean(),
+	has_skills: z.boolean(),
+	has_slash_commands: z.boolean(),
+	has_errors: z.boolean(),
+	likely_success: z.boolean(),
+});
+
+export const DeveloperProjectSchema = z.object({
+	project_path: z.string(),
+	sessions: z.number(),
+	total_duration_min: z.number(),
+	total_tokens: z.number(),
+	first_session: z.string(),
+	last_session: z.string(),
+});
+
+export const DeveloperTimelineSchema = z.object({
+	date: z.string(),
+	sessions: z.number(),
+	total_duration_min: z.number(),
+	total_tokens: z.number(),
+});
+
+export const DeveloperTrendDataPointSchema = z.object({
+	date: z.string(),
+	user_id: z.string(),
+	sessions: z.number(),
+	total_hours: z.number(),
+	total_tokens: z.number(),
+	avg_success_rate: z.number(),
+});
+
+export const DeveloperFeatureUsageSchema = z.object({
+	subagents_adoption_rate: z.number(),
+	skills_adoption_rate: z.number(),
+	slash_commands_adoption_rate: z.number(),
+	top_subagents: z.array(z.object({ name: z.string(), count: z.number() })),
+	top_skills: z.array(z.object({ name: z.string(), count: z.number() })),
+	top_slash_commands: z.array(
+		z.object({ name: z.string(), count: z.number() }),
+	),
+});
+
+export const DeveloperErrorSchema = z.object({
+	error_pattern: z.string(),
+	occurrences: z.number(),
+	last_seen: z.string(),
+});
+
+// ── Developer input schemas ────────────────────────────────────────
+
+export const DeveloperDetailsInputSchema = DaysInputSchema.extend({
+	userId: z.string(),
+});
+
+export const DeveloperSessionsInputSchema = DaysInputSchema.extend({
+	userId: z.string(),
+	projectPath: z.string().optional(),
+	outcome: z.enum(["all", "success"]).default("all"),
+	limit: z.number().int().positive().default(100),
+	offset: z.number().int().nonnegative().default(0),
+	sortBy: z.enum(["date", "duration", "tokens"]).default("date"),
+	sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+// ── Projects ───────────────────────────────────────────────────────
+
+export const ProjectInvestmentSchema = z.object({
+	repository: z.string().nullable(),
+	project_path: z.string(),
+	sessions: z.number(),
+	unique_users: z.number(),
+	total_duration_min: z.number(),
+	total_tokens: z.number(),
+	success_rate: z.number(),
+	cost: z.number(),
+	success_rate_trend: z.number(),
+});
+
+export const ProjectDetailDataSchema = z.object({
+	project_path: z.string(),
+	total_sessions: z.number(),
+	total_tokens: z.number(),
+	contributors_count: z.number(),
+	errors_count: z.number(),
+	avg_session_duration_min: z.number(),
+	success_rate: z.number(),
+	total_duration_min: z.number(),
+	cost: z.number(),
+});
+
+export const ProjectContributorSchema = z.object({
+	user_id: z.string(),
+	sessions: z.number(),
+	total_duration_min: z.number(),
+	total_tokens: z.number(),
+	contribution_percentage: z.number(),
+});
+
+export const ProjectFeatureUsageSchema = z.object({
+	subagents_adoption_rate: z.number(),
+	skills_adoption_rate: z.number(),
+	slash_commands_adoption_rate: z.number(),
+	top_subagents: z.array(z.object({ name: z.string(), count: z.number() })),
+	top_skills: z.array(z.object({ name: z.string(), count: z.number() })),
+	top_slash_commands: z.array(
+		z.object({ name: z.string(), count: z.number() }),
+	),
+});
+
+export const ProjectErrorSchema = z.object({
+	error_pattern: z.string(),
+	occurrences: z.number(),
+	affected_users: z.number(),
+	last_seen: z.string(),
+});
+
+export const ProjectTrendDataPointSchema = z.object({
+	date: z.string(),
+	project_path: z.string(),
+	sessions: z.number(),
+	total_hours: z.number(),
+	total_tokens: z.number(),
+	avg_success_rate: z.number(),
+});
+
+export const ProjectDetailsInputSchema = DaysInputSchema.extend({
+	projectPath: z.string(),
+});
+
+// ── Sessions ───────────────────────────────────────────────────────
+
+export const SessionAnalyticsSchema = z.object({
+	session_id: z.string(),
+	user_id: z.string(),
+	session_date: z.string(),
+	project_path: z.string(),
+	repository: z.string().nullable(),
+	duration_min: z.number(),
+	total_tokens: z.number(),
+	input_tokens: z.number(),
+	output_tokens: z.number(),
+	success_score: z.number(),
+	total_interactions: z.number(),
+	avg_period_sec: z.number(),
+	subagent_types: z.array(z.string()),
+	skills: z.array(z.string()),
+	slash_commands: z.array(z.string()),
+	has_commit: z.boolean(),
+	session_archetype: z.string(),
+	model_used: z.string(),
+	used_plan_mode: z.boolean(),
+});
+
+export const SessionAnalyticsSummarySchema = z.object({
+	total_sessions: z.number(),
+	avg_session_duration_min: z.number(),
+	avg_response_time_sec: z.number(),
+	subagents_adoption_rate: z.number(),
+	skills_adoption_rate: z.number(),
+	slash_commands_adoption_rate: z.number(),
+});
+
+export const SessionAnalyticsSummaryComparisonSchema = z.object({
+	current: SessionAnalyticsSummarySchema,
+	previous: SessionAnalyticsSummarySchema,
+	changes: z.object({
+		total_sessions: z.number(),
+		avg_session_duration_min: z.number(),
+		avg_response_time_sec: z.number(),
+	}),
+});
+
+export const SessionListInputSchema = DaysInputSchema.extend({
+	userId: z.string().optional(),
+	projectPath: z.string().optional(),
+	repository: z.string().optional(),
+	limit: z.number().int().positive().default(100),
+	offset: z.number().int().nonnegative().default(0),
+	sortBy: z
+		.enum(["session_date", "duration_min", "total_tokens", "success_score"])
+		.default("session_date"),
+	sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export const DimensionAnalysisInputSchema = DaysInputSchema.extend({
+	dimension: z.string(),
+	metric: z.string(),
+	splitBy: z.string().optional(),
+	limit: z.number().int().positive().default(20),
+	userId: z.string().optional(),
+	projectPath: z.string().optional(),
+});
+
+export const DimensionAnalysisDataPointSchema = z.object({
+	dimension_value: z.string(),
+	metric_value: z.number().optional(),
+	split_values: z.record(z.string(), z.number()).optional(),
+});
+
+export const SessionDetailSchema = z.object({
+	session_id: z.string(),
+	user_id: z.string(),
+	session_date: z.string(),
+	last_interaction_date: z.string(),
+	project_path: z.string(),
+	repository: z.string().nullable(),
+	content: z.string(),
+	subagents: z.record(z.string(), z.string()),
+	skills: z.array(z.string()),
+	slash_commands: z.array(z.string()),
+	git_branch: z.string().nullable(),
+	git_sha: z.string().nullable(),
+	total_tokens: z.number(),
+	input_tokens: z.number(),
+	output_tokens: z.number(),
+	success_score: z.number().optional(),
+	duration_min: z.number().optional(),
+	total_interactions: z.number().optional(),
+	session_archetype: z.string().optional(),
+	model_used: z.string().optional(),
+});
+
+export const SessionDetailInputSchema = z.object({
+	sessionId: z.string(),
+});
+
+// ── ROI ────────────────────────────────────────────────────────────
+
+export const ROIMetricsSchema = z.object({
+	total_cost: z.number(),
+	total_cost_change_pct: z.number(),
+	cost_per_session: z.number(),
+	cost_per_session_change_pct: z.number(),
+	cost_per_commit: z.number(),
+	cost_per_commit_change_pct: z.number(),
+	total_tokens: z.number(),
+	input_tokens: z.number(),
+	output_tokens: z.number(),
+	token_utilization_rate: z.number(),
+	total_sessions: z.number(),
+	total_commits: z.number(),
+	total_hours: z.number(),
+	active_developers: z.number(),
+	avg_success_score: z.number(),
+	commits_per_dollar: z.number(),
+	sessions_per_dollar: z.number(),
+	productivity_improvement_pct: z.number(),
+	estimated_loc_generated: z.number(),
+	dev_hours_saved: z.number(),
+	dev_hours_saved_change_pct: z.number(),
+	dollar_value_saved: z.number(),
+	roi_percentage: z.number(),
+	current_period_start: z.string(),
+	current_period_end: z.string(),
+	previous_period_start: z.string(),
+	previous_period_end: z.string(),
+});
+
+export const ROITrendSchema = z.object({
+	week_start: z.string(),
+	total_cost: z.number(),
+	total_sessions: z.number(),
+	total_commits: z.number(),
+	active_developers: z.number(),
+	avg_success_score: z.number(),
+	total_tokens: z.number(),
+	output_tokens: z.number(),
+	productivity_score: z.number(),
+});
+
+export const DeveloperCostBreakdownSchema = z.object({
+	user_id: z.string(),
+	sessions: z.number(),
+	total_tokens: z.number(),
+	cost: z.number(),
+	cost_percentage: z.number(),
+	avg_success_score: z.number(),
+});
+
+export const ProjectCostBreakdownSchema = z.object({
+	project_path: z.string(),
+	sessions: z.number(),
+	total_tokens: z.number(),
+	cost: z.number(),
+	cost_percentage: z.number(),
+	avg_success_score: z.number(),
+});
+
+// ── Errors ─────────────────────────────────────────────────────────
+
+export const RecurringErrorSchema = z.object({
+	error_pattern: z.string(),
+	occurrences: z.number(),
+	affected_sessions: z.number(),
+	affected_users: z.number(),
+	last_seen: z.string(),
+	severity: z.enum(["high", "medium", "low"]),
+	repositories: z.array(z.string()),
+});
+
+export const ErrorTrendDataPointSchema = z.object({
+	date: z.string(),
+	dimension: z.string(),
+	avg_errors_per_interaction: z.number(),
+	avg_errors_per_session: z.number(),
+	total_errors: z.number(),
+});
+
+export const ErrorTrendsInputSchema = DateRangeInputSchema.extend({
+	splitBy: z.enum(["repository", "user_id", "model"]).default("repository"),
+});
+
+export const RecurringErrorsInputSchema = DaysInputSchema.extend({
+	minOccurrences: z.number().int().positive().default(2),
+	limit: z.number().int().positive().default(20),
+});
+
+// ── Learnings ──────────────────────────────────────────────────────
+
+export const LearningEntrySchema = z.object({
+	session_id: z.string(),
+	user_id: z.string(),
+	created_at: z.string(),
+	type: z.string(),
+	content: z.string(),
+	scope: z.string(),
+	tags: z.array(z.string()),
+	project_path: z.string(),
+	repository: z.string().nullable(),
+});
+
+export const LearningsFeedStatsSchema = z.object({
+	total_learnings: z.number(),
+	unique_users: z.number(),
+	unique_projects: z.number(),
+	learnings_by_day: z.array(
+		z.object({
+			date: z.string(),
+			count: z.number(),
+		}),
+	),
+});
+
+export const LearningsTrendDataPointSchema = z.record(
+	z.string(),
+	z.union([z.string(), z.number()]),
+);
+
+export const LearningsTrendInputSchema = DaysInputSchema.extend({
+	splitBy: z.enum(["user_id", "repository"]),
+});
+
+// ── Users ──────────────────────────────────────────────────────────
+
+export const UserMappingSchema = z.object({
+	user_id: z.string(),
+	username: z.string(),
+});
+
+// ── Type exports ───────────────────────────────────────────────────
+
+export type OverviewKPIs = z.infer<typeof OverviewKPIsSchema>;
+export type UsageTrendData = z.infer<typeof UsageTrendDataSchema>;
+export type ModelTokensTrendData = z.infer<typeof ModelTokensTrendDataSchema>;
+export type Insight = z.infer<typeof InsightSchema>;
+export type DeveloperSummary = z.infer<typeof DeveloperSummarySchema>;
+export type DeveloperDetails = z.infer<typeof DeveloperDetailsSchema>;
+export type DeveloperSession = z.infer<typeof DeveloperSessionSchema>;
+export type DeveloperProject = z.infer<typeof DeveloperProjectSchema>;
+export type DeveloperTrendDataPoint = z.infer<
+	typeof DeveloperTrendDataPointSchema
+>;
+export type ProjectInvestment = z.infer<typeof ProjectInvestmentSchema>;
+export type ProjectDetailData = z.infer<typeof ProjectDetailDataSchema>;
+export type ProjectContributor = z.infer<typeof ProjectContributorSchema>;
+export type ProjectTrendDataPoint = z.infer<typeof ProjectTrendDataPointSchema>;
+export type SessionAnalytics = z.infer<typeof SessionAnalyticsSchema>;
+export type SessionDetail = z.infer<typeof SessionDetailSchema>;
+export type DimensionAnalysisDataPoint = z.infer<
+	typeof DimensionAnalysisDataPointSchema
+>;
+export type ROIMetrics = z.infer<typeof ROIMetricsSchema>;
+export type ROITrend = z.infer<typeof ROITrendSchema>;
+export type DeveloperCostBreakdown = z.infer<
+	typeof DeveloperCostBreakdownSchema
+>;
+export type ProjectCostBreakdown = z.infer<typeof ProjectCostBreakdownSchema>;
+export type RecurringError = z.infer<typeof RecurringErrorSchema>;
+export type ErrorTrendDataPoint = z.infer<typeof ErrorTrendDataPointSchema>;
+export type LearningEntry = z.infer<typeof LearningEntrySchema>;
+export type LearningsFeedStats = z.infer<typeof LearningsFeedStatsSchema>;
+export type UserMapping = z.infer<typeof UserMappingSchema>;

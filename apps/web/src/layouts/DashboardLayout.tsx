@@ -1,0 +1,23 @@
+import { Outlet } from "react-router-dom";
+import { Breadcrumb } from "../components/analytics/Breadcrumb";
+import { Sidebar } from "../components/analytics/Sidebar";
+import { DateRangeProvider } from "../contexts/DateRangeContext";
+import { FilterProvider } from "../contexts/FilterContext";
+
+export function DashboardLayout() {
+	return (
+		<DateRangeProvider>
+			<FilterProvider>
+				<div className="flex h-screen overflow-hidden bg-surface">
+					<Sidebar />
+					<div className="flex flex-1 flex-col overflow-hidden">
+						<Breadcrumb />
+						<main className="flex-1 overflow-y-auto">
+							<Outlet />
+						</main>
+					</div>
+				</div>
+			</FilterProvider>
+		</DateRangeProvider>
+	);
+}

@@ -1,8 +1,8 @@
 import type { IngestSessionInput } from "@rudel/api-routes";
 import type { Ingestor } from "@rudel/ch-schema";
 import {
-	type FlickClaudeSessionsRow,
-	ingestFlickClaudeSessions,
+	ingestRudelClaudeSessions,
+	type RudelClaudeSessionsRow,
 } from "@rudel/ch-schema";
 
 interface IngestContext {
@@ -13,7 +13,7 @@ interface IngestContext {
 export function buildSessionRow(
 	input: IngestSessionInput,
 	context: IngestContext,
-): FlickClaudeSessionsRow {
+): RudelClaudeSessionsRow {
 	const now = new Date().toISOString().replace("Z", "");
 
 	const subagents: Record<string, string> = {};
@@ -54,5 +54,5 @@ export async function ingestSession(
 	context: IngestContext,
 ): Promise<void> {
 	const row = buildSessionRow(input, context);
-	await ingestFlickClaudeSessions(ingestor, [row]);
+	await ingestRudelClaudeSessions(ingestor, [row]);
 }

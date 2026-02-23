@@ -8,16 +8,31 @@
 	},
 	"scripts": {
 		"check-types": "tsc --noEmit",
-		"test": "bun test"
+		"test": "bun test",
+		"ch:generate": "doppler run --project rudel --config ci -- bun --bun chkit generate",
+		"ch:generate:dryrun": "doppler run --project rudel --config ci -- bun --bun chkit generate --dryrun",
+		"ch:migrate": "doppler run --project rudel --config ci -- bash -c 'CLICKHOUSE_DB=default bun --bun chkit migrate --apply'",
+		"ch:migrate:prd": "doppler run --project rudel --config prd -- bash -c 'CLICKHOUSE_DB=default bun --bun chkit migrate --apply'",
+		"ch:status": "doppler run --project rudel --config ci -- bash -c 'CLICKHOUSE_DB=default bun --bun chkit status'",
+		"ch:status:prd": "doppler run --project rudel --config prd -- bash -c 'CLICKHOUSE_DB=default bun --bun chkit status'",
+		"ch:codegen": "doppler run --project rudel --config ci -- bun --bun chkit codegen",
+		"ch:drift": "doppler run --project rudel --config ci -- bash -c 'CLICKHOUSE_DB=default bun --bun chkit drift'",
+		"ch:query": "doppler run --project rudel --config ci -- bash -c 'curl -sk \"${CLICKHOUSE_URL}/?user=${CLICKHOUSE_USERNAME}&password=${CLICKHOUSE_PASSWORD}\" --data-binary @\"$1\"' --",
+		"ch:describe": "doppler run --project rudel --config ci -- bash -c 'curl -sk \"${CLICKHOUSE_URL}/?user=${CLICKHOUSE_USERNAME}&password=${CLICKHOUSE_PASSWORD}\" --data-binary \"DESCRIBE $1 FORMAT Pretty\"' --",
+		"chcli": "doppler run --project rudel --config ci -- bash -c 'CLICKHOUSE_HOST=${CLICKHOUSE_URL#https://} CLICKHOUSE_USER=$CLICKHOUSE_USERNAME CLICKHOUSE_SECURE=true CLICKHOUSE_PORT=443 chcli \"$@\"' --",
+		"chcli:prd": "doppler run --project rudel --config prd -- bash -c 'CLICKHOUSE_HOST=${CLICKHOUSE_URL#https://} CLICKHOUSE_USER=$CLICKHOUSE_USERNAME CLICKHOUSE_SECURE=true CLICKHOUSE_PORT=443 chcli \"$@\"' --"
 	},
 	"dependencies": {
 		"@chkit/clickhouse": "0.1.0-beta.7",
+		"@chkit/codegen": "0.1.0-beta.7",
 		"@chkit/core": "0.1.0-beta.7",
-		"@chkit/plugin-pull": "0.1.0-beta.7",
 		"@chkit/plugin-codegen": "0.1.0-beta.7",
+		"@chkit/plugin-pull": "0.1.0-beta.7",
+		"chkit": "0.1.0-beta.7",
 		"zod": "^3.24.0"
 	},
 	"devDependencies": {
+		"@obsessiondb/chcli": "^0.1.1-beta.4",
 		"@rudel/typescript-config": "workspace:*",
 		"bun-types": "latest",
 		"typescript": "5.9.2"

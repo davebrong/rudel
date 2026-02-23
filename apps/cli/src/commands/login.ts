@@ -71,13 +71,15 @@ async function runLogin(flags: {
 	write(`If the browser doesn't open, visit: ${loginUrl}`);
 
 	// Open browser
-	const opener =
-		process.platform === "darwin"
-			? "open"
-			: process.platform === "win32"
-				? "start"
-				: "xdg-open";
-	Bun.spawn([opener, loginUrl], { stdout: "ignore", stderr: "ignore" });
+	if (process.platform === "win32") {
+		Bun.spawn(["cmd", "/c", "start", "", loginUrl], {
+			stdout: "ignore",
+			stderr: "ignore",
+		});
+	} else {
+		const opener = process.platform === "darwin" ? "open" : "xdg-open";
+		Bun.spawn([opener, loginUrl], { stdout: "ignore", stderr: "ignore" });
+	}
 
 	// Wait for callback with timeout
 	const timeout = setTimeout(() => {

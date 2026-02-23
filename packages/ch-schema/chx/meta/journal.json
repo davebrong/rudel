@@ -2,9 +2,9 @@
 	"version": 1,
 	"applied": [
 		{
-			"name": "20260213092427_auto.sql",
-			"appliedAt": "2026-02-13T09:29:31.467Z",
-			"checksum": "605a7e5235d66757f5ad18b5d25ff3c1cd0d67db060850b3a9307dce16d16822"
+			"name": "20260220190421_auto.sql",
+			"appliedAt": "2026-02-22T06:41:16.058Z",
+			"checksum": "5f0a659c576d08ffcf65e731497a5a35f7c794e81e809fa9a141cca707e88a1c"
 		}
 	]
 }

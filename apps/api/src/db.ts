@@ -1,7 +1,11 @@
-import Database from "bun:sqlite";
 import * as schema from "@rudel/sql-schema";
-import { drizzle } from "drizzle-orm/bun-sqlite";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
-const sqlite = new Database(process.env.DATABASE_PATH ?? "data/auth.sqlite");
+const connectionString = process.env.PG_CONNECTION_STRING;
+if (!connectionString) {
+	throw new Error("PG_CONNECTION_STRING environment variable is required");
+}
 
-export const db = drizzle(sqlite, { schema });
+const client = postgres(connectionString);
+export const db = drizzle(client, { schema });

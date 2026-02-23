@@ -1,21 +1,8 @@
 import { join } from "node:path";
 import { RPCHandler } from "@orpc/server/fetch";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { createAuth } from "./auth.js";
 import { db } from "./db.js";
 import { router } from "./router.js";
-
-const migrationsFolder = join(
-	import.meta.dir,
-	"..",
-	"..",
-	"..",
-	"packages",
-	"sql-schema",
-	"db",
-	"migrations",
-);
-migrate(db, { migrationsFolder });
 
 const socialProviders: Record<
 	string,
@@ -67,7 +54,7 @@ function corsHeaders(origin: string | null): Record<string, string> {
 
 const port = process.env.PORT ?? 4010;
 
-Bun.serve({
+const server = Bun.serve({
 	port,
 	async fetch(request) {
 		const origin = request.headers.get("Origin");
@@ -78,6 +65,11 @@ Bun.serve({
 		}
 
 		const url = new URL(request.url);
+
+		// Health check for Fly.io (must be GET-accessible)
+		if (url.pathname === "/health") {
+			return Response.json({ status: "ok", timestamp: Date.now() });
+		}
 
 		if (url.pathname === "/api/cli-token") {
 			const session = await auth.api.getSession({
@@ -109,6 +101,11 @@ Bun.serve({
 		});
 
 		if (matched) {
+			// Log 500 errors for debugging
+			if (response.status >= 500) {
+				const body = await response.clone().text();
+				console.error(`[RPC ${url.pathname}] ${response.status}:`, body);
+			}
 			for (const [key, value] of Object.entries(cors)) {
 				response.headers.set(key, value);
 			}
@@ -142,4 +139,4 @@ async function getContext(request: Request) {
 	};
 }
 
-console.log(`API server listening on http://localhost:${port}`);
+console.log(`API server listening on http://localhost:${server.port}`);

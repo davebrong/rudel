@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, test } from "bun:test";
 import { createClickHouseExecutor } from "@chkit/clickhouse";
-import { ingestFlickClaudeSessions } from "../generated/chkit-ingest.js";
-import type { FlickClaudeSessionsRow } from "../generated/chkit-types.js";
+import { ingestRudelClaudeSessions } from "../generated/chkit-ingest.js";
+import type { RudelClaudeSessionsRow } from "../generated/chkit-types.js";
 
 const testId = `test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -68,13 +68,13 @@ async function insertWithRetry(
 
 afterAll(() => {
 	executor
-		.execute(`DELETE FROM flick.claude_sessions WHERE session_id = '${testId}'`)
+		.execute(`DELETE FROM rudel.claude_sessions WHERE session_id = '${testId}'`)
 		.catch(() => {});
 });
 
-describe("ingestFlickClaudeSessions", () => {
+describe("ingestRudelClaudeSessions", () => {
 	const now = new Date().toISOString().replace("Z", "");
-	const row: FlickClaudeSessionsRow = {
+	const row: RudelClaudeSessionsRow = {
 		session_date: now,
 		last_interaction_date: now,
 		session_id: testId,
@@ -100,10 +100,10 @@ describe("ingestFlickClaudeSessions", () => {
 
 	test("inserts a row and reads it back", async () => {
 		const results = (await insertWithRetry(
-			() => ingestFlickClaudeSessions(executor, [row]),
+			() => ingestRudelClaudeSessions(executor, [row]),
 			() =>
 				waitForQuery<{ session_id: string; tag: string }>(
-					`SELECT session_id, tag FROM flick.claude_sessions WHERE session_id = '${testId}' LIMIT 1`,
+					`SELECT session_id, tag FROM rudel.claude_sessions WHERE session_id = '${testId}' LIMIT 1`,
 				),
 		)) as Array<{ session_id: string; tag: string }>;
 
@@ -116,9 +116,9 @@ describe("ingestFlickClaudeSessions", () => {
 		const badRow = {
 			...row,
 			input_tokens: 999,
-		} as unknown as FlickClaudeSessionsRow;
+		} as unknown as RudelClaudeSessionsRow;
 		expect(
-			ingestFlickClaudeSessions(executor, [badRow], { validate: true }),
+			ingestRudelClaudeSessions(executor, [badRow], { validate: true }),
 		).rejects.toThrow();
 	});
 });

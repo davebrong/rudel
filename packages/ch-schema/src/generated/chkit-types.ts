@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 
-export interface FlickClaudeSessionsRow {
+export interface RudelClaudeSessionsRow {
 	session_date: string;
 	last_interaction_date: string;
 	session_id: string;
@@ -27,7 +27,7 @@ export interface FlickClaudeSessionsRow {
 	tag: string | null;
 }
 
-export const FlickClaudeSessionsRowSchema = z.object({
+export const RudelClaudeSessionsRowSchema = z.object({
 	session_date: z.string(),
 	last_interaction_date: z.string(),
 	session_id: z.string(),
@@ -51,9 +51,94 @@ export const FlickClaudeSessionsRowSchema = z.object({
 	tag: z.string().nullable(),
 });
 
-export type FlickClaudeSessionsRowInput = z.input<
-	typeof FlickClaudeSessionsRowSchema
+export type RudelClaudeSessionsRowInput = z.input<
+	typeof RudelClaudeSessionsRowSchema
 >;
-export type FlickClaudeSessionsRowOutput = z.output<
-	typeof FlickClaudeSessionsRowSchema
+export type RudelClaudeSessionsRowOutput = z.output<
+	typeof RudelClaudeSessionsRowSchema
+>;
+
+export interface RudelSessionAnalyticsRow {
+	session_date: string;
+	last_interaction_date: string;
+	session_id: string;
+	organization_id: string;
+	project_path: string;
+	repository: string | null;
+	content: string;
+	subagents: Record<string, string>;
+	skills: string[];
+	slash_commands: string[];
+	subagent_types: string[];
+	ingested_at: string;
+	user_id: string;
+	git_branch: string | null;
+	git_sha: string | null;
+	input_tokens: string;
+	output_tokens: string;
+	cache_read_input_tokens: string;
+	cache_creation_input_tokens: string;
+	total_tokens: string;
+	tag: string | null;
+	total_interactions: number;
+	actual_duration_min: number;
+	avg_period_sec: number;
+	median_period_sec: number;
+	quick_responses: number;
+	normal_responses: number;
+	long_pauses: number;
+	error_count: number;
+	model_used: string;
+	has_commit: number;
+	session_archetype: string;
+	success_score: number;
+	used_plan_mode: number;
+	inference_duration_sec: number;
+	human_duration_sec: number;
+}
+
+export const RudelSessionAnalyticsRowSchema = z.object({
+	session_date: z.string(),
+	last_interaction_date: z.string(),
+	session_id: z.string(),
+	organization_id: z.string(),
+	project_path: z.string(),
+	repository: z.string().nullable(),
+	content: z.string(),
+	subagents: z.record(z.string(), z.string()),
+	skills: z.array(z.string()),
+	slash_commands: z.array(z.string()),
+	subagent_types: z.array(z.string()),
+	ingested_at: z.string(),
+	user_id: z.string(),
+	git_branch: z.string().nullable(),
+	git_sha: z.string().nullable(),
+	input_tokens: z.string(),
+	output_tokens: z.string(),
+	cache_read_input_tokens: z.string(),
+	cache_creation_input_tokens: z.string(),
+	total_tokens: z.string(),
+	tag: z.string().nullable(),
+	total_interactions: z.number(),
+	actual_duration_min: z.number(),
+	avg_period_sec: z.number(),
+	median_period_sec: z.number(),
+	quick_responses: z.number(),
+	normal_responses: z.number(),
+	long_pauses: z.number(),
+	error_count: z.number(),
+	model_used: z.string(),
+	has_commit: z.number(),
+	session_archetype: z.string(),
+	success_score: z.number(),
+	used_plan_mode: z.number(),
+	inference_duration_sec: z.number(),
+	human_duration_sec: z.number(),
+});
+
+export type RudelSessionAnalyticsRowInput = z.input<
+	typeof RudelSessionAnalyticsRowSchema
+>;
+export type RudelSessionAnalyticsRowOutput = z.output<
+	typeof RudelSessionAnalyticsRowSchema
 >;

@@ -23,7 +23,7 @@ const sampleContext = {
 };
 
 describe("buildSessionRow", () => {
-	test("maps all fields from input to FlickClaudeSessionsRow", () => {
+	test("maps all fields from input to RudelClaudeSessionsRow", () => {
 		const row = buildSessionRow(sampleInput, sampleContext);
 
 		expect(row.session_id).toBe("test-session-abc");
@@ -100,9 +100,7 @@ const baseExecutor = createClickHouseExecutor({
 const executor: typeof baseExecutor = {
 	...baseExecutor,
 	async insert(params) {
-		const rows = params.values
-			.map((r: Record<string, unknown>) => JSON.stringify(r))
-			.join("\n");
+		const rows = params.values.map((r) => JSON.stringify(r)).join("\n");
 		await baseExecutor.execute(
 			`INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
 		);
@@ -112,7 +110,7 @@ const executor: typeof baseExecutor = {
 afterAll(() => {
 	// Fire-and-forget: ClickHouse Cloud DELETE mutations are slow
 	executor
-		.execute(`DELETE FROM flick.claude_sessions WHERE session_id = '${testId}'`)
+		.execute(`DELETE FROM rudel.claude_sessions WHERE session_id = '${testId}'`)
 		.catch(() => {});
 });
 
@@ -141,7 +139,7 @@ async function waitForRow(
 				user_id: string;
 				organization_id: string;
 			}>(
-				`SELECT session_id, project_path, repository, tag, user_id, organization_id FROM flick.claude_sessions WHERE session_id = '${sessionId}' LIMIT 1`,
+				`SELECT session_id, project_path, repository, tag, user_id, organization_id FROM rudel.claude_sessions WHERE session_id = '${sessionId}' LIMIT 1`,
 			);
 			if (results.length > 0) return results;
 		} catch {
