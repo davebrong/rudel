@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "35c105b3ee89",
+  "session_id": "f0a115c7-474c-493d-ac51-9606f464391f",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-23T01:05:30.181768Z",
+  "branch": "marc/num-6529-run-locally-with-everything-fresh",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md",
+    "Dockerfile",
+    "README.md",
+    "docker-compose.yml",
+    "docs/self-hosting.md",
+    "package.json",
+    "scripts/dev-local.sh",
+    "scripts/init-clickhouse-local.sql"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 51,
+    "cache_creation_tokens": 74147,
+    "cache_read_tokens": 909064,
+    "output_tokens": 241,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-23T01:05:29.926509Z",
+    "agent_lines": 288,
+    "human_added": 369,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 657,
+    "agent_percentage": 43.83561643835616
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-istanbul/f0a115c7-474c-493d-ac51-9606f464391f.jsonl"
+}

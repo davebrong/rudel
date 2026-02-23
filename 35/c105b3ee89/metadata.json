@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "35c105b3ee89",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6529-run-locally-with-everything-fresh",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md",
+    "Dockerfile",
+    "README.md",
+    "docker-compose.yml",
+    "docs/self-hosting.md",
+    "package.json",
+    "scripts/dev-local.sh",
+    "scripts/init-clickhouse-local.sql"
+  ],
+  "sessions": [
+    {
+      "metadata": "/35/c105b3ee89/0/metadata.json",
+      "transcript": "/35/c105b3ee89/0/full.jsonl",
+      "context": "/35/c105b3ee89/0/context.md",
+      "content_hash": "/35/c105b3ee89/0/content_hash.txt",
+      "prompt": "/35/c105b3ee89/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 51,
+    "cache_creation_tokens": 74147,
+    "cache_read_tokens": 909064,
+    "output_tokens": 241,
+    "api_call_count": 21
+  }
+}
