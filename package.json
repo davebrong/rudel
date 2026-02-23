@@ -12,7 +12,10 @@
 		"test:env": "doppler run --project rudel --config ci -- bun run test",
 		"verify": "doppler run --project rudel --config ci -- turbo run lint check-types test build",
 		"release:cli": "bun run ./scripts/release-cli.ts",
-		"deploy": "turbo run build"
+		"deploy": "turbo run build",
+		"dev:local": "bash scripts/dev-local.sh",
+		"infra:up": "docker compose up -d",
+		"infra:down": "docker compose down"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.0",

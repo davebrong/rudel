@@ -47,13 +47,20 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 | `APP_URL` | No | API base URL (default: `http://localhost:4010`) |
 | `ALLOWED_ORIGIN` | No | CORS origin (default: `http://localhost:4011`) |
 
-## Self-Hosting
+## Local Development
 
 ```bash
-docker compose up
+bun install
+bun run dev:local
 ```
 
-This starts Postgres, ClickHouse, and the Rudel server. Everything works with zero external accounts.
+This starts local Postgres + ClickHouse via Docker, runs migrations, and launches the API (`:4010`) and web app (`:4011`). No Doppler or external accounts required.
+
+Manage containers separately: `bun run infra:up` / `bun run infra:down`.
+
+## Self-Hosting
+
+See [docs/self-hosting.md](docs/self-hosting.md) for deploying with ObsessionDB + Neon + Fly.io.
 
 ## Secrets Management (Doppler)
 
