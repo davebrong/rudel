@@ -66,6 +66,11 @@ const server = Bun.serve({
 
 		const url = new URL(request.url);
 
+		// Health check for Fly.io (must be GET-accessible)
+		if (url.pathname === "/health") {
+			return Response.json({ status: "ok", timestamp: Date.now() });
+		}
+
 		if (url.pathname === "/api/cli-token") {
 			const session = await auth.api.getSession({
 				headers: request.headers,
