@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "e59ea2d41282",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/social-profile-pic",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/router.ts",
+    "apps/web/src/components/analytics/Sidebar.tsx",
+    "apps/web/src/components/ui/avatar.tsx",
+    "packages/api-routes/src/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e5/9ea2d41282/0/metadata.json",
+      "transcript": "/e5/9ea2d41282/0/full.jsonl",
+      "context": "/e5/9ea2d41282/0/context.md",
+      "content_hash": "/e5/9ea2d41282/0/content_hash.txt",
+      "prompt": "/e5/9ea2d41282/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 49,
+    "cache_creation_tokens": 51076,
+    "cache_read_tokens": 647892,
+    "output_tokens": 80,
+    "api_call_count": 18
+  }
+}
