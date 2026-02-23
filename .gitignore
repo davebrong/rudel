@@ -40,14 +40,5 @@ coverage/
 # Vercel
 .vercel
 
-# SQLite
-data/
-*.sqlite
-*.sqlite-journal
-
-# Wrangler
-.wrangler/
-.dev.vars
-
 # Misc
 *.pem
