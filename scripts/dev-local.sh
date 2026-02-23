@@ -12,6 +12,7 @@ PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/rudel \
 export PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/rudel
 export BETTER_AUTH_SECRET=local-dev-secret
 export CLICKHOUSE_URL=http://localhost:8123
+export APP_URL=http://localhost:4011
 
 # Run API and Web in parallel, kill both on Ctrl+C
 bun --watch apps/api/src/index.ts &

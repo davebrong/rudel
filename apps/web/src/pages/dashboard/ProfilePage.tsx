@@ -1,4 +1,4 @@
-import { Github, LogOut, Mail, User } from "lucide-react";
+import { Github, Loader2, LogOut, Mail, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
@@ -7,7 +7,7 @@ import { authClient } from "../../lib/auth-client";
 
 interface Account {
 	id: string;
-	provider: string;
+	providerId: string;
 }
 
 const providers = [
@@ -19,6 +19,7 @@ export function ProfilePage() {
 	const { data: session } = authClient.useSession();
 	const [accounts, setAccounts] = useState<readonly Account[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
 
 	useEffect(() => {
 		authClient
@@ -31,7 +32,7 @@ export function ProfilePage() {
 			.finally(() => setLoading(false));
 	}, []);
 
-	const linkedProviders = new Set(accounts.map((a) => a.provider));
+	const linkedProviders = new Set(accounts.map((a) => a.providerId));
 
 	return (
 		<div className="px-8 py-6">
@@ -122,13 +123,18 @@ export function ProfilePage() {
 											<Button
 												variant="outline"
 												size="xs"
-												onClick={() =>
+												disabled={linkingProvider !== null}
+												onClick={() => {
+													setLinkingProvider(provider.id);
 													authClient.linkSocial({
 														provider: provider.id,
-														callbackURL: "/dashboard/profile",
-													})
-												}
+														callbackURL: `${window.location.origin}/dashboard/profile`,
+													});
+												}}
 											>
+												{linkingProvider === provider.id && (
+													<Loader2 className="h-3 w-3 animate-spin" />
+												)}
 												Link
 											</Button>
 										)}
