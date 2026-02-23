@@ -49,14 +49,51 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 
 ## Local Development
 
+There are two ways to run the app locally:
+
+### 1. Standalone (local infra)
+
+Uses Docker containers for Postgres and ClickHouse. No Doppler or external accounts required. Good for working on auth, UI, or API logic without needing real data.
+
 ```bash
 bun install
 bun run dev:local
 ```
 
-This starts local Postgres + ClickHouse via Docker, runs migrations, and launches the API (`:4010`) and web app (`:4011`). No Doppler or external accounts required.
+This runs `scripts/dev-local.sh`, which:
+1. Starts local Postgres + ClickHouse via Docker Compose (`docker compose up -d --wait`)
+2. Runs Postgres migrations
+3. Launches the API (`:4010`) and web app (`:4011`) in parallel
+
+Environment is hardcoded in the script: local Postgres (`postgres://postgres:postgres@localhost:5432/rudel`), local ClickHouse (`http://localhost:8123`), and a static auth secret. Social login (Google/GitHub) is not available in this mode since there are no OAuth client credentials.
 
 Manage containers separately: `bun run infra:up` / `bun run infra:down`.
+
+### 2. Dev (production databases)
+
+Connects to production Neon Postgres and ObsessionDB ClickHouse via the `prd_local` Doppler config. Runs API + web locally but with real data. Requires Doppler access.
+
+```bash
+bun install
+
+# Terminal 1: API
+doppler run --project rudel --config prd_local -- bun --watch apps/api/src/index.ts
+
+# Terminal 2: Web
+bun run --cwd apps/web dev
+```
+
+The `prd_local` Doppler config sets `APP_URL=http://localhost:4010` and `ALLOWED_ORIGIN=http://localhost:4011` so it routes to local servers, but `PG_CONNECTION_STRING` and `CLICKHOUSE_*` vars point to production databases. GitHub OAuth is configured in this mode (`GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` are set).
+
+The web app's Vite config proxies `/api` and `/rpc` requests to `http://localhost:4010`, so the web dev server only needs to be started with `bun run --cwd apps/web dev` (no Doppler needed for the frontend).
+
+Alternatively, the API has a convenience script:
+
+```bash
+bun run --cwd apps/api dev:env
+```
+
+This runs `doppler run --project rudel --config prd_local -- bun --watch src/index.ts`.
 
 ## Self-Hosting
 
@@ -68,7 +105,8 @@ This project uses Doppler for secrets. Project: `rudel`.
 
 | Config | Database | Use for |
 |--------|----------|---------|
-| `prd` | Production | Running the app locally, ClickHouse queries & data exploration |
+| `prd` | Production | ClickHouse queries, data exploration, deployed app |
+| `prd_local` | Production | Local dev with real data (localhost URLs, production databases) |
 | `ci` | CI/test | Running tests locally (`bun run verify`) |
 
 ### Injecting secrets
@@ -232,7 +270,7 @@ The generated `RudelSessionAnalyticsRow` type includes both source columns (from
 ### Local development shortcuts
 
 ```bash
-# Run API with CI database
+# Run API with production databases (prd_local Doppler config)
 bun run --cwd apps/api dev:env
 
 # Run tests locally

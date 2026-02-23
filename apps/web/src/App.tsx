@@ -9,6 +9,7 @@ import { DevelopersListPage } from "./pages/dashboard/DevelopersListPage";
 import { ErrorsPage } from "./pages/dashboard/ErrorsPage";
 import { LearningsPage } from "./pages/dashboard/LearningsPage";
 import { OverviewPage } from "./pages/dashboard/OverviewPage";
+import { ProfilePage } from "./pages/dashboard/ProfilePage";
 import { ProjectDetailPage } from "./pages/dashboard/ProjectDetailPage";
 import { ProjectsListPage } from "./pages/dashboard/ProjectsListPage";
 import { ROIPage } from "./pages/dashboard/ROIPage";
@@ -91,6 +92,7 @@ function App() {
 				<Route path="roi" element={<ROIPage />} />
 				<Route path="errors" element={<ErrorsPage />} />
 				<Route path="learnings" element={<LearningsPage />} />
+				<Route path="profile" element={<ProfilePage />} />
 			</Route>
 			<Route path="*" element={<Navigate to="/dashboard" replace />} />
 		</Routes>

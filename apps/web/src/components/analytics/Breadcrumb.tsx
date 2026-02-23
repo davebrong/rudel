@@ -9,6 +9,7 @@ const segmentLabels: Record<string, string> = {
 	sessions: "Sessions",
 	learnings: "Learnings",
 	errors: "Errors",
+	profile: "Profile",
 };
 
 export function Breadcrumb() {

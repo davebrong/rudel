@@ -8,10 +8,12 @@ import {
 	DollarSign,
 	FolderKanban,
 	LayoutDashboard,
+	User,
 	UserCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { authClient } from "../../lib/auth-client";
 import { cn } from "../../lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -31,6 +33,7 @@ const navigation = [
 
 export function Sidebar() {
 	const { pathname } = useLocation();
+	const { data: session } = authClient.useSession();
 	const [collapsed, setCollapsed] = useState(false);
 
 	return (
@@ -83,6 +86,42 @@ export function Sidebar() {
 					);
 				})}
 			</nav>
+
+			<div className="px-2 pb-1">
+				<div className="relative group">
+					<Link
+						to="/dashboard/profile"
+						className={cn(
+							"flex items-center gap-2 rounded-lg px-2 py-2 text-[0.8125rem] font-medium transition-colors duration-150",
+							collapsed && "justify-center",
+							pathname === "/dashboard/profile"
+								? "bg-hover text-heading"
+								: "text-muted hover:bg-hover hover:text-foreground",
+						)}
+					>
+						{session?.user.image ? (
+							<img
+								src={session.user.image}
+								alt=""
+								className="h-4 w-4 rounded-full shrink-0"
+							/>
+						) : (
+							<User className="h-4 w-4 shrink-0" />
+						)}
+						{!collapsed && (
+							<span className="whitespace-nowrap overflow-hidden text-ellipsis">
+								{session?.user.name ?? "Profile"}
+							</span>
+						)}
+					</Link>
+
+					{collapsed && (
+						<div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 rounded-md bg-heading text-surface text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-50">
+							{session?.user.name ?? "Profile"}
+						</div>
+					)}
+				</div>
+			</div>
 
 			<div
 				className={cn(
