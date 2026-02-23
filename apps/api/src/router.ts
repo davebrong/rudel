@@ -15,6 +15,7 @@ const me = os.me.use(authMiddleware).handler(({ context }) => {
 		id: context.user.id,
 		email: context.user.email,
 		name: context.user.name,
+		image: context.user.image ?? null,
 	};
 });
 
