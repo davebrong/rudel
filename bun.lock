@@ -6,7 +6,6 @@
       "name": "melbourne",
       "dependencies": {
         "postgres": "^3.4.8",
-        "rudel": "^0.1.4",
       },
       "devDependencies": {
         "@biomejs/biome": "^2.4.0",
