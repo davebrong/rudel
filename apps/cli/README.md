@@ -63,4 +63,4 @@ Clear stored credentials.
 ## Links
 
 - **Web App**: [app.rudel.ai](https://app.rudel.ai)
-- **Issues**: [GitHub Issues](https://github.com/KeKs0r/kinshasa/issues)
+- **Issues**: [GitHub Issues](https://github.com/obsessiondb/rudel/issues)

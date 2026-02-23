@@ -55,6 +55,8 @@ There are two ways to run the app locally:
 
 Uses Docker containers for Postgres and ClickHouse. No Doppler or external accounts required. Good for working on auth, UI, or API logic without needing real data.
 
+**Prerequisites**: Docker (or [OrbStack](https://orbstack.dev)) must be installed and running.
+
 ```bash
 bun install
 bun run dev:local
@@ -65,9 +67,11 @@ This runs `scripts/dev-local.sh`, which:
 2. Runs Postgres migrations
 3. Launches the API (`:4010`) and web app (`:4011`) in parallel
 
-Environment is hardcoded in the script: local Postgres (`postgres://postgres:postgres@localhost:5432/rudel`), local ClickHouse (`http://localhost:8123`), and a static auth secret. Social login (Google/GitHub) is not available in this mode since there are no OAuth client credentials.
+Open **http://localhost:4011** in your browser. Sign up with email/password to create a local account. Social login (Google/GitHub) is not available in this mode since there are no OAuth client credentials.
 
-Manage containers separately: `bun run infra:up` / `bun run infra:down`.
+Environment is hardcoded in the script: local Postgres (`postgres://postgres:postgres@localhost:5432/rudel`), local ClickHouse (`http://localhost:8123`, password: `clickhouse`), and a static auth secret.
+
+Manage containers separately: `bun run infra:up` / `bun run infra:down`. To wipe all data and start fresh: `docker compose down -v`.
 
 ### 2. Dev (production databases)
 

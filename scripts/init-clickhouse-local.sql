@@ -71,10 +71,10 @@ CREATE TABLE IF NOT EXISTS rudel.session_analytics
   `used_plan_mode` UInt8 DEFAULT 0,
   `inference_duration_sec` UInt32 DEFAULT 0,
   `human_duration_sec` UInt32 DEFAULT 0,
-  INDEX `idx_model_used` (model_used) TYPE set GRANULARITY 4,
-  INDEX `idx_project_path` (project_path) TYPE set GRANULARITY 4,
-  INDEX `idx_repository` (repository) TYPE set GRANULARITY 4,
-  INDEX `idx_user_id` (user_id) TYPE set GRANULARITY 4
+  INDEX `idx_model_used` (model_used) TYPE set(0) GRANULARITY 4,
+  INDEX `idx_project_path` (project_path) TYPE set(0) GRANULARITY 4,
+  INDEX `idx_repository` (repository) TYPE set(0) GRANULARITY 4,
+  INDEX `idx_user_id` (user_id) TYPE set(0) GRANULARITY 4
 ) ENGINE = ReplacingMergeTree(ingested_at)
 PARTITION BY toYYYYMM(toDate(session_date))
 ORDER BY (`organization_id`, `session_date`, `session_id`)

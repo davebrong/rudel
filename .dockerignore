@@ -1,7 +1,10 @@
 node_modules
 .git
-data
 .turbo
+.context
+data
 dist
 *.md
-.context
+Dockerfile
+docker-compose.yml
+scripts/
