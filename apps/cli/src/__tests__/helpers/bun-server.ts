@@ -14,7 +14,7 @@ export interface TestServer {
  * Migrations run automatically at startup.
  */
 export async function startTestServer(): Promise<TestServer> {
-	const proc = Bun.spawn(["bun", "run", "apps/api/src/index.ts"], {
+	const proc = Bun.spawn(["bun", "apps/api/src/index.ts"], {
 		cwd: MONOREPO_ROOT,
 		stdout: "pipe",
 		stderr: "pipe",
@@ -27,7 +27,19 @@ export async function startTestServer(): Promise<TestServer> {
 		},
 	});
 
+	// Prevent Bun's test runner from tracking and killing this process between tests
+	proc.unref();
+
 	const port = await parseReadyPort(proc);
+
+	// Drain stdout/stderr in the background to prevent pipe buffer deadlock.
+	// Without this, the server blocks if it writes more than the OS pipe buffer (~64KB).
+	if (proc.stdout instanceof ReadableStream) {
+		proc.stdout.pipeTo(new WritableStream()).catch(() => {});
+	}
+	if (proc.stderr instanceof ReadableStream) {
+		proc.stderr.pipeTo(new WritableStream()).catch(() => {});
+	}
 
 	const baseUrl = `http://localhost:${port}`;
 	const rpcUrl = `${baseUrl}/rpc`;
