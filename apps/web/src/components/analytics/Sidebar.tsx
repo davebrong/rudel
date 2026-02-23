@@ -144,14 +144,9 @@ export function Sidebar() {
 					>
 						<Avatar size="sm">
 							{session.user.image && (
-								<AvatarImage
-									src={session.user.image}
-									alt={session.user.name}
-								/>
+								<AvatarImage src={session.user.image} alt={session.user.name} />
 							)}
-							<AvatarFallback>
-								{getInitials(session.user.name)}
-							</AvatarFallback>
+							<AvatarFallback>{getInitials(session.user.name)}</AvatarFallback>
 						</Avatar>
 						{!collapsed && (
 							<>
