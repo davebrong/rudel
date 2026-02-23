@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "41b279165030",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/fly-deployment",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "Dockerfile",
+    "apps/api/src/index.ts",
+    "fly.toml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/41/b279165030/0/metadata.json",
+      "transcript": "/41/b279165030/0/full.jsonl",
+      "context": "/41/b279165030/0/context.md",
+      "content_hash": "/41/b279165030/0/content_hash.txt",
+      "prompt": "/41/b279165030/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 64,
+    "cache_creation_tokens": 76866,
+    "cache_read_tokens": 3054667,
+    "output_tokens": 703,
+    "api_call_count": 60
+  }
+}
