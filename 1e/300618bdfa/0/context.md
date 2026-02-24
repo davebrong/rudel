@@ -65,3 +65,14 @@ The user has attached these files. Read them before proceeding.
 
 Create a PR
 
+### Prompt 9
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- /Users/marc/conductor/workspaces/rudel/mogadishu/.context/attachments/verify_64628362086.log
+</system_instruction>
+
+
+
+Fix the failing CI actions. I've attached the failure logs.
+

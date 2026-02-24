@@ -3,7 +3,7 @@
   "checkpoint_id": "1e300618bdfa",
   "strategy": "manual-commit",
   "branch": "KeKs0r/start-dev-servers",
-  "checkpoints_count": 3,
+  "checkpoints_count": 1,
   "files_touched": [
     "apps/web/src/components/analytics/Sidebar.tsx"
   ],
@@ -17,10 +17,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 127,
-    "cache_creation_tokens": 128675,
-    "cache_read_tokens": 1446526,
-    "output_tokens": 292,
-    "api_call_count": 39
+    "input_tokens": 9,
+    "cache_creation_tokens": 18650,
+    "cache_read_tokens": 448048,
+    "output_tokens": 101,
+    "api_call_count": 7
   }
 }
