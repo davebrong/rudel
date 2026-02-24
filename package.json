@@ -35,7 +35,6 @@
 		"@chkit/clickhouse": "0.1.0-beta.7"
 	},
 	"dependencies": {
-		"postgres": "^3.4.8",
-		"rudel": "^0.1.4"
+		"postgres": "^3.4.8"
 	}
 }

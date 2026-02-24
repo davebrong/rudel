@@ -69,6 +69,16 @@
             "command": "entire hooks claude-code session-end"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "RUDEL_API_BASE=http://localhost:4010 bun apps/cli/src/bin/cli.ts hooks claude session-end",
+            "async": true
+          }
+        ]
       }
     ],
     "SessionStart": [

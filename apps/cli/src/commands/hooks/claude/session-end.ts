@@ -56,7 +56,8 @@ async function runSessionEnd(): Promise<void> {
 			subagents: subagents.length > 0 ? subagents : undefined,
 		};
 
-		const endpoint = `${credentials.apiBaseUrl}/rpc`;
+		const apiBase = process.env.RUDEL_API_BASE ?? credentials.apiBaseUrl;
+		const endpoint = `${apiBase}/rpc`;
 		await uploadSession(request, { endpoint, token: credentials.token });
 	} catch {
 		// Swallow all errors — this runs async in the background
