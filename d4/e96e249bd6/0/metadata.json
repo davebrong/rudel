@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "d4e96e249bd6",
+  "session_id": "304adb49-1eeb-4656-be69-1e05d52dc392",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T04:25:49.397273Z",
+  "branch": "release-please-workflow",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/pr-title.yml",
+    ".github/workflows/release.yml",
+    ".release-please-manifest.json",
+    "CLAUDE.md",
+    "apps/cli/src/app.ts",
+    "release-please-config.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 19,
+    "cache_creation_tokens": 50974,
+    "cache_read_tokens": 587103,
+    "output_tokens": 360,
+    "api_call_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T04:25:49.258411Z",
+    "agent_lines": 36,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 52,
+    "total_committed": 36,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/304adb49-1eeb-4656-be69-1e05d52dc392.jsonl"
+}
