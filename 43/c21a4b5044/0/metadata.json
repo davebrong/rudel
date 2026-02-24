@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "43c21a4b5044",
+  "session_id": "7d3888e9-0d88-4ac6-ab51-881a2b0c5747",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T04:01:59.338771Z",
+  "branch": "marc/full-code-review",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/skills/typescript-standards/SKILL.md",
+    "apps/api/src/services/developer.service.ts",
+    "apps/api/src/services/error.service.ts",
+    "apps/api/src/services/learnings.service.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/project.service.ts",
+    "apps/api/src/services/roi.service.ts",
+    "apps/api/src/services/session-analytics.service.ts",
+    "apps/api/src/services/user.service.ts",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx",
+    "packages/api-routes/src/schemas/analytics.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "6d2fb90b-9daf-4603-a557-002c37f9a878",
+  "token_usage": {
+    "input_tokens": 166,
+    "cache_creation_tokens": 431285,
+    "cache_read_tokens": 14219655,
+    "output_tokens": 1120,
+    "api_call_count": 120
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T04:01:57.857193Z",
+    "agent_lines": 179,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 179,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-miami/7d3888e9-0d88-4ac6-ab51-881a2b0c5747.jsonl"
+}
