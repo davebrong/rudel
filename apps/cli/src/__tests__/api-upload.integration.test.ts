@@ -66,10 +66,14 @@ describe("CLI upload to local API", () => {
 	test("full CLI upload via subprocess to local API", async () => {
 		expect(bearerToken).toBeTruthy();
 
+		// Bun's test runner may kill the server between tests ("dangling processes").
+		// Restart it if needed — the port may change.
+		await server.ensureAlive();
+
 		const projectDir = join(tempDir, "cli-e2e-test");
 		await mkdir(projectDir, { recursive: true });
 
-		// Write credentials file so the CLI subprocess can authenticate
+		// Write credentials file using the current server URL (port may have changed)
 		const credDir = join(tempDir, "cli-creds");
 		await mkdir(credDir, { recursive: true });
 		await writeFile(
