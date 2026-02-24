@@ -1,6 +1,12 @@
 export type {
 	AccountInsert,
 	AccountSelect,
+	InvitationInsert,
+	InvitationSelect,
+	MemberInsert,
+	MemberSelect,
+	OrganizationInsert,
+	OrganizationSelect,
 	SessionInsert,
 	SessionSelect,
 	UserInsert,
@@ -10,6 +16,9 @@ export type {
 } from "./schema.js";
 export {
 	account,
+	invitation,
+	member,
+	organization,
 	session,
 	user,
 	verification,

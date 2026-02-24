@@ -20,3 +20,24 @@ export const authMiddleware = os.middleware(async ({ context, next }) => {
 		},
 	});
 });
+
+export const orgMiddleware = os.middleware(async ({ context, next }) => {
+	if (!context.user || !context.session) {
+		throw new ORPCError("UNAUTHORIZED");
+	}
+	const organizationId =
+		(context.session as Record<string, unknown>).activeOrganizationId ??
+		context.user.id;
+	if (!organizationId || typeof organizationId !== "string") {
+		throw new ORPCError("BAD_REQUEST", {
+			message: "No active organization",
+		});
+	}
+	return next({
+		context: {
+			user: context.user,
+			session: context.session,
+			organizationId,
+		},
+	});
+});

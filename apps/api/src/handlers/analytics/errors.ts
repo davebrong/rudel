@@ -1,13 +1,13 @@
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import {
 	getErrorTrends,
 	getTopRecurringErrors,
 } from "../../services/error.service.js";
 
 const topRecurring = os.analytics.errors.topRecurring
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getTopRecurringErrors(context.user.id, {
+		return getTopRecurringErrors(context.organizationId, {
 			days: input.days,
 			min_occurrences: input.minOccurrences,
 			limit: input.limit,
@@ -15,9 +15,9 @@ const topRecurring = os.analytics.errors.topRecurring
 	});
 
 const trends = os.analytics.errors.trends
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getErrorTrends(context.user.id, {
+		return getErrorTrends(context.organizationId, {
 			start_date: input.startDate,
 			end_date: input.endDate,
 			split_by: input.splitBy,

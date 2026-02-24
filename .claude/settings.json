@@ -31,6 +31,15 @@
   "hooks": {
     "PostToolUse": [
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bunx biome format --write \"$CLAUDE_FILE_PATH\""
+          }
+        ]
+      },
+      {
         "matcher": "Task",
         "hooks": [
           {

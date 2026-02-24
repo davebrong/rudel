@@ -1,4 +1,4 @@
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import {
 	getLearningProjects,
 	getLearningsFeed,
@@ -8,9 +8,9 @@ import {
 } from "../../services/learnings.service.js";
 
 const list = os.analytics.learnings.list
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getLearningsFeed(context.user.id, {
+		return getLearningsFeed(context.organizationId, {
 			days: input.days,
 			limit: input.limit,
 			offset: input.offset,
@@ -18,29 +18,29 @@ const list = os.analytics.learnings.list
 	});
 
 const stats = os.analytics.learnings.stats
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getLearningsFeedStats(context.user.id, {
+		return getLearningsFeedStats(context.organizationId, {
 			days: input.days,
 		});
 	});
 
 const users = os.analytics.learnings.users
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ context }) => {
-		return getLearningUsers(context.user.id);
+		return getLearningUsers(context.organizationId);
 	});
 
 const projects = os.analytics.learnings.projects
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ context }) => {
-		return getLearningProjects(context.user.id);
+		return getLearningProjects(context.organizationId);
 	});
 
 const trend = os.analytics.learnings.trend
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getLearningsTrend(context.user.id, {
+		return getLearningsTrend(context.organizationId, {
 			days: input.days,
 			split_by: input.splitBy,
 		});

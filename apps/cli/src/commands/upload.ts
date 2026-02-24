@@ -2,6 +2,7 @@ import { buildCommand } from "@stricli/core";
 import { classifySession } from "../lib/classifier.js";
 import { loadCredentials } from "../lib/credentials.js";
 import { getGitInfo } from "../lib/git-info.js";
+import { getProjectOrgId } from "../lib/project-config.js";
 import { resolveSession } from "../lib/session-resolver.js";
 import { readSubagentFiles } from "../lib/subagent-reader.js";
 import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
@@ -20,6 +21,7 @@ async function runUpload(
 		endpoint: string;
 		classify: boolean;
 		dryRun: boolean;
+		org?: string;
 	},
 	session: string,
 ): Promise<void> {
@@ -94,6 +96,11 @@ async function runUpload(
 		if (tag) write(`Classified as: ${tag}`);
 	}
 
+	// Resolve organization
+	const organizationId =
+		flags.org ?? (await getProjectOrgId(sessionInfo.projectPath));
+	if (organizationId) write(`Organization: ${organizationId}`);
+
 	// Build request
 	const request: IngestRequest = {
 		sessionId: sessionInfo.sessionId,
@@ -104,6 +111,7 @@ async function runUpload(
 		tag,
 		content,
 		subagents: subagents.length > 0 ? subagents : undefined,
+		organizationId,
 	};
 
 	// Upload or dry-run
@@ -172,11 +180,18 @@ export const uploadCommand = buildCommand({
 				brief: "Preview what would be uploaded without sending",
 				default: false,
 			},
+			org: {
+				kind: "parsed",
+				parse: String,
+				brief: "Override the organization ID to upload to",
+				optional: true,
+			},
 		},
 		aliases: {
 			t: "tag",
 			c: "classify",
 			n: "dryRun",
+			o: "org",
 		},
 	},
 	docs: {

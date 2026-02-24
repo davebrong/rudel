@@ -1,4 +1,4 @@
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import {
 	getDeveloperCostBreakdown,
 	getProjectCostBreakdown,
@@ -7,27 +7,27 @@ import {
 } from "../../services/roi.service.js";
 
 const metrics = os.analytics.roi.metrics
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getROIMetrics(context.user.id, input.days);
+		return getROIMetrics(context.organizationId, input.days);
 	});
 
 const trends = os.analytics.roi.trends
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getROITrends(context.user.id, input.days);
+		return getROITrends(context.organizationId, input.days);
 	});
 
 const breakdownDevelopers = os.analytics.roi.breakdownDevelopers
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperCostBreakdown(context.user.id, input.days);
+		return getDeveloperCostBreakdown(context.organizationId, input.days);
 	});
 
 const breakdownProjects = os.analytics.roi.breakdownProjects
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getProjectCostBreakdown(context.user.id, input.days);
+		return getProjectCostBreakdown(context.organizationId, input.days);
 	});
 
 export const roiRouter = os.analytics.roi.router({

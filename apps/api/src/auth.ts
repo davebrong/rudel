@@ -1,7 +1,7 @@
 import * as schema from "@rudel/sql-schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer } from "better-auth/plugins";
+import { bearer, organization } from "better-auth/plugins";
 
 export interface AuthConfig {
 	appURL: string;
@@ -28,11 +28,50 @@ export function createAuth(db: object, config: AuthConfig) {
 			enabled: true,
 		},
 		socialProviders: config.socialProviders,
-		plugins: [bearer()],
+		plugins: [
+			bearer(),
+			organization({
+				allowUserToCreateOrganization: true,
+				creatorRole: "owner",
+			}),
+		],
 		session: {
 			expiresIn: 60 * 60 * 24 * 365,
 		},
 		trustedOrigins,
+		databaseHooks: {
+			user: {
+				create: {
+					after: async (user, ctx) => {
+						const adapter = ctx?.context?.adapter;
+						if (!adapter) return;
+
+						const slug = `${user.email.split("@")[0]}-${user.id.slice(0, 8)}`;
+						const org = await adapter.create({
+							model: "organization",
+							data: {
+								id: user.id,
+								name: `${user.name}'s Workspace`,
+								slug,
+								createdAt: new Date(),
+							},
+						});
+
+						if (org) {
+							await adapter.create({
+								model: "member",
+								data: {
+									organizationId: org.id,
+									userId: user.id,
+									role: "owner",
+									createdAt: new Date(),
+								},
+							});
+						}
+					},
+				},
+			},
+		},
 	});
 }
 

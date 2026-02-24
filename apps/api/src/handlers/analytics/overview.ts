@@ -1,4 +1,4 @@
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import {
 	getModelTokensTrend,
 	getOverviewInsights,
@@ -9,39 +9,39 @@ import {
 } from "../../services/overview.service.js";
 
 const kpis = os.analytics.overview.kpis
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getOverviewKPIs(context.user.id, input.days);
+		return getOverviewKPIs(context.organizationId, input.days);
 	});
 
 const usageTrend = os.analytics.overview.usageTrend
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getUsageTrendDetailed(context.user.id, input.days);
+		return getUsageTrendDetailed(context.organizationId, input.days);
 	});
 
 const modelTokensTrend = os.analytics.overview.modelTokensTrend
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getModelTokensTrend(context.user.id, input.days);
+		return getModelTokensTrend(context.organizationId, input.days);
 	});
 
 const insights = os.analytics.overview.insights
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getOverviewInsights(context.user.id, input.days);
+		return getOverviewInsights(context.organizationId, input.days);
 	});
 
 const teamSummaryComparison = os.analytics.overview.teamSummaryComparison
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getTeamSummaryWithComparison(context.user.id, input.days);
+		return getTeamSummaryWithComparison(context.organizationId, input.days);
 	});
 
 const successRate = os.analytics.overview.successRate
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getSuccessRateMetrics(context.user.id, input.days);
+		return getSuccessRateMetrics(context.organizationId, input.days);
 	});
 
 export const overviewRouter = os.analytics.overview.router({

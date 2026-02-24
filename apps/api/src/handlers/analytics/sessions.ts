@@ -1,5 +1,5 @@
 import { ORPCError } from "@orpc/server";
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import {
 	getSessionAnalytics,
 	getSessionAnalyticsSummary,
@@ -16,11 +16,11 @@ const sortByMap: Record<string, "date" | "duration" | "interactions"> = {
 };
 
 const list = os.analytics.sessions.list
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		console.log("[list] orgId:", context.user.id, "days:", input.days);
+		console.log("[list] orgId:", context.organizationId, "days:", input.days);
 		try {
-			const result = await getSessionAnalytics(context.user.id, {
+			const result = await getSessionAnalytics(context.organizationId, {
 				days: input.days,
 				user_id: input.userId,
 				project_path: input.projectPath,
@@ -39,10 +39,10 @@ const list = os.analytics.sessions.list
 	});
 
 const summary = os.analytics.sessions.summary
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
 		try {
-			const result = await getSessionAnalyticsSummary(context.user.id, {
+			const result = await getSessionAnalyticsSummary(context.organizationId, {
 				days: input.days,
 			});
 			console.log("[summary] OK:", JSON.stringify(result));
@@ -54,11 +54,11 @@ const summary = os.analytics.sessions.summary
 	});
 
 const summaryComparison = os.analytics.sessions.summaryComparison
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
 		try {
 			const result = await getSessionAnalyticsSummaryComparison(
-				context.user.id,
+				context.organizationId,
 				{
 					days: input.days,
 				},
@@ -75,9 +75,9 @@ const summaryComparison = os.analytics.sessions.summaryComparison
 	});
 
 const dimensionAnalysis = os.analytics.sessions.dimensionAnalysis
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getSessionDimensionAnalysis(context.user.id, {
+		return getSessionDimensionAnalysis(context.organizationId, {
 			days: input.days,
 			dimension: input.dimension,
 			metric: input.metric,
@@ -89,9 +89,12 @@ const dimensionAnalysis = os.analytics.sessions.dimensionAnalysis
 	});
 
 const detail = os.analytics.sessions.detail
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		const result = await getSessionDetail(context.user.id, input.sessionId);
+		const result = await getSessionDetail(
+			context.organizationId,
+			input.sessionId,
+		);
 		if (!result) {
 			throw new ORPCError("NOT_FOUND");
 		}

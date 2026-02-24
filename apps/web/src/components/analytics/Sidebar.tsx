@@ -1,19 +1,24 @@
 import {
-	Activity,
 	AlertCircle,
 	BookOpen,
+	Building2,
+	Check,
 	ChevronsLeft,
 	ChevronsRight,
+	ChevronsUpDown,
 	Clock,
 	DollarSign,
 	FolderKanban,
 	LayoutDashboard,
 	LogOut,
+	Plus,
+	Settings,
 	User,
 	UserCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useOrganization } from "../../contexts/OrganizationContext";
 import { authClient } from "../../lib/auth-client";
 import { cn } from "../../lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -42,6 +47,94 @@ function getInitials(name: string) {
 		.slice(0, 2);
 }
 
+function OrgSwitcher({ collapsed }: { collapsed: boolean }) {
+	const { activeOrg, organizations, switchOrg } = useOrganization();
+	const [open, setOpen] = useState(false);
+	const ref = useRef<HTMLDivElement>(null);
+
+	const handleSelect = async (orgId: string) => {
+		setOpen(false);
+		if (orgId !== activeOrg?.id) {
+			await switchOrg(orgId);
+		}
+	};
+
+	return (
+		<div ref={ref} className="relative">
+			<button
+				type="button"
+				onClick={() => setOpen(!open)}
+				className={cn(
+					"flex w-full items-center gap-1.5 px-4 h-10 overflow-hidden border-b border-border hover:bg-hover transition-colors",
+					collapsed && "justify-center px-0",
+				)}
+			>
+				<Building2 className="h-4 w-4 shrink-0 text-accent" />
+				{!collapsed && (
+					<>
+						<span className="flex-1 truncate text-left text-sm font-bold text-heading">
+							{activeOrg?.name ?? "Select org"}
+						</span>
+						<ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted" />
+					</>
+				)}
+			</button>
+
+			{open && (
+				<>
+					{/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop overlay */}
+					<div
+						className="fixed inset-0 z-40"
+						onClick={() => setOpen(false)}
+						onKeyDown={() => {}}
+					/>
+					<div
+						className={cn(
+							"absolute z-50 mt-1 w-56 rounded-lg border border-border bg-surface shadow-lg",
+							collapsed ? "left-full top-0 ml-2" : "left-2 right-2 w-auto",
+						)}
+					>
+						<div className="p-1">
+							{organizations.map((org) => (
+								<button
+									key={org.id}
+									type="button"
+									onClick={() => handleSelect(org.id)}
+									className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground hover:bg-hover transition-colors"
+								>
+									<Building2 className="h-3.5 w-3.5 shrink-0 text-muted" />
+									<span className="flex-1 truncate text-left">{org.name}</span>
+									{org.id === activeOrg?.id && (
+										<Check className="h-3.5 w-3.5 shrink-0 text-accent" />
+									)}
+								</button>
+							))}
+						</div>
+						<div className="border-t border-border p-1">
+							<Link
+								to="/dashboard/organization"
+								onClick={() => setOpen(false)}
+								className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted hover:bg-hover hover:text-foreground transition-colors"
+							>
+								<Settings className="h-3.5 w-3.5 shrink-0" />
+								<span>Manage organization</span>
+							</Link>
+							<Link
+								to="/dashboard/organization/new"
+								onClick={() => setOpen(false)}
+								className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted hover:bg-hover hover:text-foreground transition-colors"
+							>
+								<Plus className="h-3.5 w-3.5 shrink-0" />
+								<span>Create organization</span>
+							</Link>
+						</div>
+					</div>
+				</>
+			)}
+		</div>
+	);
+}
+
 export function Sidebar() {
 	const { pathname } = useLocation();
 	const { data: session } = authClient.useSession();
@@ -54,14 +147,7 @@ export function Sidebar() {
 				collapsed ? "w-14" : "w-64",
 			)}
 		>
-			<div className="flex h-10 items-center gap-1.5 px-4 overflow-hidden border-b border-border">
-				<Activity className="h-5 w-5 shrink-0 text-accent" />
-				{!collapsed && (
-					<span className="text-sm font-bold text-heading whitespace-nowrap">
-						Rudel Analytics
-					</span>
-				)}
-			</div>
+			<OrgSwitcher collapsed={collapsed} />
 
 			<nav className="flex-1 px-2 pt-2 pb-1 flex flex-col gap-[1px]">
 				{navigation.map((item) => {

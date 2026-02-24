@@ -31,6 +31,7 @@ export interface IngestRequest {
 	tag?: SessionTag;
 	content: string;
 	subagents?: SubagentFile[];
+	organizationId?: string;
 }
 
 export interface UploadResult {

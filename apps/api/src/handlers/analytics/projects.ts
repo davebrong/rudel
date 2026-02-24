@@ -1,5 +1,5 @@
 import { ORPCError } from "@orpc/server";
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import {
 	getProjectContributors,
 	getProjectDetails,
@@ -10,22 +10,22 @@ import {
 } from "../../services/project.service.js";
 
 const investment = os.analytics.projects.investment
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getProjectInvestment(context.user.id, { days: input.days });
+		return getProjectInvestment(context.organizationId, { days: input.days });
 	});
 
 const trends = os.analytics.projects.trends
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getProjectTrends(context.user.id, input.days);
+		return getProjectTrends(context.organizationId, input.days);
 	});
 
 const details = os.analytics.projects.details
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
 		const result = await getProjectDetails(
-			context.user.id,
+			context.organizationId,
 			input.projectPath,
 			input.days,
 		);
@@ -36,29 +36,33 @@ const details = os.analytics.projects.details
 	});
 
 const contributors = os.analytics.projects.contributors
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
 		return getProjectContributors(
-			context.user.id,
+			context.organizationId,
 			input.projectPath,
 			input.days,
 		);
 	});
 
 const features = os.analytics.projects.features
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
 		return getProjectFeatureUsage(
-			context.user.id,
+			context.organizationId,
 			input.projectPath,
 			input.days,
 		);
 	});
 
 const errors = os.analytics.projects.errors
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getProjectErrors(context.user.id, input.projectPath, input.days);
+		return getProjectErrors(
+			context.organizationId,
+			input.projectPath,
+			input.days,
+		);
 	});
 
 export const projectsRouter = os.analytics.projects.router({

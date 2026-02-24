@@ -1,6 +1,7 @@
 import { buildCommand } from "@stricli/core";
 import { loadCredentials } from "../../../lib/credentials.js";
 import { getGitInfo } from "../../../lib/git-info.js";
+import { getProjectOrgId } from "../../../lib/project-config.js";
 import { readSubagentFiles } from "../../../lib/subagent-reader.js";
 import {
 	extractAgentIds,
@@ -45,6 +46,7 @@ async function runSessionEnd(): Promise<void> {
 				: [];
 
 		const gitInfo = await getGitInfo(input.cwd);
+		const organizationId = await getProjectOrgId(input.cwd);
 
 		const request: IngestRequest = {
 			sessionId: input.session_id,
@@ -54,6 +56,7 @@ async function runSessionEnd(): Promise<void> {
 			gitSha: gitInfo.sha,
 			content,
 			subagents: subagents.length > 0 ? subagents : undefined,
+			organizationId,
 		};
 
 		const apiBase = process.env.RUDEL_API_BASE ?? credentials.apiBaseUrl;

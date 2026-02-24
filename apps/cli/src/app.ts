@@ -4,6 +4,7 @@ import { enableCommand } from "./commands/enable.js";
 import { hooksRouteMap } from "./commands/hooks/index.js";
 import { loginCommand } from "./commands/login.js";
 import { logoutCommand } from "./commands/logout.js";
+import { setOrgCommand } from "./commands/set-org.js";
 import { uploadCommand } from "./commands/upload.js";
 import { whoamiCommand } from "./commands/whoami.js";
 
@@ -15,6 +16,7 @@ const routes = buildRouteMap({
 		upload: uploadCommand,
 		enable: enableCommand,
 		disable: disableCommand,
+		"set-org": setOrgCommand,
 		hooks: hooksRouteMap,
 	},
 	docs: {

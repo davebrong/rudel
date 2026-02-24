@@ -61,6 +61,14 @@ export const UserSchema = z.object({
 	email: z.string(),
 	name: z.string(),
 	image: z.string().nullable(),
+	activeOrganizationId: z.string().nullable(),
+});
+
+export const OrganizationSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	slug: z.string(),
+	logo: z.string().nullable(),
 });
 
 export const SessionTagSchema = z.enum([
@@ -87,6 +95,7 @@ export const IngestSessionInputSchema = z.object({
 	tag: SessionTagSchema.optional(),
 	content: z.string(),
 	subagents: z.array(SubagentFileSchema).optional(),
+	organizationId: z.string().optional(),
 });
 
 export const IngestSessionOutputSchema = z.object({
@@ -99,6 +108,7 @@ export type IngestSessionInput = z.infer<typeof IngestSessionInputSchema>;
 export const contract = {
 	health: oc.output(HealthSchema),
 	me: oc.output(UserSchema),
+	listMyOrganizations: oc.output(z.array(OrganizationSchema)),
 	ingestSession: oc
 		.input(IngestSessionInputSchema)
 		.output(IngestSessionOutputSchema),

@@ -1,5 +1,5 @@
 import { ORPCError } from "@orpc/server";
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import {
 	getDeveloperDetails,
 	getDeveloperErrors,
@@ -12,16 +12,16 @@ import {
 } from "../../services/developer.service.js";
 
 const list = os.analytics.developers.list
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperList(context.user.id, input.days);
+		return getDeveloperList(context.organizationId, input.days);
 	});
 
 const details = os.analytics.developers.details
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
 		const result = await getDeveloperDetails(
-			context.user.id,
+			context.organizationId,
 			input.userId,
 			input.days,
 		);
@@ -32,9 +32,9 @@ const details = os.analytics.developers.details
 	});
 
 const sessions = os.analytics.developers.sessions
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperSessions(context.user.id, input.userId, {
+		return getDeveloperSessions(context.organizationId, input.userId, {
 			days: input.days,
 			project_path: input.projectPath,
 			outcome: input.outcome,
@@ -46,33 +46,45 @@ const sessions = os.analytics.developers.sessions
 	});
 
 const projects = os.analytics.developers.projects
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperProjects(context.user.id, input.userId, input.days);
+		return getDeveloperProjects(
+			context.organizationId,
+			input.userId,
+			input.days,
+		);
 	});
 
 const timeline = os.analytics.developers.timeline
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperTimeline(context.user.id, input.userId, input.days);
+		return getDeveloperTimeline(
+			context.organizationId,
+			input.userId,
+			input.days,
+		);
 	});
 
 const features = os.analytics.developers.features
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperFeatureUsage(context.user.id, input.userId, input.days);
+		return getDeveloperFeatureUsage(
+			context.organizationId,
+			input.userId,
+			input.days,
+		);
 	});
 
 const errors = os.analytics.developers.errors
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperErrors(context.user.id, input.userId, input.days);
+		return getDeveloperErrors(context.organizationId, input.userId, input.days);
 	});
 
 const trends = os.analytics.developers.trends
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getDeveloperTrends(context.user.id, input.days);
+		return getDeveloperTrends(context.organizationId, input.days);
 	});
 
 export const developersRouter = os.analytics.developers.router({

@@ -1,11 +1,6 @@
 import { createInterface } from "node:readline";
 import { buildCommand } from "@stricli/core";
 import { createApiClient } from "../lib/api-client.js";
-import {
-	addHook,
-	getClaudeSettingsPath,
-	isHookEnabled,
-} from "../lib/claude-settings.js";
 import { loadCredentials } from "../lib/credentials.js";
 import { getProjectOrgId, setProjectOrgId } from "../lib/project-config.js";
 
@@ -24,7 +19,7 @@ async function promptChoice(question: string, max: number): Promise<number> {
 	});
 }
 
-async function runEnable(): Promise<void> {
+async function runSetOrg(): Promise<void> {
 	const write = (msg: string) => process.stdout.write(`${msg}\n`);
 	const writeError = (msg: string) => process.stderr.write(`${msg}\n`);
 
@@ -35,7 +30,6 @@ async function runEnable(): Promise<void> {
 		return;
 	}
 
-	// Fetch user's organizations
 	const client = createApiClient(credentials);
 	let orgs: { id: string; name: string; slug: string }[];
 	try {
@@ -54,52 +48,33 @@ async function runEnable(): Promise<void> {
 		return;
 	}
 
-	// Check if already configured for this project
 	const cwd = process.cwd();
-	const existingOrgId = await getProjectOrgId(cwd);
-	const existingOrg = existingOrgId
-		? orgs.find((o) => o.id === existingOrgId)
+	const currentOrgId = await getProjectOrgId(cwd);
+	const currentOrg = currentOrgId
+		? orgs.find((o) => o.id === currentOrgId)
 		: undefined;
 
-	let selectedOrgId: string;
-
-	const [firstOrg] = orgs;
-	if (orgs.length === 1 && firstOrg) {
-		selectedOrgId = firstOrg.id;
-		write(`Using organization: ${firstOrg.name}`);
-	} else if (existingOrg) {
-		write(`Currently configured for: ${existingOrg.name}`);
-		selectedOrgId = existingOrg.id;
-	} else {
-		write("Select an organization for this repository:");
-		for (const [i, org] of orgs.entries()) {
-			write(`  ${i + 1}. ${org.name} (${org.slug})`);
-		}
-		const choice = await promptChoice(
-			`Choice [1-${orgs.length}]: `,
-			orgs.length,
-		);
-		const selected = orgs[choice - 1] ?? orgs[0];
-		if (!selected) return;
-		selectedOrgId = selected.id;
-		write(`Selected: ${selected.name}`);
+	if (currentOrg) {
+		write(`Current organization: ${currentOrg.name} (${currentOrg.slug})`);
 	}
 
-	await setProjectOrgId(cwd, selectedOrgId);
-
-	if (isHookEnabled()) {
-		write("Auto-upload hook is already enabled. Organization updated.");
-		return;
+	write("Select an organization for this repository:");
+	for (const [i, org] of orgs.entries()) {
+		const marker = org.id === currentOrgId ? " (current)" : "";
+		write(`  ${i + 1}. ${org.name} (${org.slug})${marker}`);
 	}
 
-	addHook();
-	write(`Auto-upload hook enabled in ${getClaudeSettingsPath()}`);
+	const choice = await promptChoice(`Choice [1-${orgs.length}]: `, orgs.length);
+	const selected = orgs[choice - 1] ?? orgs[0];
+	if (!selected) return;
+	await setProjectOrgId(cwd, selected.id);
+	write(`Organization set to: ${selected.name}`);
 }
 
-export const enableCommand = buildCommand({
-	loader: async () => ({ default: runEnable }),
+export const setOrgCommand = buildCommand({
+	loader: async () => ({ default: runSetOrg }),
 	parameters: {},
 	docs: {
-		brief: "Enable automatic session upload via Claude Code hook",
+		brief: "Set the organization for the current repository",
 	},
 });

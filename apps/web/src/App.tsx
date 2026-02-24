@@ -4,10 +4,13 @@ import { LoginForm } from "./components/auth/login-form";
 import { SignupForm } from "./components/auth/signup-form";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { authClient } from "./lib/auth-client";
+import { AcceptInvitationPage } from "./pages/AcceptInvitationPage";
+import { CreateOrgPage } from "./pages/dashboard/CreateOrgPage";
 import { DeveloperDetailPage } from "./pages/dashboard/DeveloperDetailPage";
 import { DevelopersListPage } from "./pages/dashboard/DevelopersListPage";
 import { ErrorsPage } from "./pages/dashboard/ErrorsPage";
 import { LearningsPage } from "./pages/dashboard/LearningsPage";
+import { OrganizationPage } from "./pages/dashboard/OrganizationPage";
 import { OverviewPage } from "./pages/dashboard/OverviewPage";
 import { ProfilePage } from "./pages/dashboard/ProfilePage";
 import { ProjectDetailPage } from "./pages/dashboard/ProjectDetailPage";
@@ -81,6 +84,10 @@ function App() {
 	return (
 		<Routes>
 			<Route path="/" element={<Navigate to="/dashboard" replace />} />
+			<Route
+				path="/invitation/:invitationId"
+				element={<AcceptInvitationPage />}
+			/>
 			<Route path="/dashboard" element={<DashboardLayout />}>
 				<Route index element={<OverviewPage />} />
 				<Route path="developers" element={<DevelopersListPage />} />
@@ -93,6 +100,8 @@ function App() {
 				<Route path="errors" element={<ErrorsPage />} />
 				<Route path="learnings" element={<LearningsPage />} />
 				<Route path="profile" element={<ProfilePage />} />
+				<Route path="organization" element={<OrganizationPage />} />
+				<Route path="organization/new" element={<CreateOrgPage />} />
 			</Route>
 			<Route path="*" element={<Navigate to="/dashboard" replace />} />
 		</Routes>

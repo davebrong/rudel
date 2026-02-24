@@ -1,10 +1,10 @@
-import { authMiddleware, os } from "../../middleware.js";
+import { orgMiddleware, os } from "../../middleware.js";
 import { getUserMappings } from "../../services/user.service.js";
 
 const mappings = os.analytics.users.mappings
-	.use(authMiddleware)
+	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getUserMappings(context.user.id, input.days);
+		return getUserMappings(context.organizationId, input.days);
 	});
 
 export const usersRouter = os.analytics.users.router({
