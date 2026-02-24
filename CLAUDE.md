@@ -283,6 +283,25 @@ bun run --cwd apps/api dev:env
 doppler run --project rudel --config ci -- bun run verify
 ```
 
+## Releasing
+
+The CLI (`rudel` on npm) uses Release Please for automated versioning and changelogs, with manual npm publishing (OTP required).
+
+**How it works:**
+
+1. PRs must have conventional commit titles (`feat:`, `fix:`, `chore:`, etc.) — enforced by `.github/workflows/pr-title.yml`
+2. When PRs merge to `main`, Release Please creates/updates a Release PR that accumulates changelog entries and version bumps
+3. Merging the Release PR creates a GitHub Release + tag, and bumps `package.json` + `src/app.ts` versions
+4. After the Release PR merges, publish to npm manually: `bun run --cwd apps/cli build && cd apps/cli && npm publish` (requires OTP)
+
+**Configuration files:**
+
+- `release-please-config.json` — Release Please manifest config (only `apps/cli` is releasable)
+- `.release-please-manifest.json` — tracks current version
+- `apps/cli/src/app.ts` has a `// x-release-please-version` annotation so the hardcoded version stays in sync
+
+**Manual release script:** `scripts/release-cli.ts` can also be used for releases outside the Release Please flow.
+
 ## Pre-Push Checklist
 
 Before pushing and creating a pull request, always run:
