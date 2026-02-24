@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "01597b8af7b2",
+  "strategy": "manual-commit",
+  "branch": "marc/add-verify-to-claude-md",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/01/597b8af7b2/0/metadata.json",
+      "transcript": "/01/597b8af7b2/0/full.jsonl",
+      "context": "/01/597b8af7b2/0/context.md",
+      "content_hash": "/01/597b8af7b2/0/content_hash.txt",
+      "prompt": "/01/597b8af7b2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 95,
+    "cache_creation_tokens": 38844,
+    "cache_read_tokens": 463584,
+    "output_tokens": 34,
+    "api_call_count": 14
+  }
+}
