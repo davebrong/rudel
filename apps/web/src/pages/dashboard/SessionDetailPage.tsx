@@ -25,8 +25,8 @@ export function SessionDetailPage() {
 				</div>
 				<div className="flex-1 p-4">
 					<div className="space-y-4">
-						{[...Array(5)].map((_, i) => (
-							<div key={i} className="h-24 bg-muted animate-pulse rounded" />
+						{["sk-1", "sk-2", "sk-3", "sk-4", "sk-5"].map((id) => (
+							<div key={id} className="h-24 bg-muted animate-pulse rounded" />
 						))}
 					</div>
 				</div>

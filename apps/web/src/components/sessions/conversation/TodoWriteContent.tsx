@@ -21,8 +21,8 @@ export function TodoWriteContent({ todos }: TodoWriteContentProps) {
 				{inProgress > 0 && ` \u00b7 ${inProgress} in progress`}
 			</div>
 			<ul className="space-y-0.5">
-				{todos.map((todo, index) => (
-					<li key={index} className="flex items-start gap-1.5 text-xs">
+				{todos.map((todo) => (
+					<li key={todo.content} className="flex items-start gap-1.5 text-xs">
 						<span className="flex-shrink-0 mt-0.5">
 							{todo.status === "completed" ? (
 								<CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />

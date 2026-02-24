@@ -44,7 +44,7 @@ export function ConversationList({
 
 				if ("summaries" in item) {
 					return (
-						<li key={`summary-group-${index}`}>
+						<li key={`summary-group-${item.summaries[0].summary.slice(0, 32)}`}>
 							<SummaryGroup summaries={item.summaries} />
 						</li>
 					);
@@ -63,7 +63,7 @@ export function ConversationList({
 				}
 
 				return (
-					<li key={"uuid" in item ? item.uuid : index}>
+					<li key={"uuid" in item ? item.uuid : `item-${index}`}>
 						<ConversationItem
 							conversation={item}
 							getToolResult={getToolResult}

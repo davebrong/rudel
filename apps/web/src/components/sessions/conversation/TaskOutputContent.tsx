@@ -220,12 +220,12 @@ function formatAgentOutput(output: string): React.ReactNode {
 
 	return (
 		<div className="space-y-1 font-mono">
-			{lines.map((line, i) => {
+			{lines.map((line) => {
 				const match = line.match(toolCallPattern);
 				if (match) {
 					const [, toolName, params] = match;
 					return (
-						<div key={i} className="flex items-start gap-1.5">
+						<div key={line} className="flex items-start gap-1.5">
 							<span className="text-purple-600 dark:text-purple-400 flex-shrink-0">
 								{toolName}
 							</span>
@@ -234,7 +234,7 @@ function formatAgentOutput(output: string): React.ReactNode {
 					);
 				}
 				return (
-					<div key={i} className="text-muted-foreground">
+					<div key={line} className="text-muted-foreground">
 						{line}
 					</div>
 				);

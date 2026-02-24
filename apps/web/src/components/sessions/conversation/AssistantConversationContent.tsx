@@ -35,12 +35,12 @@ export function AssistantConversationContent({
 				<div className="w-6 flex-shrink-0" />
 			)}
 			<div className="flex-1 min-w-0 space-y-1.5">
-				{entry.message.content.map((block, index) => {
+				{entry.message.content.map((block) => {
 					switch (block.type) {
 						case "text":
 							return (
 								<div
-									key={index}
+									key={`text-${block.text.slice(0, 32)}`}
 									className="prose prose-sm dark:prose-invert max-w-none text-sm"
 								>
 									<MarkdownContent content={block.text} />
@@ -49,7 +49,7 @@ export function AssistantConversationContent({
 						case "thinking":
 							return (
 								<div
-									key={index}
+									key={`thinking-${block.thinking.slice(0, 32)}`}
 									className="bg-muted/50 border border-dashed border-muted-foreground/30 rounded-md"
 								>
 									<Collapsible>
@@ -81,6 +81,8 @@ export function AssistantConversationContent({
 									subagents={subagents}
 								/>
 							);
+						default:
+							return null;
 					}
 				})}
 			</div>

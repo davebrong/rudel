@@ -15,8 +15,8 @@ export function SummaryGroup({ summaries }: SummaryGroupProps) {
 				</span>
 			</div>
 			<div className="divide-y divide-amber-200/50 dark:divide-amber-800/50">
-				{summaries.map((entry, index) => (
-					<div key={index} className="px-3 py-1.5">
+				{summaries.map((entry) => (
+					<div key={entry.summary.slice(0, 64)} className="px-3 py-1.5">
 						<pre className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
 							{entry.summary}
 						</pre>
