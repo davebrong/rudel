@@ -12,7 +12,7 @@ interface Organization {
 	id: string;
 	name: string;
 	slug: string;
-	logo: string | null | undefined;
+	logo?: string | null | undefined;
 }
 
 interface OrganizationContextType {
