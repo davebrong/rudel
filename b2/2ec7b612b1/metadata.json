@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "b22ec7b612b1",
+  "strategy": "manual-commit",
+  "branch": "marc/test-standalone-setup",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".context/plans/fix-organization-id-mismatch-on-sign-up.md",
+    "apps/api/src/auth.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b2/2ec7b612b1/0/metadata.json",
+      "transcript": "/b2/2ec7b612b1/0/full.jsonl",
+      "context": "/b2/2ec7b612b1/0/context.md",
+      "content_hash": "/b2/2ec7b612b1/0/content_hash.txt",
+      "prompt": "/b2/2ec7b612b1/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 88,
+    "cache_creation_tokens": 145571,
+    "cache_read_tokens": 3056216,
+    "output_tokens": 583,
+    "api_call_count": 67
+  }
+}
