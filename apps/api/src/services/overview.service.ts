@@ -1,33 +1,13 @@
+import type {
+	ModelTokensTrendData,
+	OverviewKPIs,
+	UsageTrendData,
+} from "@rudel/api-routes";
 import {
 	buildDateFilter,
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
-
-export interface OverviewKPIs {
-	distinct_users: number;
-	distinct_sessions: number;
-	distinct_projects: number;
-	distinct_subagents: number;
-	distinct_skills: number;
-	distinct_slash_commands: number;
-}
-
-export interface UsageTrendData {
-	date: string;
-	sessions: number;
-	active_users: number;
-	total_hours: number;
-	total_tokens: number;
-}
-
-export interface ModelTokensTrendData {
-	date: string;
-	model: string;
-	total_tokens: number;
-	input_tokens: number;
-	output_tokens: number;
-}
 
 export interface Insight {
 	type: "trend" | "performer" | "alert" | "info";

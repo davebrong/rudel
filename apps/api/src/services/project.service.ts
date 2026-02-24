@@ -1,20 +1,16 @@
+import type {
+	ProjectContributor as ProjectContributorBase,
+	ProjectDetailData,
+	ProjectError as ProjectErrorBase,
+	ProjectFeatureUsage,
+	ProjectInvestment,
+	ProjectTrendDataPoint as ProjectTrendDataPointBase,
+} from "@rudel/api-routes";
 import {
 	buildDateFilter,
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
-
-export interface ProjectInvestment {
-	repository: string | null;
-	project_path: string;
-	sessions: number;
-	unique_users: number;
-	total_duration_min: number;
-	total_tokens: number;
-	success_rate: number;
-	cost: number;
-	success_rate_trend: number;
-}
 
 export interface KnowledgeSilo {
 	project_path: string;
@@ -40,54 +36,20 @@ export interface ProjectSummary {
 	most_active_sessions: number;
 }
 
-export interface ProjectDetails {
-	project_path: string;
-	total_sessions: number;
-	total_tokens: number;
-	contributors_count: number;
-	errors_count: number;
-	avg_session_duration_min: number;
-	success_rate: number;
-	total_duration_min: number;
-	cost: number;
-}
+export type ProjectDetails = ProjectDetailData;
 
-export interface ProjectContributor {
-	user_id: string;
+export interface ProjectContributor extends ProjectContributorBase {
 	username?: string;
-	sessions: number;
-	total_duration_min: number;
-	total_tokens: number;
 	first_session: string;
 	last_session: string;
-	contribution_percentage: number;
 }
 
-export interface ProjectFeatureUsage {
-	subagents_adoption_rate: number;
-	skills_adoption_rate: number;
-	slash_commands_adoption_rate: number;
-	top_subagents: Array<{ name: string; count: number }>;
-	top_skills: Array<{ name: string; count: number }>;
-	top_slash_commands: Array<{ name: string; count: number }>;
-}
-
-export interface ProjectError {
-	error_pattern: string;
-	occurrences: number;
-	affected_users: number;
+export interface ProjectError extends ProjectErrorBase {
 	first_seen: string;
-	last_seen: string;
 }
 
-export interface ProjectTrendDataPoint {
-	date: string;
-	project_path: string;
+export interface ProjectTrendDataPoint extends ProjectTrendDataPointBase {
 	project_name?: string;
-	sessions: number;
-	total_hours: number;
-	total_tokens: number;
-	avg_success_rate: number;
 }
 
 /**

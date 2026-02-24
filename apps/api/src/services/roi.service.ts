@@ -1,3 +1,9 @@
+import type {
+	DeveloperCostBreakdown,
+	ProjectCostBreakdown,
+	ROIMetrics,
+	ROITrend,
+} from "@rudel/api-routes";
 import {
 	buildDateFilter,
 	escapeString,
@@ -13,66 +19,6 @@ const DEFAULT_DEV_HOURLY_RATE = 100;
 const CODE_PERCENTAGE = 0.65; // 65% of output tokens are actual code
 const TOKENS_PER_LOC = 15; // Average tokens per line of code
 const LOC_PER_HOUR = 30; // Developer baseline: 30 lines per hour without Claude
-
-export interface ROIMetrics {
-	total_cost: number;
-	total_cost_change_pct: number;
-	cost_per_session: number;
-	cost_per_session_change_pct: number;
-	cost_per_commit: number;
-	cost_per_commit_change_pct: number;
-	total_tokens: number;
-	input_tokens: number;
-	output_tokens: number;
-	token_utilization_rate: number;
-	total_sessions: number;
-	total_commits: number;
-	total_hours: number;
-	active_developers: number;
-	avg_success_score: number;
-	commits_per_dollar: number;
-	sessions_per_dollar: number;
-	productivity_improvement_pct: number;
-	estimated_loc_generated: number;
-	dev_hours_saved: number;
-	dev_hours_saved_change_pct: number;
-	dollar_value_saved: number;
-	roi_percentage: number;
-	current_period_start: string;
-	current_period_end: string;
-	previous_period_start: string;
-	previous_period_end: string;
-}
-
-export interface ROITrend {
-	week_start: string;
-	total_cost: number;
-	total_sessions: number;
-	total_commits: number;
-	active_developers: number;
-	avg_success_score: number;
-	total_tokens: number;
-	output_tokens: number;
-	productivity_score: number;
-}
-
-export interface DeveloperCostBreakdown {
-	user_id: string;
-	sessions: number;
-	total_tokens: number;
-	cost: number;
-	cost_percentage: number;
-	avg_success_score: number;
-}
-
-export interface ProjectCostBreakdown {
-	project_path: string;
-	sessions: number;
-	total_tokens: number;
-	cost: number;
-	cost_percentage: number;
-	avg_success_score: number;
-}
 
 interface ROIMetricsQueryResult {
 	total_sessions: number;

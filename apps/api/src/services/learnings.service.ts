@@ -1,31 +1,15 @@
+import type {
+	LearningEntry as LearningEntryBase,
+	LearningsFeedStats,
+	LearningsTrendDataPoint,
+} from "@rudel/api-routes";
 import { escapeString, queryClickhouse } from "../clickhouse.js";
 
-export interface LearningEntry {
-	session_id: string;
-	user_id: string;
-	created_at: string;
-	type: string;
-	content: string;
-	scope: string;
-	tags: string[];
-	project_path: string;
+export interface LearningEntry extends LearningEntryBase {
 	organization_id: string;
-	repository: string | null;
 	subagents: string[];
 	skills: string[];
 	other_commands: string[];
-}
-
-export interface LearningsFeedStats {
-	total_learnings: number;
-	unique_users: number;
-	unique_projects: number;
-	learnings_by_day: Array<{ date: string; count: number }>;
-}
-
-export interface LearningsTrendDataPoint {
-	date: string;
-	[key: string]: string | number;
 }
 
 /**
