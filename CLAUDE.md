@@ -75,6 +75,8 @@ Manage containers separately: `bun run infra:up` / `bun run infra:down`. To wipe
 
 ### 2. Dev (production databases)
 
+> **Note**: This mode is used by the core team to develop against the hosted `app.rudel.ai` production data. If you're self-hosting or contributing, use **Standalone** above — it's the fully functional default.
+
 Connects to production Neon Postgres and ObsessionDB ClickHouse via the `prd_local` Doppler config. Runs API + web locally but with real data. Requires Doppler access.
 
 ```bash
