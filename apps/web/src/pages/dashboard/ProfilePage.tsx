@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
 import { Button } from "../../components/ui/button";
-import { authClient } from "../../lib/auth-client";
+import { authClient, signOut } from "../../lib/auth-client";
 
 interface Account {
 	id: string;
@@ -63,15 +63,7 @@ export function ProfilePage() {
 						</div>
 					</div>
 
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => {
-							authClient.signOut().then(() => {
-								window.location.reload();
-							});
-						}}
-					>
+					<Button variant="outline" size="sm" onClick={() => signOut()}>
 						<LogOut className="h-4 w-4 mr-2" />
 						Sign out
 					</Button>

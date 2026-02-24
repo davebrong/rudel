@@ -18,7 +18,7 @@ import {
 import { useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useOrganization } from "../../contexts/OrganizationContext";
-import { authClient } from "../../lib/auth-client";
+import { authClient, signOut } from "../../lib/auth-client";
 import { cn } from "../../lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
@@ -224,7 +224,7 @@ export function Sidebar() {
 					{!collapsed && (
 						<button
 							type="button"
-							onClick={() => authClient.signOut()}
+							onClick={() => signOut()}
 							className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors shrink-0"
 							title="Sign out"
 						>
