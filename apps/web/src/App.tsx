@@ -1,3 +1,4 @@
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginForm } from "./components/auth/login-form";
@@ -40,6 +41,9 @@ function App() {
 	const [page, setPage] = useState<Page>("login");
 	const [cliRedirecting, setCliRedirecting] = useState(false);
 	const cliParams = getCliParams();
+	const { resolvedTheme } = useTheme();
+	const logoSrc =
+		resolvedTheme === "dark" ? "/logo-light.svg" : "/logo-dark.svg";
 
 	useEffect(() => {
 		if (!session || !cliParams || cliRedirecting) return;
@@ -71,7 +75,8 @@ function App() {
 
 	if (!session) {
 		return (
-			<div className="flex min-h-screen items-center justify-center">
+			<div className="flex min-h-screen flex-col items-center justify-center gap-6">
+				<img src={logoSrc} alt="Rudel" className="h-10 w-10" />
 				{page === "login" ? (
 					<LoginForm onSwitchToSignup={() => setPage("signup")} />
 				) : (

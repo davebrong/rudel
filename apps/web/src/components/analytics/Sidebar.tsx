@@ -15,12 +15,14 @@ import {
 	Settings,
 	UserCircle,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useOrganization } from "../../contexts/OrganizationContext";
 import { authClient, signOut } from "../../lib/auth-client";
 import { cn } from "../../lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navigation = [
 	{ name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -137,6 +139,10 @@ export function Sidebar() {
 	const { pathname } = useLocation();
 	const { data: session } = authClient.useSession();
 	const [collapsed, setCollapsed] = useState(false);
+	const { resolvedTheme } = useTheme();
+
+	const logoSrc =
+		resolvedTheme === "dark" ? "/logo-light.svg" : "/logo-dark.svg";
 
 	return (
 		<div
@@ -146,6 +152,19 @@ export function Sidebar() {
 			)}
 		>
 			<div className="flex items-center border-b border-border">
+				<Link
+					to="/dashboard"
+					className={cn(
+						"flex items-center shrink-0 px-4 h-10",
+						collapsed && "px-3",
+					)}
+				>
+					<img
+						src={logoSrc}
+						alt="Rudel"
+						className="h-5 w-5"
+					/>
+				</Link>
 				<div className="flex-1 min-w-0">
 					<OrgSwitcher collapsed={collapsed} />
 				</div>
@@ -222,14 +241,17 @@ export function Sidebar() {
 						)}
 					</Link>
 					{!collapsed && (
-						<button
-							type="button"
-							onClick={() => signOut()}
-							className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors shrink-0"
-							title="Sign out"
-						>
-							<LogOut className="h-3.5 w-3.5" />
-						</button>
+						<>
+							<ThemeToggle />
+							<button
+								type="button"
+								onClick={() => signOut()}
+								className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors shrink-0"
+								title="Sign out"
+							>
+								<LogOut className="h-3.5 w-3.5" />
+							</button>
+						</>
 					)}
 					{collapsed && (
 						<div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 rounded-md bg-heading text-surface text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-50">
