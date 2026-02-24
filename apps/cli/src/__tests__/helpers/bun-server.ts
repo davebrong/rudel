@@ -44,6 +44,10 @@ export async function startTestServer(): Promise<TestServer> {
 	const baseUrl = `http://localhost:${port}`;
 	const rpcUrl = `${baseUrl}/rpc`;
 
+	// Wait until the server actually responds to HTTP requests.
+	// The "listening on" log can appear before the server is fully ready.
+	await waitForReady(baseUrl);
+
 	return {
 		port,
 		baseUrl,
@@ -98,6 +102,28 @@ async function parseReadyPort(
 	proc.kill();
 	throw new Error(
 		`Server did not become ready within 30 s.\nstdout buffer: ${buffer}\nstderr: ${stderrText}`,
+	);
+}
+
+/**
+ * Poll the server until it responds to a GET request.
+ * Retries every 200ms for up to 10s.
+ */
+async function waitForReady(baseUrl: string): Promise<void> {
+	const deadline = Date.now() + 10_000;
+	while (Date.now() < deadline) {
+		try {
+			const res = await fetch(`${baseUrl}/health`, {
+				signal: AbortSignal.timeout(2000),
+			});
+			if (res.ok) return;
+		} catch {
+			// Connection refused or timeout — retry
+		}
+		await Bun.sleep(200);
+	}
+	throw new Error(
+		`Server at ${baseUrl} did not respond within 10s after port was detected`,
 	);
 }
 
