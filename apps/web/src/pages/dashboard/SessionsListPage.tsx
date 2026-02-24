@@ -1,3 +1,4 @@
+import type { DimensionAnalysisInput } from "@rudel/api-routes";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Clock, Timer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -22,14 +23,22 @@ export function SessionsListPage() {
 	);
 	const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
-	const [selectedDimension, setSelectedDimension] = useState("repository");
-	const [selectedMetric, setSelectedMetric] = useState("session_count");
-	const [selectedSplitBy, setSelectedSplitBy] = useState<string>("");
+	const [selectedDimension, setSelectedDimension] =
+		useState<DimensionAnalysisInput["dimension"]>("repository");
+	const [selectedMetric, setSelectedMetric] =
+		useState<DimensionAnalysisInput["metric"]>("session_count");
+	const [selectedSplitBy, setSelectedSplitBy] = useState<
+		DimensionAnalysisInput["dimension"] | ""
+	>("");
 	const [showPercentage, setShowPercentage] = useState(false);
 
-	const [debouncedDimension, setDebouncedDimension] = useState("repository");
-	const [debouncedMetric, setDebouncedMetric] = useState("session_count");
-	const [debouncedSplitBy, setDebouncedSplitBy] = useState<string>("");
+	const [debouncedDimension, setDebouncedDimension] =
+		useState<DimensionAnalysisInput["dimension"]>("repository");
+	const [debouncedMetric, setDebouncedMetric] =
+		useState<DimensionAnalysisInput["metric"]>("session_count");
+	const [debouncedSplitBy, setDebouncedSplitBy] = useState<
+		DimensionAnalysisInput["dimension"] | ""
+	>("");
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -194,7 +203,11 @@ export function SessionsListPage() {
 						<select
 							id="sessions-metric-select"
 							value={selectedMetric}
-							onChange={(e) => setSelectedMetric(e.target.value)}
+							onChange={(e) =>
+								setSelectedMetric(
+									e.target.value as DimensionAnalysisInput["metric"],
+								)
+							}
 							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 						>
 							<option value="session_count">Session Count</option>
@@ -216,11 +229,13 @@ export function SessionsListPage() {
 						<select
 							id="sessions-dimension-select"
 							value={selectedDimension}
-							onChange={(e) => setSelectedDimension(e.target.value)}
+							onChange={(e) =>
+								setSelectedDimension(
+									e.target.value as DimensionAnalysisInput["dimension"],
+								)
+							}
 							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 						>
-							<option value="">None</option>
-							<option value="task_type">Task Type</option>
 							<option value="session_archetype">Session Type</option>
 							<option value="model_used">Model Used</option>
 							<option value="user_id">User/Developer</option>
@@ -240,13 +255,14 @@ export function SessionsListPage() {
 							id="sessions-splitby-select"
 							value={selectedSplitBy}
 							onChange={(e) => {
-								setSelectedSplitBy(e.target.value);
+								setSelectedSplitBy(
+									e.target.value as DimensionAnalysisInput["dimension"] | "",
+								);
 								if (!e.target.value) setShowPercentage(false);
 							}}
 							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 						>
 							<option value="">None</option>
-							<option value="task_type">Task Type</option>
 							<option value="session_archetype">Session Type</option>
 							<option value="model_used">Model Used</option>
 							<option value="user_id">User/Developer</option>

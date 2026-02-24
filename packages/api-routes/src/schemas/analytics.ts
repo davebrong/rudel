@@ -12,8 +12,8 @@ export const PaginatedDaysInputSchema = DaysInputSchema.extend({
 });
 
 export const DateRangeInputSchema = z.object({
-	startDate: z.string(),
-	endDate: z.string(),
+	startDate: z.string().date(),
+	endDate: z.string().date(),
 });
 
 // ── Overview ───────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export const ModelTokensTrendDataSchema = z.object({
 });
 
 export const InsightSchema = z.object({
-	type: z.string(),
+	type: z.enum(["trend", "performer", "alert", "info"]),
 	severity: z.enum(["positive", "warning", "negative", "info"]),
 	message: z.string(),
 	link: z.string().optional(),
@@ -300,10 +300,38 @@ export const SessionListInputSchema = DaysInputSchema.extend({
 	sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
+const VALID_DIMENSIONS = [
+	"user_id",
+	"project_path",
+	"repository",
+	"session_archetype",
+	"model_used",
+	"has_commit",
+	"used_plan_mode",
+	"used_skills",
+	"used_slash_commands",
+	"used_subagents",
+] as const;
+
+const VALID_METRICS = [
+	"session_count",
+	"avg_duration",
+	"total_duration",
+	"avg_interactions",
+	"total_interactions",
+	"avg_response_time",
+	"median_response_time",
+	"avg_tokens",
+	"total_tokens",
+	"avg_success_score",
+	"avg_errors",
+	"total_errors",
+] as const;
+
 export const DimensionAnalysisInputSchema = DaysInputSchema.extend({
-	dimension: z.string(),
-	metric: z.string(),
-	splitBy: z.string().optional(),
+	dimension: z.enum(VALID_DIMENSIONS),
+	metric: z.enum(VALID_METRICS),
+	splitBy: z.enum(VALID_DIMENSIONS).optional(),
 	limit: z.number().int().positive().default(20),
 	userId: z.string().optional(),
 	projectPath: z.string().optional(),
@@ -507,4 +535,23 @@ export type RecurringError = z.infer<typeof RecurringErrorSchema>;
 export type ErrorTrendDataPoint = z.infer<typeof ErrorTrendDataPointSchema>;
 export type LearningEntry = z.infer<typeof LearningEntrySchema>;
 export type LearningsFeedStats = z.infer<typeof LearningsFeedStatsSchema>;
+export type TeamSummaryComparison = z.infer<typeof TeamSummaryComparisonSchema>;
+export type SuccessRate = z.infer<typeof SuccessRateSchema>;
+export type DeveloperTimeline = z.infer<typeof DeveloperTimelineSchema>;
+export type DeveloperFeatureUsage = z.infer<typeof DeveloperFeatureUsageSchema>;
+export type DeveloperError = z.infer<typeof DeveloperErrorSchema>;
+export type ProjectFeatureUsage = z.infer<typeof ProjectFeatureUsageSchema>;
+export type ProjectError = z.infer<typeof ProjectErrorSchema>;
+export type SessionAnalyticsSummary = z.infer<
+	typeof SessionAnalyticsSummarySchema
+>;
+export type SessionAnalyticsSummaryComparison = z.infer<
+	typeof SessionAnalyticsSummaryComparisonSchema
+>;
+export type LearningsTrendDataPoint = z.infer<
+	typeof LearningsTrendDataPointSchema
+>;
+export type DimensionAnalysisInput = z.infer<
+	typeof DimensionAnalysisInputSchema
+>;
 export type UserMapping = z.infer<typeof UserMappingSchema>;

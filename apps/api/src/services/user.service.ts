@@ -1,12 +1,11 @@
+import type { UserMapping as UserMappingBase } from "@rudel/api-routes";
 import {
 	buildDateFilter,
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
 
-export interface UserMapping {
-	user_id: string;
-	username: string;
+export interface UserMapping extends UserMappingBase {
 	session_count: number;
 }
 
