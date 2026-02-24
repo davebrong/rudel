@@ -1,4 +1,11 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import {
+	afterAll,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	test,
+} from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -28,6 +35,12 @@ afterAll(async () => {
 });
 
 describe("CLI upload to local API", () => {
+	// Bun's test runner may kill the server as a "dangling process" between
+	// beforeAll and the first test, or between tests. Restart it if needed.
+	beforeEach(async () => {
+		await server.ensureAlive();
+	});
+
 	test("uploads a session via uploadSession to the local API", async () => {
 		expect(bearerToken).toBeTruthy();
 
@@ -65,10 +78,6 @@ describe("CLI upload to local API", () => {
 
 	test("full CLI upload via subprocess to local API", async () => {
 		expect(bearerToken).toBeTruthy();
-
-		// Bun's test runner may kill the server between tests ("dangling processes").
-		// Restart it if needed — the port may change.
-		await server.ensureAlive();
 
 		const projectDir = join(tempDir, "cli-e2e-test");
 		await mkdir(projectDir, { recursive: true });
