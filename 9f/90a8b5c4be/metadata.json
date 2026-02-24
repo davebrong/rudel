@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "9f90a8b5c4be",
+  "strategy": "manual-commit",
+  "branch": "marc/full-code-review",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/skills/typescript-standards/SKILL.md",
+    "apps/api/src/services/developer.service.ts",
+    "apps/api/src/services/error.service.ts",
+    "apps/api/src/services/learnings.service.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/project.service.ts",
+    "apps/api/src/services/roi.service.ts",
+    "apps/api/src/services/session-analytics.service.ts",
+    "apps/api/src/services/user.service.ts",
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx",
+    "packages/api-routes/src/schemas/analytics.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/9f/90a8b5c4be/0/metadata.json",
+      "transcript": "/9f/90a8b5c4be/0/full.jsonl",
+      "context": "/9f/90a8b5c4be/0/context.md",
+      "content_hash": "/9f/90a8b5c4be/0/content_hash.txt",
+      "prompt": "/9f/90a8b5c4be/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 219221,
+    "cache_read_tokens": 1243635,
+    "output_tokens": 256,
+    "api_call_count": 19
+  }
+}
