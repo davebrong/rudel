@@ -3,28 +3,29 @@
   "checkpoint_id": "1a05a25d3531",
   "session_id": "5cdd4964-ecd9-426c-8898-8356745e031c",
   "strategy": "manual-commit",
-  "created_at": "2026-02-24T02:43:56.86442Z",
+  "created_at": "2026-02-24T02:53:42.399393Z",
   "branch": "KeKs0r/fix-deploy-ci",
   "checkpoints_count": 1,
   "files_touched": [
     "apps/cli/src/__tests__/api-upload.integration.test.ts"
   ],
   "agent": "Claude Code",
+  "transcript_identifier_at_start": "b14339c0-4806-4575-95d3-c5c9753e2871",
   "token_usage": {
-    "input_tokens": 21,
-    "cache_creation_tokens": 32842,
-    "cache_read_tokens": 689478,
-    "output_tokens": 191,
-    "api_call_count": 17
+    "input_tokens": 66,
+    "cache_creation_tokens": 73569,
+    "cache_read_tokens": 1236422,
+    "output_tokens": 279,
+    "api_call_count": 28
   },
   "initial_attribution": {
-    "calculated_at": "2026-02-24T02:43:56.758562Z",
-    "agent_lines": 4,
-    "human_added": 0,
+    "calculated_at": "2026-02-24T02:53:42.131221Z",
+    "agent_lines": 14,
+    "human_added": 16,
     "human_modified": 0,
     "human_removed": 0,
-    "total_committed": 4,
-    "agent_percentage": 100
+    "total_committed": 30,
+    "agent_percentage": 46.666666666666664
   },
   "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-brisbane/5cdd4964-ecd9-426c-8898-8356745e031c.jsonl"
 }

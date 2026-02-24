@@ -24,3 +24,22 @@ check why the deploy CI action failed on main
 ---
 
 yes commit and push
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- /Users/marc/conductor/workspaces/rudel/brisbane/.context/attachments/PR instructions.md
+</system_instruction>
+
+
+
+Create a PR
+
+---
+
+why not in beforeEach?
+
+---
+
+but the timout is only in the error case? if the server is running, it just moves on, odesnt it?

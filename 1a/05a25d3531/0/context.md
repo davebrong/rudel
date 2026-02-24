@@ -14,3 +14,22 @@ The target branch for this workspace is main. Use this for actions like creating
 
 yes commit and push
 
+### Prompt 3
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- /Users/marc/conductor/workspaces/rudel/brisbane/.context/attachments/PR instructions.md
+</system_instruction>
+
+
+
+Create a PR
+
+### Prompt 4
+
+why not in beforeEach?
+
+### Prompt 5
+
+but the timout is only in the error case? if the server is running, it just moves on, odesnt it?
+
