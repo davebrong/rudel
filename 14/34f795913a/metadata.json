@@ -3,8 +3,9 @@
   "checkpoint_id": "1434f795913a",
   "strategy": "manual-commit",
   "branch": "marc/num-6532-make-rudel-multitenant-team",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
+    ".claude/settings.json",
     "apps/api/src/auth.ts",
     "apps/cli/src/app.ts",
     "apps/cli/src/commands/enable.ts",
@@ -39,13 +40,20 @@
       "context": "/14/34f795913a/1/context.md",
       "content_hash": "/14/34f795913a/1/content_hash.txt",
       "prompt": "/14/34f795913a/1/prompt.txt"
+    },
+    {
+      "metadata": "/14/34f795913a/2/metadata.json",
+      "transcript": "/14/34f795913a/2/full.jsonl",
+      "context": "/14/34f795913a/2/context.md",
+      "content_hash": "/14/34f795913a/2/content_hash.txt",
+      "prompt": "/14/34f795913a/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 7997,
-    "cache_creation_tokens": 357677,
-    "cache_read_tokens": 16308398,
-    "output_tokens": 1750,
-    "api_call_count": 163
+    "input_tokens": 8045,
+    "cache_creation_tokens": 398706,
+    "cache_read_tokens": 16864108,
+    "output_tokens": 1897,
+    "api_call_count": 180
   }
 }
