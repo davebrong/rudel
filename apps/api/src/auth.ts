@@ -55,6 +55,7 @@ export function createAuth(db: object, config: AuthConfig) {
 								slug,
 								createdAt: new Date(),
 							},
+							forceAllowId: true,
 						});
 
 						if (org) {
