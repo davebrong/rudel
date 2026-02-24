@@ -282,3 +282,13 @@ bun run --cwd apps/api dev:env
 # Run tests locally
 doppler run --project rudel --config ci -- bun run verify
 ```
+
+## Pre-Push Checklist
+
+Before pushing and creating a pull request, always run:
+
+```bash
+bun run verify
+```
+
+This runs type checking, linting, and tests across the monorepo. Do not push or create a PR if `bun run verify` fails.
