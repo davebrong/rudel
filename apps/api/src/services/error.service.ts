@@ -1,18 +1,9 @@
+import type { ErrorTrendDataPoint, RecurringError } from "@rudel/api-routes";
 import {
 	buildDateFilter,
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
-
-export interface RecurringError {
-	error_pattern: string;
-	occurrences: number;
-	affected_sessions: number;
-	affected_users: number;
-	last_seen: string;
-	severity: "high" | "medium" | "low";
-	repositories: string[];
-}
 
 export interface CrossDeveloperError {
 	error_pattern: string;
@@ -20,14 +11,6 @@ export interface CrossDeveloperError {
 	total_occurrences: number;
 	affected_user_ids: string[];
 	avg_session_duration_min: number;
-}
-
-export interface ErrorTrendDataPoint {
-	date: string;
-	dimension: string;
-	avg_errors_per_interaction: number;
-	avg_errors_per_session: number;
-	total_errors: number;
 }
 
 /**
@@ -144,64 +127,13 @@ export async function getErrorTrends(
 	params: {
 		start_date: string;
 		end_date: string;
-		split_by: "repository" | "user_id" | "model" | "error_type";
+		split_by: "repository" | "user_id" | "model";
 	},
 ): Promise<ErrorTrendDataPoint[]> {
 	const { start_date, end_date, split_by } = params;
 	const org = escapeString(orgId);
 	const sd = escapeString(start_date);
 	const ed = escapeString(end_date);
-
-	if (split_by === "error_type") {
-		const query = `
-      WITH error_sessions AS (
-        SELECT
-          toDate(session_date) as date,
-          session_id,
-          user_id,
-          CASE
-            WHEN content ILIKE '%Error:%' THEN extractAll(content, '([A-Z][a-zA-Z]+Error):')[1]
-            WHEN content ILIKE '%Exception:%' THEN extractAll(content, '([A-Z][a-zA-Z]+Exception):')[1]
-            WHEN content ILIKE '%failed%' THEN 'OperationFailed'
-            WHEN content ILIKE '%timeout%' THEN 'Timeout'
-            WHEN content ILIKE '%not found%' THEN 'NotFound'
-            ELSE 'UnknownError'
-          END as error_type,
-          length(splitByRegexp('\\\\n', content)) as error_count
-        FROM rudel.session_analytics
-        WHERE session_date >= '${sd}'
-          AND session_date < '${ed}'
-          AND organization_id = '${org}'
-          AND (
-            content ILIKE '%error%' OR
-            content ILIKE '%exception%' OR
-            content ILIKE '%failed%' OR
-            content ILIKE '%timeout%'
-          )
-      ),
-      daily_metrics AS (
-        SELECT
-          date,
-          error_type,
-          COUNT(DISTINCT session_id) as session_count,
-          SUM(error_count) as total_errors,
-          COUNT(DISTINCT user_id) as interaction_count
-        FROM error_sessions
-        WHERE error_type != ''
-        GROUP BY date, error_type
-      )
-      SELECT
-        date,
-        error_type as dimension,
-        round(total_errors / GREATEST(interaction_count, 1), 2) as avg_errors_per_interaction,
-        round(total_errors / GREATEST(session_count, 1), 2) as avg_errors_per_session,
-        total_errors
-      FROM daily_metrics
-      ORDER BY date, dimension
-    `;
-
-		return queryClickhouse<ErrorTrendDataPoint>(query);
-	}
 
 	if (split_by === "model") {
 		const query = `

@@ -13,7 +13,6 @@ import {
 	LogOut,
 	Plus,
 	Settings,
-	User,
 	UserCircle,
 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -22,7 +21,6 @@ import { useOrganization } from "../../contexts/OrganizationContext";
 import { authClient } from "../../lib/auth-client";
 import { cn } from "../../lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ThemeToggle } from "./ThemeToggle";
 
 const navigation = [
 	{ name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -65,7 +63,7 @@ function OrgSwitcher({ collapsed }: { collapsed: boolean }) {
 				type="button"
 				onClick={() => setOpen(!open)}
 				className={cn(
-					"flex w-full items-center gap-1.5 px-4 h-10 overflow-hidden border-b border-border hover:bg-hover transition-colors",
+					"flex w-full items-center gap-1.5 px-4 h-10 overflow-hidden hover:bg-hover transition-colors",
 					collapsed && "justify-center px-0",
 				)}
 			>
@@ -147,7 +145,23 @@ export function Sidebar() {
 				collapsed ? "w-14" : "w-64",
 			)}
 		>
-			<OrgSwitcher collapsed={collapsed} />
+			<div className="flex items-center border-b border-border">
+				<div className="flex-1 min-w-0">
+					<OrgSwitcher collapsed={collapsed} />
+				</div>
+				<button
+					type="button"
+					onClick={() => setCollapsed(!collapsed)}
+					className="p-1 mr-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors shrink-0"
+					title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+				>
+					{collapsed ? (
+						<ChevronsRight className="h-4 w-4" />
+					) : (
+						<ChevronsLeft className="h-4 w-4" />
+					)}
+				</button>
+			</div>
 
 			<nav className="flex-1 px-2 pt-2 pb-1 flex flex-col gap-[1px]">
 				{navigation.map((item) => {
@@ -184,99 +198,46 @@ export function Sidebar() {
 				})}
 			</nav>
 
-			<div className="px-2 pb-1">
-				<div className="relative group">
+			{session?.user && (
+				<div
+					className={cn(
+						"border-t border-border p-2 relative group flex items-center gap-2",
+						collapsed ? "justify-center" : "px-2",
+					)}
+				>
 					<Link
 						to="/dashboard/profile"
-						className={cn(
-							"flex items-center gap-2 rounded-lg px-2 py-2 text-[0.8125rem] font-medium transition-colors duration-150",
-							collapsed && "justify-center",
-							pathname === "/dashboard/profile"
-								? "bg-hover text-heading"
-								: "text-muted hover:bg-hover hover:text-foreground",
-						)}
+						className="flex-1 flex items-center gap-2 min-w-0"
 					>
-						{session?.user.image ? (
-							<img
-								src={session.user.image}
-								alt=""
-								className="h-4 w-4 rounded-full shrink-0"
-							/>
-						) : (
-							<User className="h-4 w-4 shrink-0" />
-						)}
-						{!collapsed && (
-							<span className="whitespace-nowrap overflow-hidden text-ellipsis">
-								{session?.user.name ?? "Profile"}
-							</span>
-						)}
-					</Link>
-
-					{collapsed && (
-						<div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 rounded-md bg-heading text-surface text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-50">
-							{session?.user.name ?? "Profile"}
-						</div>
-					)}
-				</div>
-			</div>
-
-			<div className="border-t border-border p-2 flex flex-col gap-2">
-				{session?.user && (
-					<div
-						className={cn(
-							"relative group flex items-center gap-2",
-							collapsed ? "justify-center" : "px-2",
-						)}
-					>
-						<Avatar size="sm">
+						<Avatar size="sm" className="shrink-0">
 							{session.user.image && (
 								<AvatarImage src={session.user.image} alt={session.user.name} />
 							)}
 							<AvatarFallback>{getInitials(session.user.name)}</AvatarFallback>
 						</Avatar>
 						{!collapsed && (
-							<>
-								<span className="flex-1 truncate text-xs font-medium text-foreground">
-									{session.user.name}
-								</span>
-								<button
-									type="button"
-									onClick={() => authClient.signOut()}
-									className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors"
-									title="Sign out"
-								>
-									<LogOut className="h-3.5 w-3.5" />
-								</button>
-							</>
-						)}
-						{collapsed && (
-							<div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 rounded-md bg-heading text-surface text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-50">
+							<span className="flex-1 truncate text-xs font-medium text-foreground hover:text-heading transition-colors">
 								{session.user.name}
-							</div>
+							</span>
 						)}
-					</div>
-				)}
-				<div
-					className={cn(
-						"flex items-center",
-						collapsed ? "justify-center flex-col gap-2" : "justify-end gap-2",
+					</Link>
+					{!collapsed && (
+						<button
+							type="button"
+							onClick={() => authClient.signOut()}
+							className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors shrink-0"
+							title="Sign out"
+						>
+							<LogOut className="h-3.5 w-3.5" />
+						</button>
 					)}
-				>
-					<ThemeToggle />
-					<button
-						type="button"
-						onClick={() => setCollapsed(!collapsed)}
-						className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors"
-						title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-					>
-						{collapsed ? (
-							<ChevronsRight className="h-4 w-4" />
-						) : (
-							<ChevronsLeft className="h-4 w-4" />
-						)}
-					</button>
+					{collapsed && (
+						<div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 rounded-md bg-heading text-surface text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-50">
+							{session.user.name}
+						</div>
+					)}
 				</div>
-			</div>
+			)}
 		</div>
 	);
 }

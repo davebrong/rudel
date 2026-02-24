@@ -64,6 +64,28 @@ type Instance = MyClass
 
 ## Type Safety Rules
 
+### Derive Types from Zod Schemas
+When a Zod schema exists, always derive the TypeScript type from it using `z.infer`. Never define a separate interface that duplicates the schema's shape:
+```ts
+// ❌ Bad - Manually duplicates the Zod schema, drifts over time
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+// ✅ Good - Single source of truth
+import { type User } from "@rudel/api-routes"
+
+// ✅ Good - Extend when the service needs extra internal fields
+import { type User as UserBase } from "@rudel/api-routes"
+export interface User extends UserBase {
+  session_count: number
+}
+```
+
+If the type needs fields beyond the schema, extend the inferred type rather than redefining it.
+
 ### No Type Casts
 Never use `as` or `as unknown as` type assertions. They hide type incompatibilities:
 ```ts

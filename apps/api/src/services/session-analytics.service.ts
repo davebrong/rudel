@@ -1,3 +1,9 @@
+import type {
+	DimensionAnalysisInput,
+	SessionAnalytics,
+	SessionAnalyticsSummary as SessionAnalyticsSummaryBase,
+	SessionDetail,
+} from "@rudel/api-routes";
 import {
 	buildDateFilter,
 	escapeString,
@@ -49,61 +55,12 @@ export interface SessionAnalyticsRaw {
 	used_plan_mode: number;
 }
 
-export interface SessionAnalytics {
-	session_id: string;
-	user_id: string;
-	session_date: string;
-	project_path: string;
-	repository: string | null;
-	duration_min: number;
-	total_tokens: number;
-	input_tokens: number;
-	output_tokens: number;
-	success_score: number;
+export interface SessionAnalyticsSummary extends SessionAnalyticsSummaryBase {
 	total_interactions: number;
-	avg_period_sec: number;
-	subagent_types: string[];
-	skills: string[];
-	slash_commands: string[];
-	has_commit: boolean;
-	session_archetype: string;
-	model_used: string;
-	used_plan_mode: boolean;
-}
-
-export interface SessionAnalyticsSummary {
-	total_sessions: number;
-	total_interactions: number;
-	avg_session_duration_min: number;
 	avg_interactions_per_session: number;
-	avg_response_time_sec: number;
 	median_response_time_sec: number;
 	quick_response_rate: number;
 	long_pause_rate: number;
-	subagents_adoption_rate: number;
-	skills_adoption_rate: number;
-	slash_commands_adoption_rate: number;
-}
-
-export interface SessionDetail {
-	session_id: string;
-	user_id: string;
-	session_date: string;
-	last_interaction_date: string;
-	project_path: string;
-	repository: string | null;
-	content: string;
-	subagents: Record<string, string>;
-	skills: string[];
-	slash_commands: string[];
-	git_branch: string | null;
-	git_sha: string | null;
-	total_tokens: number;
-	input_tokens: number;
-	output_tokens: number;
-	success_score?: number;
-	duration_min?: number;
-	total_interactions?: number;
 }
 
 /**
@@ -308,14 +265,7 @@ export async function getSessionAnalyticsSummary(
 	) as SessionAnalyticsSummary;
 }
 
-export interface SessionSummaryComparisonPeriod {
-	total_sessions: number;
-	avg_session_duration_min: number;
-	avg_response_time_sec: number;
-	subagents_adoption_rate: number;
-	skills_adoption_rate: number;
-	slash_commands_adoption_rate: number;
-}
+export type SessionSummaryComparisonPeriod = SessionAnalyticsSummaryBase;
 
 /**
  * Get session analytics summary with period-over-period comparison
@@ -495,13 +445,30 @@ export async function getInteractionTimingDistribution(
 /**
  * Get flexible dimension analysis with optional split-by for stacked charts
  */
+
+// Map metric to SQL expression
+const METRIC_EXPRESSIONS: Record<DimensionAnalysisInput["metric"], string> = {
+	session_count: "COUNT(*)",
+	avg_duration: "round(AVG(actual_duration_min), 2)",
+	total_duration: "round(SUM(actual_duration_min) / 60, 2)",
+	avg_interactions: "round(AVG(total_interactions), 2)",
+	total_interactions: "SUM(total_interactions)",
+	avg_response_time: "round(AVG(avg_period_sec), 2)",
+	median_response_time: "round(AVG(median_period_sec), 2)",
+	avg_tokens: "round(AVG(total_tokens), 0)",
+	total_tokens: "SUM(total_tokens)",
+	avg_success_score: "round(AVG(success_score), 2)",
+	avg_errors: "round(AVG(error_count), 2)",
+	total_errors: "SUM(error_count)",
+};
+
 export async function getSessionDimensionAnalysis(
 	orgId: string,
 	params: {
 		days?: number;
-		dimension: string;
-		metric: string;
-		split_by?: string;
+		dimension: DimensionAnalysisInput["dimension"];
+		metric: DimensionAnalysisInput["metric"];
+		split_by?: DimensionAnalysisInput["dimension"];
 		limit?: number;
 		user_id?: string;
 		project_path?: string;
@@ -520,48 +487,7 @@ export async function getSessionDimensionAnalysis(
 	const d = Number(days);
 	const lim = Number(limit);
 
-	// Validate dimension parameter
-	const validDimensions = [
-		"user_id",
-		"project_path",
-		"repository",
-		"session_archetype",
-		"model_used",
-		"has_commit",
-		"used_plan_mode",
-		"used_skills",
-		"used_slash_commands",
-		"used_subagents",
-	];
-
-	if (!validDimensions.includes(dimension)) {
-		throw new Error(`Invalid dimension: ${dimension}`);
-	}
-
-	if (split_by && !validDimensions.includes(split_by)) {
-		throw new Error(`Invalid split_by dimension: ${split_by}`);
-	}
-
-	// Map metric to SQL expression
-	const metricExpressions: Record<string, string> = {
-		session_count: "COUNT(*)",
-		avg_duration: "round(AVG(actual_duration_min), 2)",
-		total_duration: "round(SUM(actual_duration_min) / 60, 2)",
-		avg_interactions: "round(AVG(total_interactions), 2)",
-		total_interactions: "SUM(total_interactions)",
-		avg_response_time: "round(AVG(avg_period_sec), 2)",
-		median_response_time: "round(AVG(median_period_sec), 2)",
-		avg_tokens: "round(AVG(total_tokens), 0)",
-		total_tokens: "SUM(total_tokens)",
-		avg_success_score: "round(AVG(success_score), 2)",
-		avg_errors: "round(AVG(error_count), 2)",
-		total_errors: "SUM(error_count)",
-	};
-
-	const metricExpression = metricExpressions[metric];
-	if (!metricExpression) {
-		throw new Error(`Invalid metric: ${metric}`);
-	}
+	const metricExpression = METRIC_EXPRESSIONS[metric];
 
 	// Map dimension to SQL expression (for computed dimensions)
 	const dimensionExpressions: Record<string, string> = {

@@ -107,35 +107,49 @@ describe("CLI upload to local API", () => {
 		);
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
-		const proc = Bun.spawn(
-			["bun", cliPath, "upload", sessionFile, "--endpoint", server.rpcUrl],
-			{
-				stdin: "ignore",
-				stdout: "pipe",
-				stderr: "pipe",
-				env: {
-					...process.env,
-					RUDEL_CONFIG_DIR: credDir,
+
+		// Retry up to 3 times — the server may need a moment after restart
+		// before ClickHouse accepts inserts (same pattern as the direct-call test).
+		let lastStdout = "";
+		let lastStderr = "";
+		let lastExitCode = -1;
+		for (let attempt = 0; attempt < 3; attempt++) {
+			const proc = Bun.spawn(
+				["bun", cliPath, "upload", sessionFile, "--endpoint", server.rpcUrl],
+				{
+					stdin: "ignore",
+					stdout: "pipe",
+					stderr: "pipe",
+					env: {
+						...process.env,
+						RUDEL_CONFIG_DIR: credDir,
+					},
 				},
-			},
-		);
+			);
 
-		// Read stdout/stderr concurrently with proc.exited to avoid pipe drain races
-		const [exitCode, stdout, stderr] = await Promise.all([
-			proc.exited,
-			new Response(proc.stdout).text(),
-			new Response(proc.stderr).text(),
-		]);
+			const [exitCode, stdout, stderr] = await Promise.all([
+				proc.exited,
+				new Response(proc.stdout).text(),
+				new Response(proc.stderr).text(),
+			]);
 
-		if (!stdout.includes("Upload successful!")) {
+			lastStdout = stdout;
+			lastStderr = stderr;
+			lastExitCode = exitCode;
+
+			if (stdout.includes("Upload successful!")) break;
+			await Bun.sleep(1000);
+		}
+
+		if (!lastStdout.includes("Upload successful!")) {
 			throw new Error(
-				`Expected "Upload successful!" in stdout.\n` +
-					`Exit code: ${exitCode}\n` +
-					`stdout: ${stdout}\n` +
-					`stderr: ${stderr}`,
+				`Expected "Upload successful!" in stdout after 3 attempts.\n` +
+					`Exit code: ${lastExitCode}\n` +
+					`stdout: ${lastStdout}\n` +
+					`stderr: ${lastStderr}`,
 			);
 		}
-		expect(exitCode).toBe(0);
+		expect(lastExitCode).toBe(0);
 	}, 30_000);
 
 	test("rejects unauthenticated requests", async () => {

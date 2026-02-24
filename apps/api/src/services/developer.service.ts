@@ -1,67 +1,35 @@
+import type {
+	DeveloperDetails as DeveloperDetailsBase,
+	DeveloperError,
+	DeveloperFeatureUsage,
+	DeveloperProject as DeveloperProjectBase,
+	DeveloperSession as DeveloperSessionBase,
+	DeveloperSummary as DeveloperSummaryBase,
+	DeveloperTimeline,
+	DeveloperTrendDataPoint,
+} from "@rudel/api-routes";
 import {
 	buildDateFilter,
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
 
-export interface DeveloperSummary {
-	user_id: string;
+export interface DeveloperSummary extends DeveloperSummaryBase {
 	username?: string;
-	total_sessions: number;
-	active_days: number;
-	total_tokens: number;
-	total_duration_min: number;
-	avg_session_duration_min: number;
-	last_active_date: string;
-	success_rate: number;
-	cost: number;
-	success_rate_trend: number;
-	input_tokens: number;
-	output_tokens: number;
 }
 
-export interface DeveloperDetails {
-	user_id: string;
+export interface DeveloperDetails extends DeveloperDetailsBase {
 	username?: string;
-	total_sessions: number;
-	active_days: number;
-	total_tokens: number;
-	input_tokens: number;
-	output_tokens: number;
-	total_duration_min: number;
-	avg_session_duration_min: number;
-	last_active_date: string;
-	success_rate: number;
-	cost: number;
-	success_rate_trend: number;
-	distinct_projects: number;
-	error_count: number;
 }
 
-export interface DeveloperSession {
-	session_id: string;
-	session_date: string;
-	project_path: string;
+export interface DeveloperSession extends DeveloperSessionBase {
 	project_name?: string;
-	duration_min: number;
 	input_tokens: number;
 	output_tokens: number;
-	total_tokens: number;
-	has_subagents: boolean;
-	has_skills: boolean;
-	has_slash_commands: boolean;
-	has_errors: boolean;
-	likely_success: boolean;
 }
 
-export interface DeveloperProject {
-	project_path: string;
+export interface DeveloperProject extends DeveloperProjectBase {
 	project_name?: string;
-	sessions: number;
-	total_duration_min: number;
-	total_tokens: number;
-	first_session: string;
-	last_session: string;
 }
 
 export interface DeveloperProjectTimeline {
@@ -70,37 +38,6 @@ export interface DeveloperProjectTimeline {
 	sessions: number;
 	total_duration_min: number;
 	total_tokens: number;
-}
-
-export interface DeveloperError {
-	error_pattern: string;
-	occurrences: number;
-	last_seen: string;
-}
-
-export interface DeveloperTimeline {
-	date: string;
-	sessions: number;
-	total_duration_min: number;
-	total_tokens: number;
-}
-
-export interface DeveloperFeatureUsage {
-	subagents_adoption_rate: number;
-	skills_adoption_rate: number;
-	slash_commands_adoption_rate: number;
-	top_subagents: Array<{ name: string; count: number }>;
-	top_skills: Array<{ name: string; count: number }>;
-	top_slash_commands: Array<{ name: string; count: number }>;
-}
-
-export interface DeveloperTrendDataPoint {
-	date: string;
-	user_id: string;
-	sessions: number;
-	total_hours: number;
-	total_tokens: number;
-	avg_success_rate: number;
 }
 
 /**
