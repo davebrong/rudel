@@ -4,11 +4,13 @@ import {
 	Copy,
 	Loader2,
 	Mail,
+	Plus,
 	Trash2,
 	UserPlus,
 	X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
 import { Badge } from "../../components/ui/badge";
@@ -109,6 +111,14 @@ export function OrganizationPage() {
 			<PageHeader
 				title="Organization"
 				description={`Manage ${activeOrg.name}`}
+				actions={
+					<Link to="/dashboard/organization/new">
+						<Button size="sm">
+							<Plus className="h-4 w-4 mr-1" />
+							Create Organization
+						</Button>
+					</Link>
+				}
 			/>
 
 			<div className="flex flex-col gap-6">

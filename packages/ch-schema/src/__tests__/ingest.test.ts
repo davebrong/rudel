@@ -22,9 +22,19 @@ const executor: typeof baseExecutor = {
 		const rows = params.values
 			.map((r: Record<string, unknown>) => JSON.stringify(r))
 			.join("\n");
-		await baseExecutor.execute(
-			`INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
-		);
+		const sql = `INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`;
+		for (let attempt = 0; attempt < 5; attempt++) {
+			try {
+				await baseExecutor.execute(sql);
+				return;
+			} catch (error) {
+				const isRaceCondition =
+					error instanceof Error &&
+					error.message.includes("INSERT race condition");
+				if (!isRaceCondition || attempt === 4) throw error;
+				await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+			}
+		}
 	},
 };
 
