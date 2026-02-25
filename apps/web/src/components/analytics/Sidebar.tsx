@@ -159,11 +159,7 @@ export function Sidebar() {
 						collapsed && "px-3",
 					)}
 				>
-					<img
-						src={logoSrc}
-						alt="Rudel"
-						className="h-5 w-5"
-					/>
+					<img src={logoSrc} alt="Rudel" className="h-5 w-5" />
 				</Link>
 				<div className="flex-1 min-w-0">
 					<OrgSwitcher collapsed={collapsed} />
