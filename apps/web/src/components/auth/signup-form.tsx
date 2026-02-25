@@ -10,6 +10,17 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { Separator } from "../ui/separator";
+
+function getCallbackURL(): string {
+	const params = new URLSearchParams(window.location.search);
+	const cliCallback = params.get("cli_callback");
+	const state = params.get("state");
+	if (cliCallback && state) {
+		return `/?cli_callback=${encodeURIComponent(cliCallback)}&state=${encodeURIComponent(state)}`;
+	}
+	return "/";
+}
 
 export function SignupForm({
 	onSwitchToLogin,
@@ -34,6 +45,17 @@ export function SignupForm({
 		setLoading(false);
 		if (error) {
 			setError(error.message ?? "Sign up failed");
+		}
+	}
+
+	async function handleSocialSignIn(provider: "google" | "github") {
+		setError("");
+		const { error } = await authClient.signIn.social({
+			provider,
+			callbackURL: getCallbackURL(),
+		});
+		if (error) {
+			setError(error.message ?? `Sign up with ${provider} failed`);
 		}
 	}
 
@@ -85,6 +107,27 @@ export function SignupForm({
 						{loading ? "Creating account..." : "Sign up"}
 					</Button>
 				</form>
+
+				<div className="flex items-center gap-2">
+					<Separator className="flex-1" />
+					<span className="text-xs text-muted-foreground">OR</span>
+					<Separator className="flex-1" />
+				</div>
+
+				<div className="flex flex-col gap-2">
+					<Button
+						variant="outline"
+						onClick={() => handleSocialSignIn("google")}
+					>
+						Continue with Google
+					</Button>
+					<Button
+						variant="outline"
+						onClick={() => handleSocialSignIn("github")}
+					>
+						Continue with GitHub
+					</Button>
+				</div>
 
 				<p className="text-center text-sm text-muted-foreground">
 					Already have an account?{" "}

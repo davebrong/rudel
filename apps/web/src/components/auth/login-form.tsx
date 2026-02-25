@@ -43,6 +43,17 @@ export function LoginForm({
 		}
 	}
 
+	async function handleSocialSignIn(provider: "google" | "github") {
+		setError("");
+		const { error } = await authClient.signIn.social({
+			provider,
+			callbackURL: getCallbackURL(),
+		});
+		if (error) {
+			setError(error.message ?? `Sign in with ${provider} failed`);
+		}
+	}
+
 	return (
 		<Card className="w-full max-w-sm">
 			<CardHeader>
@@ -89,23 +100,13 @@ export function LoginForm({
 				<div className="flex flex-col gap-2">
 					<Button
 						variant="outline"
-						onClick={() =>
-							authClient.signIn.social({
-								provider: "google",
-								callbackURL: getCallbackURL(),
-							})
-						}
+						onClick={() => handleSocialSignIn("google")}
 					>
 						Continue with Google
 					</Button>
 					<Button
 						variant="outline"
-						onClick={() =>
-							authClient.signIn.social({
-								provider: "github",
-								callbackURL: getCallbackURL(),
-							})
-						}
+						onClick={() => handleSocialSignIn("github")}
 					>
 						Continue with GitHub
 					</Button>

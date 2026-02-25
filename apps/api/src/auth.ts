@@ -43,31 +43,39 @@ export function createAuth(db: object, config: AuthConfig) {
 			user: {
 				create: {
 					after: async (user, ctx) => {
-						const adapter = ctx?.context?.adapter;
-						if (!adapter) return;
+						try {
+							const adapter = ctx?.context?.adapter;
+							if (!adapter) return;
 
-						const slug = `${user.email.split("@")[0]}-${user.id.slice(0, 8)}`;
-						const org = await adapter.create({
-							model: "organization",
-							data: {
-								id: user.id,
-								name: `${user.name}'s Workspace`,
-								slug,
-								createdAt: new Date(),
-							},
-							forceAllowId: true,
-						});
-
-						if (org) {
-							await adapter.create({
-								model: "member",
+							const slug = `${user.email.split("@")[0]}-${user.id.slice(0, 8)}`;
+							const org = await adapter.create({
+								model: "organization",
 								data: {
-									organizationId: org.id,
-									userId: user.id,
-									role: "owner",
+									id: user.id,
+									name: `${user.name}'s Workspace`,
+									slug,
 									createdAt: new Date(),
 								},
+								forceAllowId: true,
 							});
+
+							if (org) {
+								await adapter.create({
+									model: "member",
+									data: {
+										organizationId: org.id,
+										userId: user.id,
+										role: "owner",
+										createdAt: new Date(),
+									},
+								});
+							}
+						} catch (err) {
+							console.error(
+								"Failed to create default organization for user",
+								user.id,
+								err,
+							);
 						}
 					},
 				},
