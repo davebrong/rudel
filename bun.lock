@@ -107,13 +107,14 @@
       "name": "@rudel/ch-schema",
       "version": "0.0.0",
       "dependencies": {
-        "@chkit/clickhouse": "0.1.0-beta.9",
-        "@chkit/codegen": "0.1.0-beta.9",
-        "@chkit/core": "0.1.0-beta.9",
-        "@chkit/plugin-codegen": "0.1.0-beta.9",
-        "@chkit/plugin-obsessiondb": "0.1.0-beta.9",
-        "@chkit/plugin-pull": "0.1.0-beta.9",
-        "chkit": "0.1.0-beta.9",
+        "@chkit/clickhouse": "0.1.0-beta.10",
+        "@chkit/codegen": "0.1.0-beta.10",
+        "@chkit/core": "0.1.0-beta.10",
+        "@chkit/plugin-backfill": "0.1.0-beta.10",
+        "@chkit/plugin-codegen": "0.1.0-beta.10",
+        "@chkit/plugin-obsessiondb": "0.1.0-beta.10",
+        "@chkit/plugin-pull": "0.1.0-beta.10",
+        "chkit": "0.1.0-beta.10",
         "zod": "^3.24.0",
       },
       "devDependencies": {
@@ -142,8 +143,8 @@
     },
   },
   "overrides": {
-    "@chkit/clickhouse": "0.1.0-beta.9",
-    "@chkit/core": "0.1.0-beta.9",
+    "@chkit/clickhouse": "0.1.0-beta.10",
+    "@chkit/core": "0.1.0-beta.10",
   },
   "packages": {
     "@antfu/ni": ["@antfu/ni@25.0.0", "", { "dependencies": { "ansis": "^4.0.0", "fzf": "^0.5.2", "package-manager-detector": "^1.3.0", "tinyexec": "^1.0.1" }, "bin": { "na": "bin/na.mjs", "ni": "bin/ni.mjs", "nr": "bin/nr.mjs", "nci": "bin/nci.mjs", "nlx": "bin/nlx.mjs", "nun": "bin/nun.mjs", "nup": "bin/nup.mjs" } }, "sha512-9q/yCljni37pkMr4sPrI3G4jqdIk074+iukc5aFJl7kmDCCsiJrbZ6zKxnES1Gwg+i9RcDZwvktl23puGslmvA=="],
@@ -236,17 +237,19 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.4.2", "", { "os": "win32", "cpu": "x64" }, "sha512-9ma7C4g8Sq3cBlRJD2yrsHXB1mnnEBdpy7PhvFrylQWQb4PoyCmPucdX7frvsSBQuFtIiKCrolPl/8tCZrKvgQ=="],
 
-    "@chkit/clickhouse": ["@chkit/clickhouse@0.1.0-beta.9", "", { "dependencies": { "@chkit/core": "0.1.0-beta.9", "@clickhouse/client": "^1.11.0" } }, "sha512-D/3JK5QWJh6QBOtrD90SkhWFwTN9uUj8pyR6+5aOvalNmCat+vFH6SHb9di+vkHKLJ5sdNyTqsyEaN/FMg5wtQ=="],
+    "@chkit/clickhouse": ["@chkit/clickhouse@0.1.0-beta.10", "", { "dependencies": { "@chkit/core": "0.1.0-beta.10", "@clickhouse/client": "^1.11.0" } }, "sha512-kbGbc2taqdaJ/G1UKbMn10NMYm3vPd0Iwp1y8LIb72WzjisW1WErSWk3PD3Kejl1D38tw8sd00qzia3w5GLAqw=="],
 
-    "@chkit/codegen": ["@chkit/codegen@0.1.0-beta.9", "", { "dependencies": { "@chkit/core": "0.1.0-beta.9" } }, "sha512-32Cz8udL+X5DkHks78OVshsMMduS5ftv537bW4oS38Lx0fMS7XQ1wlcA2CNXGZm52tslUSHUUhLPsfeVXlwgYQ=="],
+    "@chkit/codegen": ["@chkit/codegen@0.1.0-beta.10", "", { "dependencies": { "@chkit/core": "0.1.0-beta.10" } }, "sha512-sumjAYStY9+TnVe++b+dr3IZlVHnxUCUkKVQ/w25iP2kRvJQrox3wSwn3/BliQpC1d2ee9PpAKZc5hItMaVLCw=="],
 
-    "@chkit/core": ["@chkit/core@0.1.0-beta.9", "", { "dependencies": { "fast-glob": "^3.3.2" } }, "sha512-nHRmCaylL6DRiMAAV5gkknM5qTc+fLSIu8Em5Y/jMFem4+llke2+lxeY8zz8XeKK1d7mYVea6OPcKNjWnjnd9A=="],
+    "@chkit/core": ["@chkit/core@0.1.0-beta.10", "", { "dependencies": { "fast-glob": "^3.3.2" } }, "sha512-uyFlq8l5nmdacb4VHsMhGywMrQHxmEMp5JD97+tJrGMAVoXnRQkIbun8s3rLaZcMatzWKcxnpnXwc8bMTLausg=="],
 
-    "@chkit/plugin-codegen": ["@chkit/plugin-codegen@0.1.0-beta.9", "", { "dependencies": { "@chkit/core": "0.1.0-beta.9" } }, "sha512-T5lN4M7xJK5dTlbvQFZJ1nrJ8gyYs851DNrDXA0oJnLbSk7ZgjWcsWCuDqRvW0upxUvGE1UHALTpZjTKmJBwUw=="],
+    "@chkit/plugin-backfill": ["@chkit/plugin-backfill@0.1.0-beta.10", "", { "dependencies": { "@chkit/core": "0.1.0-beta.10" } }, "sha512-941t5Pw52SRNjrlVuBkRan4ssti8L8ZXvY2rK2WsMkQzKxmRsum3RDHTOsAjzaeXxb0k5M0AVsn9vi9dgtK3Nw=="],
 
-    "@chkit/plugin-obsessiondb": ["@chkit/plugin-obsessiondb@0.1.0-beta.9", "", { "dependencies": { "@chkit/core": "0.1.0-beta.9" } }, "sha512-tJC1otS8Nt6cIQDd8qiPqg8BIIqRpLFCizCssNyhV2xK/8n44lU9J0kGBIWUgEN0csMJfKcTuK2j2diXsIIGsg=="],
+    "@chkit/plugin-codegen": ["@chkit/plugin-codegen@0.1.0-beta.10", "", { "dependencies": { "@chkit/core": "0.1.0-beta.10" } }, "sha512-FyeA+hI7j5qgvVTb8sEjdQSqvI4v2D9acDB1TdKJ+8F1BneqynTqO4e/9cE+dzcLxRLIozMjGLHCk8UxW0a9GA=="],
 
-    "@chkit/plugin-pull": ["@chkit/plugin-pull@0.1.0-beta.9", "", { "dependencies": { "@chkit/clickhouse": "0.1.0-beta.9", "@chkit/core": "0.1.0-beta.9" } }, "sha512-2xyE2rK2W4KWVHx253y4ph6LrbRW1OoXNmpkblrc/zGv+lB7tF7HGMU/yXPWnghAR8Xfd6MucX2pFyPQOlvTVw=="],
+    "@chkit/plugin-obsessiondb": ["@chkit/plugin-obsessiondb@0.1.0-beta.10", "", { "dependencies": { "@chkit/core": "0.1.0-beta.10" } }, "sha512-v0kvLMRPgtc0h/oH3hNnxOk1/cQjy6aAHAw28++wGDNu4ga9D6b52PqP/Ykqpcmm0vQ/5+Od2yvu2cNuqQv5xg=="],
+
+    "@chkit/plugin-pull": ["@chkit/plugin-pull@0.1.0-beta.10", "", { "dependencies": { "@chkit/clickhouse": "0.1.0-beta.10", "@chkit/core": "0.1.0-beta.10" } }, "sha512-95JPbpMl5hd+OrimaPudAeril848yBAjVB0/Yx0IlHZlYIaoxEDUxnF+gg66b0KwgrgaulRcPR8C+bY7mkAWQw=="],
 
     "@clickhouse/client": ["@clickhouse/client@1.17.0", "", { "dependencies": { "@clickhouse/client-common": "1.17.0" } }, "sha512-Y3DQoamKZ/Iyosoq7Lj7lqpDkQDK4R/5mI52yJs4ZLPIO+d6/CYDqTbFBIb4No3C/AlXUYE4TKhj/kXDpe6rOA=="],
 
@@ -730,7 +733,7 @@
 
     "buffer-from": ["buffer-from@1.1.2", "", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
 
-    "bun-types": ["bun-types@1.3.9", "", { "dependencies": { "@types/node": "*" } }, "sha512-+UBWWOakIP4Tswh0Bt0QD0alpTY8cb5hvgiYeWCMet9YukHbzuruIEeXC2D7nMJPB12kbh8C7XJykSexEqGKJg=="],
+    "bun-types": ["bun-types@1.3.10", "", { "dependencies": { "@types/node": "*" } }, "sha512-tcpfCCl6XWo6nCVnpcVrxQ+9AYN1iqMIzgrSKYMB/fjLtV2eyAVEg7AxQJuCq/26R6HpKWykQXuSOq/21RYcbg=="],
 
     "bundle-name": ["bundle-name@4.1.0", "", { "dependencies": { "run-applescript": "^7.0.0" } }, "sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q=="],
 
@@ -756,7 +759,7 @@
 
     "character-reference-invalid": ["character-reference-invalid@2.0.1", "", {}, "sha512-iBZ4F4wRbyORVsu0jPV7gXkOsGYjGHPmAyv+HiHG8gi5PtC9KI2j1+v8/tlibRvjoWX027ypmG/n0HtO5t7unw=="],
 
-    "chkit": ["chkit@0.1.0-beta.9", "", { "dependencies": { "@chkit/clickhouse": "0.1.0-beta.9", "@chkit/codegen": "0.1.0-beta.9", "@chkit/core": "0.1.0-beta.9", "fast-glob": "^3.3.2" }, "bin": { "chkit": "dist/bin/chkit.js" } }, "sha512-p6gu5afd19enQtwGegWIP3AS05SLn/S2cNSL98ooRcNENF6kCCWDXCsyUc8HkCcINMF1dYxVcGXh6pxCBf+lVg=="],
+    "chkit": ["chkit@0.1.0-beta.10", "", { "dependencies": { "@chkit/clickhouse": "0.1.0-beta.10", "@chkit/codegen": "0.1.0-beta.10", "@chkit/core": "0.1.0-beta.10", "fast-glob": "^3.3.2" }, "bin": { "chkit": "dist/bin/chkit.js" } }, "sha512-6dI6bTMri51xVwlzuhPVKKm4GM15XlKTjbg5xFgeTyugc8esQBjx+p3icGsaEWefAPzlUDyvZHW1zlwHpuRBag=="],
 
     "class-variance-authority": ["class-variance-authority@0.7.1", "", { "dependencies": { "clsx": "^2.1.1" } }, "sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg=="],
 
