@@ -123,6 +123,10 @@ export const invitation = pgTable("invitation", {
 	inviterId: text("inviter_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+		.defaultNow()
+		.notNull(),
+	teamId: text("team_id"),
 });
 
 export type UserSelect = typeof user.$inferSelect;
