@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "207f41adf678",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6593-rudel-org-invites-not-working-v1",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/chx/migrations/20260226054030_auto.sql",
+    "packages/ch-schema/clickhouse.config.ts",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/scripts/backfill.sql",
+    "packages/ch-schema/src/generated/chkit-ingest.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/20/7f41adf678/0/metadata.json",
+      "transcript": "/20/7f41adf678/0/full.jsonl",
+      "context": "/20/7f41adf678/0/context.md",
+      "content_hash": "/20/7f41adf678/0/content_hash.txt",
+      "prompt": "/20/7f41adf678/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 635,
+    "cache_creation_tokens": 65684,
+    "cache_read_tokens": 1285976,
+    "output_tokens": 139,
+    "api_call_count": 21
+  }
+}
