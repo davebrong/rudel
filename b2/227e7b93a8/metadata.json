@@ -3,7 +3,7 @@
   "checkpoint_id": "b2227e7b93a8",
   "strategy": "manual-commit",
   "branch": "marc/num-6593-rudel-org-invites-not-working",
-  "checkpoints_count": 4,
+  "checkpoints_count": 6,
   "files_touched": [
     ".context/NUM-6590-analysis.md",
     ".context/NUM-6592-mv-extraction-context.md",
@@ -34,13 +34,20 @@
       "context": "/b2/227e7b93a8/1/context.md",
       "content_hash": "/b2/227e7b93a8/1/content_hash.txt",
       "prompt": "/b2/227e7b93a8/1/prompt.txt"
+    },
+    {
+      "metadata": "/b2/227e7b93a8/2/metadata.json",
+      "transcript": "/b2/227e7b93a8/2/full.jsonl",
+      "context": "/b2/227e7b93a8/2/context.md",
+      "content_hash": "/b2/227e7b93a8/2/content_hash.txt",
+      "prompt": "/b2/227e7b93a8/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 93,
-    "cache_creation_tokens": 137610,
-    "cache_read_tokens": 5043238,
-    "output_tokens": 1087,
-    "api_call_count": 77
+    "input_tokens": 122,
+    "cache_creation_tokens": 174060,
+    "cache_read_tokens": 6077681,
+    "output_tokens": 1317,
+    "api_call_count": 101
   }
 }

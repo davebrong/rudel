@@ -1,0 +1,306 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/marc/conductor/workspaces/rudel/chiang-mai directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is main. Use this for actions like creating new PRs, bisecting, etc., unless you're told otherwise.
+
+If the user asks you to work on several unrelated tasks in parallel, you can suggest they start new workspaces.
+If the user asks for help with Conductor, ask them to email [humans@conductor.build](mailto:humans@conductor.build) or
+click on the comment icon in the bottom left to send feedback.
+</system_instruction>
+
+fix #2 from @.context/NUM-6590-analysis.md
+
+---
+
+Base directory for this skill: /Users/marc/conductor/workspaces/rudel/chiang-mai/.claude/skills/typescript-standards
+
+# TypeScript Standards
+
+## Named Exports Only
+```ts
+// ❌ Bad
+export default function myFunction() {}
+
+// ✅ Good
+export function myFunction() {}
+```
+
+## Package Exports (Monorepo)
+
+Only export what other packages actually consume:
+
+```ts
+// ❌ Bad - Exports everything including internal types
+export * from "./digest";
+
+// ✅ Good - Explicit public interface
+export {
+  fetchCompoundDigest,
+  buildCompoundDigestBlocks,
+  type CompoundDigestEnv,
+} from "./digest";
+```
+
+Before adding exports, check what's actually imported by consumer packages.
+
+## Import Patterns
+
+### Prefer Static Imports
+Always use static imports at the top of the file. Only use dynamic imports (`await import()`) when:
+- Conditional loading is required (feature flags, environment checks)
+- Code splitting is intentional for performance
+- Circular dependency breaking is necessary
+
+Never use dynamic imports just to import something mid-function when a static import would work.
+
+### Type-Only Imports
+For values used only as types, use explicit type-only imports:
+```ts
+// ❌ Bad - Imports value but only uses type
+import { MyClass } from './my-class'
+type Instance = MyClass
+
+// ✅ Good - Clear intent, no runtime import
+import { type MyClass } from './my-class'
+type Instance = MyClass
+```
+
+## Naming Conventions
+- **Files**: kebab-case (`my-component.ts`)
+- **Variables/functions**: camelCase (`myVariable`, `myFunction()`)
+- **Classes/types/interfaces**: PascalCase (`MyClass`, `MyInterface`)
+- **Constants/enum values**: ALL_CAPS (`MAX_COUNT`)
+- **Generic type parameters**: Prefix with `T` (`TKey`, `TValue`)
+
+## Type Safety Rules
+
+### Derive Types from Zod Schemas
+When a Zod schema exists, always derive the TypeScript type from it using `z.infer`. Never define a separate interface that duplicates the schema's shape:
+```ts
+// ❌ Bad - Manually duplicates the Zod schema, drifts over time
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+// ✅ Good - Single source of truth
+import { type User } from "@rudel/api-routes"
+
+// ✅ Good - Extend when the service needs extra internal fields
+import { type User as UserBase } from "@rudel/api-routes"
+export interface User extends UserBase {
+  session_count: number
+}
+```
+
+If the type needs fields beyond the schema, extend the inferred type rather than redefining it.
+
+### No Type Casts
+Never use `as` or `as unknown as` type assertions. They hide type incompatibilities:
+```ts
+// ❌ Bad - Hides the real problem
+const env = context.env as unknown as ExecutorEnv
+
+// ✅ Good - Fix the underlying type mismatch
+// Option 1: Properly type the source
+const env: ExecutorEnv = context.env
+
+// Option 2: Use type guards for runtime checking
+function isExecutorEnv(env: unknown): env is ExecutorEnv {
+  return typeof env === 'object' && env !== null && 'DB' in env
+}
+```
+
+If you encounter code that seems to require a cast:
+1. Investigate why the types don't match
+2. Fix the source type definitions
+3. If copying from existing code with casts, note it needs cleanup
+
+### Prefer Discriminated Unions
+```ts
+// ✅ Good - Prevents impossible states
+type FetchingState<TData> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: TData }
+  | { status: 'error'; error: Error }
+
+// Handle with switch
+switch (state.status) {
+  case 'success':
+    console.log(state.data)
+    break
+}
+```
+
+### Optional Properties
+Use sparingly. Prefer `T | undefined` over `T?` to force explicit passing:
+```ts
+// ✅ Good
+type AuthOptions = {
+  userId: string | undefined
+}
+```
+
+### Prefer Interfaces for Extending
+```ts
+// ❌ Bad - & operator has terrible performance
+type C = A & B
+
+// ✅ Good
+interface C extends A, B {}
+```
+
+### Don't Use Enums
+Use `as const` objects instead:
+```ts
+const sizes = {
+  xs: 'EXTRA_SMALL',
+  sm: 'SMALL',
+} as const
+
+type Size = keyof typeof sizes
+```
+
+## Installing Libraries
+Never rely on training data for versions. Always install latest:
+```bash
+pnpm add -D @typescript-eslint/eslint-plugin
+```
+
+## Async Operations
+Use `Promise.all` for parallel operations:
+```ts
+const [users, posts] = await Promise.all([fetchUsers(), fetchPosts()])
+```
+
+## Immutability
+- Use readonly arrays
+- Use const assertions
+- Create new objects instead of mutating
+
+---
+
+Base directory for this skill: /Users/marc/conductor/workspaces/rudel/chiang-mai/.claude/skills/testing-vitest
+
+# Testing Standards (Vitest)
+
+## Framework
+- Use `vitest` (not jest or bun test)
+- Use `@cloudflare/vitest-pool-workers` for Cloudflare Workers
+- **CRITICAL**: Always use `pnpm test`, NEVER standalone test runners
+
+## CRITICAL Rules
+
+### 1. Never Use Try-Catch in Positive Tests
+```ts
+// ❌ Bad - Hides real errors
+it('should create user', async () => {
+  try {
+    const user = await createUser(userData)
+    expect(user.id).toBeTruthy()
+  } catch (error) {
+    console.error('Unexpected error:', error)
+  }
+})
+
+// ✅ Good - Let test framework handle errors
+it('should create user', async () => {
+  const user = await createUser(userData)
+  expect(user.id).toBeTruthy()
+})
+
+// ✅ Good - Only for testing specific errors
+it('should throw error', async () => {
+  await expect(createUser(invalid)).rejects.toThrow('Invalid email')
+})
+```
+
+### 2. Never Use Early Returns
+```ts
+// ❌ Bad - Silently skips test
+it('should test API', async () => {
+  if (!hasValidCredentials) return
+  const result = await apiCall()
+})
+
+// ✅ Good - Fail when preconditions missing
+it('should test API', async () => {
+  expect(hasValidCredentials).toBe(true)
+  const result = await apiCall()
+})
+```
+
+### 3. Never Skip Tests for Missing Env Vars
+```ts
+// ❌ Bad
+describe.skipIf(!process.env.CLICKHOUSE_URL)('Database Tests', () => {})
+
+// ✅ Good - Let tests fail if env not configured
+describe('Database Tests', () => {
+  const env = DatabaseEnvSchema.parse(process.env)
+  const client = createClientFromEnv(env)
+})
+```
+
+### 4. Initialize Inline, Not in beforeEach
+```ts
+// ❌ Bad - Unnecessary beforeEach
+describe('Tests', () => {
+  let queryBuilder: QueryBuilder
+  beforeEach(() => {
+    queryBuilder = new QueryBuilder(schema)
+  })
+})
+
+// ✅ Good - Inline initialization
+describe('Tests', () => {
+  const queryBuilder = new QueryBuilder(schema)
+})
+
+// ✅ Good - Use beforeEach only for async cleanup
+beforeEach(async () => {
+  await client.query('DELETE FROM test_table')
+})
+```
+
+## Best Practices
+
+### Use assert() for Type Narrowing
+```ts
+// ✅ Good - Provides type narrowing
+assert(checkoutRecord)
+```
+
+### Use vi.waitFor() for Async Tests
+```ts
+await vi.waitFor(
+  async () => {
+    const result = await clickhouse.query('...')
+    expect(records).toHaveLength(2)
+  },
+  { timeout: 5000, interval: 500 }
+)
+```
+
+### Don't Assert Env Vars in Tests
+Already validated in `vitest.config.ts`. Trust the config.
+
+### Automatic State Reset (Cloudflare Workers)
+Vitest automatically resets D1, KV, R2, Durable Objects between tests.
+
+Only clean up external services (ClickHouse, external APIs).
+
+## Test Scripts Organization
+Place test scripts, utilities, one-off scripts in `repl/` folder at package root.
+
+## Environment Variables
+When adding new env vars for tests, update:
+1. Package's `turbo.json` → `passThroughEnv` array
+2. `.github/workflows/ci.yml` → `env` section
+
+---
+
+okay mark the task in the analysis file as done

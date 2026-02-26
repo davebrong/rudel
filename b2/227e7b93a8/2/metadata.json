@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "b2227e7b93a8",
+  "session_id": "ea4eb6aa-c32e-4be0-bb84-4d56b13fcaa9",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T04:53:17.995948Z",
+  "branch": "marc/num-6593-rudel-org-invites-not-working",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".context/NUM-6590-analysis.md",
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/ingest.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 29,
+    "cache_creation_tokens": 36450,
+    "cache_read_tokens": 1034443,
+    "output_tokens": 230,
+    "api_call_count": 24
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T04:53:17.86392Z",
+    "agent_lines": 0,
+    "human_added": 341,
+    "human_modified": 459,
+    "human_removed": 0,
+    "total_committed": 565,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-chiang-mai/ea4eb6aa-c32e-4be0-bb84-4d56b13fcaa9.jsonl"
+}
