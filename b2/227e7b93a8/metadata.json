@@ -3,7 +3,7 @@
   "checkpoint_id": "b2227e7b93a8",
   "strategy": "manual-commit",
   "branch": "marc/num-6593-rudel-org-invites-not-working",
-  "checkpoints_count": 6,
+  "checkpoints_count": 9,
   "files_touched": [
     ".context/NUM-6590-analysis.md",
     ".context/NUM-6592-mv-extraction-context.md",
@@ -18,7 +18,8 @@
     "packages/ch-schema/src/db/schema/session-analytics.ts",
     "packages/ch-schema/src/generated/chkit-types.ts",
     "packages/sql-schema/db/migrations/0003_clean_franklin_storm.sql",
-    "packages/sql-schema/db/migrations/meta/0003_snapshot.json"
+    "packages/sql-schema/db/migrations/meta/0003_snapshot.json",
+    "packages/sql-schema/src/auth-schema.ts"
   ],
   "sessions": [
     {
@@ -41,13 +42,20 @@
       "context": "/b2/227e7b93a8/2/context.md",
       "content_hash": "/b2/227e7b93a8/2/content_hash.txt",
       "prompt": "/b2/227e7b93a8/2/prompt.txt"
+    },
+    {
+      "metadata": "/b2/227e7b93a8/3/metadata.json",
+      "transcript": "/b2/227e7b93a8/3/full.jsonl",
+      "context": "/b2/227e7b93a8/3/context.md",
+      "content_hash": "/b2/227e7b93a8/3/content_hash.txt",
+      "prompt": "/b2/227e7b93a8/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 122,
-    "cache_creation_tokens": 174060,
-    "cache_read_tokens": 6077681,
-    "output_tokens": 1317,
-    "api_call_count": 101
+    "input_tokens": 1199,
+    "cache_creation_tokens": 266417,
+    "cache_read_tokens": 11565083,
+    "output_tokens": 2292,
+    "api_call_count": 173
   }
 }
