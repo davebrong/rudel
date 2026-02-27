@@ -61,19 +61,16 @@ bun run chcli:prd -- -q "TRUNCATE TABLE rudel.session_analytics" -F pretty
 
 ### Step 4: Backfill `session_analytics`
 
-After the MV is recreated, new inserts into `claude_sessions` are handled automatically. But existing data needs to be replayed through the MV query. There are two approaches:
+After the MV is recreated, new inserts into `claude_sessions` are handled automatically. But existing data needs to be replayed through the MV query.
 
-#### Option A: chkit backfill plugin (preferred)
-
-The backfill plugin divides the time window into chunks (default 6 hours each), executes with per-chunk checkpointing, and supports resume on failure.
-
-**Known limitation:** The plugin uses a fixed `event_time` column convention for time windowing. Our tables use `session_date` / `ingested_at` instead. Test with CI first to verify the generated SQL is correct.
+The backfill plugin divides the time window into chunks (default 6 hours each), executes with per-chunk checkpointing, and supports resume on failure. The plugin uses the `session_date` column for time windowing, configured via `plugins.backfill.timeColumn` on the `claude_sessions` table definition.
 
 ```bash
 # 1. Plan the backfill (generates a plan, does not execute)
 bun run ch:backfill:plan -- --target rudel.session_analytics --from 2025-01-01 --to 2026-03-01
 
 # 2. Inspect the plan output — check the generated SQL and chunk boundaries
+#    Verify the WHERE clauses reference session_date
 #    The plan ID is a 16-char hex string printed in the output
 
 # 3. Execute
@@ -83,8 +80,6 @@ bun run ch:backfill:run -- --plan-id <plan-id>
 bun run ch:backfill:status -- --plan-id <plan-id>
 ```
 
-If the `event_time` convention causes issues (e.g., the generated SQL references a column that doesn't exist), fall back to Option B.
-
 For production:
 
 ```bash
@@ -93,30 +88,7 @@ bun run ch:backfill:run:prd -- --plan-id <plan-id>
 bun run ch:backfill:status:prd -- --plan-id <plan-id>
 ```
 
-#### Option B: Manual INSERT...SELECT (fallback)
-
-If the backfill plugin doesn't work due to the `event_time` column convention, run the MV query manually as a one-shot INSERT. This is what the old `scripts/backfill.sql` did.
-
-```bash
-bun run chcli -- -q "
-INSERT INTO rudel.session_analytics
-SELECT * FROM rudel.session_analytics_mv
--- This won't work: MVs are triggers, not queryable.
-"
-```
-
-The correct approach is to extract the MV's AS query and run it directly:
-
-```bash
-# Get the MV definition
-bun run chcli -- -q "SHOW CREATE TABLE rudel.session_analytics_mv" -F csv
-
-# Copy the SELECT ... FROM rudel.claude_sessions part
-# Wrap it in: INSERT INTO rudel.session_analytics (<column list>) <SELECT query> SETTINGS async_insert=0
-# Run it via chcli -f <file>
-```
-
-Note: For manual backfill, use `SETTINGS async_insert=0` to avoid ClickHouse Cloud silent 0-row inserts.
+The `--time-column session_date` CLI flag can also be used to explicitly override the time column, though this is handled automatically by the schema-level config.
 
 ### Step 5: Verify
 

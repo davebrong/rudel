@@ -129,10 +129,32 @@ const rudel_session_analytics_mv = materializedView({
       arrayMap(i -> if(_msg_types[i] = 'assistant' AND _msg_types[i+1] = 'user',
         dateDiff('second', _timestamps[i], _timestamps[i+1]), 0), range(1, length(_timestamps))),
       []
-    ) AS _human_gaps
+    ) AS _human_gaps,
+
+    arrayFilter(
+      x -> JSONExtractString(x, 'type') = 'assistant' AND JSONHas(x, 'message'),
+      splitByChar('\\n', cs.content)
+    ) AS _assistant_lines,
+
+    arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'input_tokens')), _assistant_lines)) AS _input_tokens,
+    arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'output_tokens')), _assistant_lines)) AS _output_tokens,
+    arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'cache_read_input_tokens')), _assistant_lines)) AS _cache_read,
+    arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'cache_creation_input_tokens')), _assistant_lines)) AS _cache_creation,
+
+    arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '"name":"Skill"[^}]*"skill":"([^"]+)"'))) AS _skills,
+    arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '"name":"Task"[^}]*"subagent_type":"([^"]+)"'))) AS _subagent_types,
+    arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '<command-name>/([^<]+)</command-name>'))) AS _slash_commands
 
   SELECT
     *,
+    _input_tokens as input_tokens,
+    _output_tokens as output_tokens,
+    _cache_read as cache_read_input_tokens,
+    _cache_creation as cache_creation_input_tokens,
+    _input_tokens + _output_tokens as total_tokens,
+    _skills as skills,
+    _slash_commands as slash_commands,
+    _subagent_types as subagent_types,
     toUInt32(length(_timestamps)) as total_interactions,
     toUInt32(dateDiff('minute', arrayMin(_timestamps), arrayMax(_timestamps))) as actual_duration_min,
     if(length(_prompt_periods_sec) > 0, round(arrayAvg(_prompt_periods_sec), 2), 0) as avg_period_sec,
@@ -170,33 +192,33 @@ const rudel_session_analytics_mv = materializedView({
     toUInt32(arraySum(_human_gaps)) as human_duration_sec,
     CASE
       WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) <= 10
-          AND cs.total_tokens < 500000
-          AND cs.output_tokens > 1000
+          AND (_input_tokens + _output_tokens) < 500000
+          AND _output_tokens > 1000
       THEN 'quick_win'
       WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) > 30
-          AND cs.output_tokens > 50000
+          AND _output_tokens > 50000
           AND cs.git_sha IS NOT NULL AND cs.git_sha != ''
       THEN 'deep_work'
-      WHEN cs.total_tokens > 1000000
-          AND (cs.output_tokens / nullif(cs.input_tokens, 0)) < 0.3
+      WHEN (_input_tokens + _output_tokens) > 1000000
+          AND (_output_tokens / nullif(_input_tokens, 0)) < 0.3
           AND dateDiff('minute', cs.session_date, cs.last_interaction_date) > 20
       THEN 'struggle'
-      WHEN length(cs.skills) >= 3
+      WHEN length(_skills) >= 3
           AND (cs.git_sha IS NULL OR cs.git_sha = '')
-          AND cs.total_tokens > 200000
+          AND (_input_tokens + _output_tokens) > 200000
       THEN 'exploration'
       WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) < 3
-          AND cs.output_tokens < 500
+          AND _output_tokens < 500
       THEN 'abandoned'
       ELSE 'standard'
     END as session_archetype,
     toUInt8(round(
       50
       + (if(cs.git_sha IS NOT NULL AND cs.git_sha != '', 20, 0))
-      + (if((cs.output_tokens / nullif(cs.input_tokens, 0)) > 0.5, 15, 0))
-      + (least(toUInt32(length(cs.skills)), 3) * 5)
-      - (if(cs.total_tokens > 1500000 AND (cs.git_sha IS NULL OR cs.git_sha = ''), 20, 0))
-      - (if(dateDiff('minute', cs.session_date, cs.last_interaction_date) < 2 AND cs.output_tokens < 200, 30, 0))
+      + (if((_output_tokens / nullif(_input_tokens, 0)) > 0.5, 15, 0))
+      + (least(toUInt32(length(_skills)), 3) * 5)
+      - (if((_input_tokens + _output_tokens) > 1500000 AND (cs.git_sha IS NULL OR cs.git_sha = ''), 20, 0))
+      - (if(dateDiff('minute', cs.session_date, cs.last_interaction_date) < 2 AND _output_tokens < 200, 30, 0))
       - (least(toUInt32(
           length(extractAll(cs.content, '"isApiErrorMessage":true'))
           + length(extractAll(cs.content, '"is_error":true'))

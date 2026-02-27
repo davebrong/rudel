@@ -1,7 +1,11 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { IngestSessionInput } from "@rudel/api-routes";
 import { createClickHouseExecutor } from "../clickhouse.js";
-import { buildSessionRow, ingestSession } from "../ingest.js";
+import {
+	buildSessionRow,
+	extractTimestampRange,
+	ingestSession,
+} from "../ingest.js";
 
 const sampleInput: IngestSessionInput = {
 	sessionId: "test-session-abc",
@@ -62,25 +66,99 @@ describe("buildSessionRow", () => {
 		expect(row.subagents).toEqual({});
 	});
 
-	test("sets timestamps and default token values", () => {
+	test("falls back to now when content has no timestamps", () => {
 		const row = buildSessionRow(sampleInput, sampleContext);
 
 		expect(row.session_date).toBeTruthy();
 		expect(row.last_interaction_date).toBeTruthy();
 		expect(row.ingested_at).toBeTruthy();
-		expect(row.input_tokens).toBe("0");
-		expect(row.output_tokens).toBe("0");
-		expect(row.cache_read_input_tokens).toBe("0");
-		expect(row.cache_creation_input_tokens).toBe("0");
-		expect(row.total_tokens).toBe("0");
+		// With no JSONL timestamps, session_date should equal ingested_at (both are "now")
+		expect(row.session_date).toBe(row.ingested_at);
+		expect(row.last_interaction_date).toBe(row.ingested_at);
 	});
 
-	test("sets empty arrays for metadata fields", () => {
-		const row = buildSessionRow(sampleInput, sampleContext);
+	test("extracts session_date and last_interaction_date from JSONL timestamps", () => {
+		const jsonlContent = [
+			'{"type":"user","timestamp":"2025-01-15T10:00:00.000Z","message":{"role":"user","content":"hello"}}',
+			'{"type":"assistant","timestamp":"2025-01-15T10:00:05.000Z","message":{"role":"assistant","content":"hi"}}',
+			'{"type":"user","timestamp":"2025-01-15T10:05:00.000Z","message":{"role":"user","content":"bye"}}',
+			'{"type":"assistant","timestamp":"2025-01-15T10:05:03.000Z","message":{"role":"assistant","content":"goodbye"}}',
+		].join("\n");
 
-		expect(row.skills).toEqual([]);
-		expect(row.slash_commands).toEqual([]);
-		expect(row.subagent_types).toEqual([]);
+		const input: IngestSessionInput = {
+			...sampleInput,
+			content: jsonlContent,
+		};
+
+		const row = buildSessionRow(input, sampleContext);
+
+		expect(row.session_date).toBe("2025-01-15T10:00:00.000");
+		expect(row.last_interaction_date).toBe("2025-01-15T10:05:03.000");
+		// ingested_at should still be "now", not a content timestamp
+		expect(row.ingested_at).not.toBe(row.session_date);
+	});
+});
+
+describe("extractTimestampRange", () => {
+	const fallback = "2026-01-01T00:00:00.000";
+
+	test("returns earliest and latest timestamps from JSONL lines", () => {
+		const content = [
+			'{"type":"user","timestamp":"2025-03-10T08:00:00.000Z"}',
+			'{"type":"assistant","timestamp":"2025-03-10T08:00:05.000Z"}',
+			'{"type":"user","timestamp":"2025-03-10T09:30:00.000Z"}',
+		].join("\n");
+
+		const [earliest, latest] = extractTimestampRange(content, fallback);
+		expect(earliest).toBe("2025-03-10T08:00:00.000");
+		expect(latest).toBe("2025-03-10T09:30:00.000");
+	});
+
+	test("returns fallback when content has no timestamps", () => {
+		const [earliest, latest] = extractTimestampRange(
+			"plain text content",
+			fallback,
+		);
+		expect(earliest).toBe(fallback);
+		expect(latest).toBe(fallback);
+	});
+
+	test("returns fallback for empty content", () => {
+		const [earliest, latest] = extractTimestampRange("", fallback);
+		expect(earliest).toBe(fallback);
+		expect(latest).toBe(fallback);
+	});
+
+	test("ignores lines without top-level timestamp fields", () => {
+		const content = [
+			'{"type":"summary","summary":"some text"}',
+			'{"type":"user","timestamp":"2025-06-01T12:00:00.000Z"}',
+			'{"type":"file-history-snapshot","snapshot":{"timestamp":"2025-06-01T11:00:00.000Z"}}',
+		].join("\n");
+
+		const [earliest, latest] = extractTimestampRange(content, fallback);
+		// Only the top-level timestamp is extracted; nested snapshot.timestamp is ignored
+		expect(earliest).toBe("2025-06-01T12:00:00.000");
+		expect(latest).toBe("2025-06-01T12:00:00.000");
+	});
+
+	test("handles single timestamp", () => {
+		const content = '{"type":"user","timestamp":"2025-04-20T15:30:00.000Z"}';
+
+		const [earliest, latest] = extractTimestampRange(content, fallback);
+		expect(earliest).toBe("2025-04-20T15:30:00.000");
+		expect(latest).toBe("2025-04-20T15:30:00.000");
+	});
+
+	test("ignores invalid timestamp values", () => {
+		const content = [
+			'{"type":"user","timestamp":"not-a-date"}',
+			'{"type":"assistant","timestamp":"2025-07-04T10:00:00.000Z"}',
+		].join("\n");
+
+		const [earliest, latest] = extractTimestampRange(content, fallback);
+		expect(earliest).toBe("2025-07-04T10:00:00.000");
+		expect(latest).toBe("2025-07-04T10:00:00.000");
 	});
 });
 
