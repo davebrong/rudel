@@ -39,9 +39,6 @@ const rudel_claude_sessions = table({
 		index_granularity: "8192",
 		storage_policy: "'s3'",
 	},
-	plugins: {
-		backfill: { timeColumn: "session_date" },
-	},
 });
 
 export default schema(rudel_claude_sessions);

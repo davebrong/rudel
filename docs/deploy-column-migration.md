@@ -63,7 +63,7 @@ bun run chcli:prd -- -q "TRUNCATE TABLE rudel.session_analytics" -F pretty
 
 After the MV is recreated, new inserts into `claude_sessions` are handled automatically. But existing data needs to be replayed through the MV query.
 
-The backfill plugin divides the time window into chunks (default 6 hours each), executes with per-chunk checkpointing, and supports resume on failure. The plugin uses the `session_date` column for time windowing, configured via `plugins.backfill.timeColumn` on the `claude_sessions` table definition.
+The backfill plugin divides the time window into chunks (default 6 hours each), executes with per-chunk checkpointing, and supports resume on failure. The plugin uses the `session_date` column for time windowing, configured via `defaults.timeColumn` in the `backfill()` plugin config in `clickhouse.config.ts`.
 
 ```bash
 # 1. Plan the backfill (generates a plan, does not execute)
