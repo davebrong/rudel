@@ -272,7 +272,7 @@ To drop everything and recreate:
 
 To backfill `session_analytics` from existing `claude_sessions` data (e.g., after recreating the table), use the `@chkit/plugin-backfill` plugin.
 
-The plugin uses `session_date` for time windowing, configured via `plugins.backfill.timeColumn` on the `claude_sessions` table definition and as a project-wide fallback in `clickhouse.config.ts`. The `--time-column` CLI flag can also override this explicitly.
+The plugin uses `session_date` for time windowing, configured via `defaults.timeColumn` in the `backfill()` plugin config in `clickhouse.config.ts`. The `--time-column` CLI flag can also override this explicitly.
 
 ```bash
 # From packages/ch-schema
