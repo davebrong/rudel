@@ -3,11 +3,14 @@
   "checkpoint_id": "2e4f1bac7f5b",
   "strategy": "manual-commit",
   "branch": "marc/num-6593-rudel-org-invites-not-working-v1",
-  "checkpoints_count": 2,
+  "checkpoints_count": 5,
   "files_touched": [
+    "CLAUDE.md",
     "docs/deploy-column-migration.md",
+    "packages/ch-schema/clickhouse.config.ts",
     "packages/ch-schema/package.json",
-    "packages/ch-schema/scripts/backfill.sql"
+    "packages/ch-schema/scripts/backfill.sql",
+    "packages/ch-schema/src/db/schema/claude-sessions.ts"
   ],
   "sessions": [
     {
@@ -23,13 +26,20 @@
       "context": "/2e/4f1bac7f5b/1/context.md",
       "content_hash": "/2e/4f1bac7f5b/1/content_hash.txt",
       "prompt": "/2e/4f1bac7f5b/1/prompt.txt"
+    },
+    {
+      "metadata": "/2e/4f1bac7f5b/2/metadata.json",
+      "transcript": "/2e/4f1bac7f5b/2/full.jsonl",
+      "context": "/2e/4f1bac7f5b/2/context.md",
+      "content_hash": "/2e/4f1bac7f5b/2/content_hash.txt",
+      "prompt": "/2e/4f1bac7f5b/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 327,
-    "cache_creation_tokens": 117741,
-    "cache_read_tokens": 566250,
-    "output_tokens": 110,
-    "api_call_count": 14
+    "input_tokens": 403,
+    "cache_creation_tokens": 242588,
+    "cache_read_tokens": 1641471,
+    "output_tokens": 1660,
+    "api_call_count": 39
   }
 }
