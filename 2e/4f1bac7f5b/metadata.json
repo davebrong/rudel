@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2e4f1bac7f5b",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6593-rudel-org-invites-not-working-v1",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/scripts/backfill.sql"
+  ],
+  "sessions": [
+    {
+      "metadata": "/2e/4f1bac7f5b/0/metadata.json",
+      "transcript": "/2e/4f1bac7f5b/0/full.jsonl",
+      "context": "/2e/4f1bac7f5b/0/context.md",
+      "content_hash": "/2e/4f1bac7f5b/0/content_hash.txt",
+      "prompt": "/2e/4f1bac7f5b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7,
+    "cache_creation_tokens": 13637,
+    "cache_read_tokens": 136520,
+    "output_tokens": 14,
+    "api_call_count": 5
+  }
+}
