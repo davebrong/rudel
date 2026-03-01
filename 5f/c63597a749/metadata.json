@@ -3,10 +3,16 @@
   "checkpoint_id": "5fc63597a749",
   "strategy": "manual-commit",
   "branch": "marc/oss-readiness",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     "CODE_OF_CONDUCT.md",
-    "LICENSE"
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md",
+    "apps/cli/CHANGELOG.md",
+    "apps/cli/package.json",
+    "package.json"
   ],
   "sessions": [
     {
@@ -22,13 +28,20 @@
       "context": "/5f/c63597a749/1/context.md",
       "content_hash": "/5f/c63597a749/1/content_hash.txt",
       "prompt": "/5f/c63597a749/1/prompt.txt"
+    },
+    {
+      "metadata": "/5f/c63597a749/2/metadata.json",
+      "transcript": "/5f/c63597a749/2/full.jsonl",
+      "context": "/5f/c63597a749/2/context.md",
+      "content_hash": "/5f/c63597a749/2/content_hash.txt",
+      "prompt": "/5f/c63597a749/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 3393,
-    "cache_creation_tokens": 73657,
-    "cache_read_tokens": 1017061,
-    "output_tokens": 5644,
-    "api_call_count": 26
+    "input_tokens": 3498,
+    "cache_creation_tokens": 161091,
+    "cache_read_tokens": 2739997,
+    "output_tokens": 12863,
+    "api_call_count": 64
   }
 }
