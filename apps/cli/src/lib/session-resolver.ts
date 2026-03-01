@@ -2,7 +2,7 @@ import { readdir, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join } from "node:path";
 
-const SESSIONS_BASE_DIR = join(homedir(), ".claude", "projects");
+export const SESSIONS_BASE_DIR = join(homedir(), ".claude", "projects");
 
 export interface SessionInfo {
 	transcriptPath: string;
