@@ -32,18 +32,10 @@ export function buildSessionRow(
 		repository: input.repository ?? null,
 		content: input.content,
 		subagents,
-		skills: [],
-		slash_commands: [],
-		subagent_types: [],
 		ingested_at: now,
 		user_id: context.userId,
 		git_branch: input.gitBranch ?? null,
 		git_sha: input.gitSha ?? null,
-		input_tokens: "0",
-		output_tokens: "0",
-		cache_read_input_tokens: "0",
-		cache_creation_input_tokens: "0",
-		total_tokens: "0",
 		tag: input.tag ?? null,
 	};
 }

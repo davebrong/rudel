@@ -62,25 +62,11 @@ describe("buildSessionRow", () => {
 		expect(row.subagents).toEqual({});
 	});
 
-	test("sets timestamps and default token values", () => {
+	test("sets session_date and last_interaction_date to now (MV computes real values)", () => {
 		const row = buildSessionRow(sampleInput, sampleContext);
 
-		expect(row.session_date).toBeTruthy();
-		expect(row.last_interaction_date).toBeTruthy();
-		expect(row.ingested_at).toBeTruthy();
-		expect(row.input_tokens).toBe("0");
-		expect(row.output_tokens).toBe("0");
-		expect(row.cache_read_input_tokens).toBe("0");
-		expect(row.cache_creation_input_tokens).toBe("0");
-		expect(row.total_tokens).toBe("0");
-	});
-
-	test("sets empty arrays for metadata fields", () => {
-		const row = buildSessionRow(sampleInput, sampleContext);
-
-		expect(row.skills).toEqual([]);
-		expect(row.slash_commands).toEqual([]);
-		expect(row.subagent_types).toEqual([]);
+		expect(row.session_date).toBe(row.ingested_at);
+		expect(row.last_interaction_date).toBe(row.ingested_at);
 	});
 });
 
