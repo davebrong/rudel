@@ -126,6 +126,15 @@ const server = Bun.serve({
 			return new Response(indexFile);
 		}
 
+		// Dev mode: redirect to frontend dev server for non-API routes
+		// (e.g., after OAuth callback redirects to APP_URL which has no SPA)
+		if (ALLOWED_ORIGIN !== appURL) {
+			return Response.redirect(
+				`${ALLOWED_ORIGIN}${url.pathname}${url.search}`,
+				302,
+			);
+		}
+
 		return new Response("Not found", { status: 404, headers: cors });
 	},
 });
