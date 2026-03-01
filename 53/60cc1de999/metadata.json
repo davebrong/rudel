@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "5360cc1de999",
+  "strategy": "manual-commit",
+  "branch": "marc/cli-enable-verify-upload",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/__tests__/agents.test.ts",
+    "apps/cli/src/__tests__/auth-verify.test.ts",
+    "apps/cli/src/commands/disable.ts",
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/commands/whoami.ts",
+    "apps/cli/src/lib/agents/claude-code.ts",
+    "apps/cli/src/lib/agents/index.ts",
+    "apps/cli/src/lib/agents/types.ts",
+    "apps/cli/src/lib/auth.ts",
+    "apps/cli/src/lib/credentials.ts",
+    "apps/cli/src/lib/project-config.ts",
+    "apps/cli/src/lib/session-resolver.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/53/60cc1de999/0/metadata.json",
+      "transcript": "/53/60cc1de999/0/full.jsonl",
+      "context": "/53/60cc1de999/0/context.md",
+      "content_hash": "/53/60cc1de999/0/content_hash.txt",
+      "prompt": "/53/60cc1de999/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 67,
+    "cache_creation_tokens": 102612,
+    "cache_read_tokens": 4357213,
+    "output_tokens": 19996,
+    "api_call_count": 59
+  }
+}
