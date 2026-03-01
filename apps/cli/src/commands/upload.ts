@@ -1,8 +1,15 @@
+import * as p from "@clack/prompts";
 import { buildCommand } from "@stricli/core";
+import { type BatchOptions, batchUpload } from "../lib/batch-uploader.js";
 import { classifySession } from "../lib/classifier.js";
 import { loadCredentials } from "../lib/credentials.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId } from "../lib/project-config.js";
+import {
+	groupProjectsForCwd,
+	type ScannedProject,
+	scanProjects,
+} from "../lib/project-scanner.js";
 import { resolveSession } from "../lib/session-resolver.js";
 import { readSubagentFiles } from "../lib/subagent-reader.js";
 import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
@@ -15,14 +22,144 @@ import {
 } from "../lib/types.js";
 import { uploadSession } from "../lib/uploader.js";
 
-async function runUpload(
-	flags: {
-		tag?: SessionTag;
-		endpoint: string;
-		classify: boolean;
-		dryRun: boolean;
-		org?: string;
-	},
+interface UploadFlags {
+	tag?: SessionTag;
+	endpoint: string;
+	classify: boolean;
+	dryRun: boolean;
+	org?: string;
+}
+
+async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
+	const credentials = loadCredentials();
+	if (!credentials && !flags.dryRun) {
+		p.log.error("Not authenticated. Run `rudel login` first.");
+		process.exitCode = 1;
+		return;
+	}
+
+	p.intro("rudel upload");
+
+	const spin = p.spinner();
+	spin.start("Scanning projects...");
+	const projects = await scanProjects();
+	spin.stop(`Found ${projects.length} project(s)`);
+
+	if (projects.length === 0) {
+		p.log.warn("No projects with sessions found in ~/.claude/projects/");
+		p.outro("Nothing to upload.");
+		return;
+	}
+
+	const cwd = process.cwd();
+	const grouped = groupProjectsForCwd(projects, cwd);
+
+	const options: Array<{
+		value: ScannedProject;
+		label: string;
+		hint: string;
+	}> = [];
+	const preSelected: ScannedProject[] = [];
+
+	if (grouped.current) {
+		options.push({
+			value: grouped.current,
+			label: grouped.current.displayPath,
+			hint: sessionCountHint(grouped.current.sessionCount),
+		});
+		preSelected.push(grouped.current);
+
+		for (const sub of grouped.subfolders) {
+			const relative = sub.decodedPath.slice(
+				grouped.current.decodedPath.length + 1,
+			);
+			options.push({
+				value: sub,
+				label: `  ${relative}`,
+				hint: sessionCountHint(sub.sessionCount),
+			});
+			preSelected.push(sub);
+		}
+	}
+
+	for (const other of grouped.others) {
+		options.push({
+			value: other,
+			label: other.displayPath,
+			hint: sessionCountHint(other.sessionCount),
+		});
+	}
+
+	const selected = await p.multiselect({
+		message: "Select projects to upload",
+		options,
+		initialValues: preSelected,
+		required: true,
+	});
+
+	if (p.isCancel(selected)) {
+		p.cancel("Upload cancelled.");
+		return;
+	}
+
+	const totalSessions = selected.reduce(
+		(sum, proj) => sum + proj.sessionCount,
+		0,
+	);
+	p.log.info(
+		`Uploading ${totalSessions} session(s) from ${selected.length} project(s)`,
+	);
+
+	const batchOpts: BatchOptions = {
+		tag: flags.tag,
+		classify: flags.classify,
+		dryRun: flags.dryRun,
+		org: flags.org,
+		uploadConfig: {
+			endpoint: flags.endpoint,
+			token: credentials?.token ?? "",
+		},
+	};
+
+	const uploadSpin = p.spinner();
+	uploadSpin.start("Uploading sessions...");
+
+	const result = await batchUpload(selected, batchOpts, (current, total) => {
+		uploadSpin.message(`[${current}/${total}] Uploading...`);
+	});
+
+	uploadSpin.stop("Upload complete");
+
+	if (result.succeeded > 0) {
+		p.log.success(`${result.succeeded} session(s) uploaded successfully`);
+	}
+	if (result.failed > 0) {
+		p.log.error(`${result.failed} session(s) failed`);
+		for (const err of result.errors.slice(0, 5)) {
+			p.log.warn(`  ${err.project}/${err.sessionId}: ${err.error}`);
+		}
+		if (result.errors.length > 5) {
+			p.log.warn(`  ...and ${result.errors.length - 5} more`);
+		}
+	}
+
+	if (flags.dryRun) {
+		p.outro("Dry run complete — no sessions were uploaded.");
+	} else {
+		p.outro("Done!");
+	}
+
+	if (result.failed > 0) {
+		process.exitCode = 1;
+	}
+}
+
+function sessionCountHint(count: number): string {
+	return `${count} session${count !== 1 ? "s" : ""}`;
+}
+
+async function runSingleUpload(
+	flags: UploadFlags,
 	session: string,
 ): Promise<void> {
 	const write = (msg: string) => {
@@ -32,7 +169,6 @@ async function runUpload(
 		process.stderr.write(`${msg}\n`);
 	};
 
-	// Load credentials
 	const credentials = loadCredentials();
 	if (!credentials && !flags.dryRun) {
 		writeError("Error: Not authenticated. Run `rudel login` first.");
@@ -40,7 +176,6 @@ async function runUpload(
 		return;
 	}
 
-	// Resolve session (by ID or path)
 	write(`Resolving session: ${session}`);
 	let sessionInfo: Awaited<ReturnType<typeof resolveSession>>;
 	try {
@@ -54,7 +189,6 @@ async function runUpload(
 	}
 	write(`Found session at: ${sessionInfo.transcriptPath}`);
 
-	// Read transcript
 	write("Reading transcript...");
 	let content: string;
 	try {
@@ -68,7 +202,6 @@ async function runUpload(
 	}
 	write(`Transcript: ${content.length} bytes`);
 
-	// Extract and read subagents
 	const agentIds = extractAgentIds(content);
 	let subagents: SubagentFile[] = [];
 	if (agentIds.length > 0) {
@@ -83,12 +216,10 @@ async function runUpload(
 		);
 	}
 
-	// Get git info
 	const gitInfo = await getGitInfo(sessionInfo.projectPath);
 	if (gitInfo.repository) write(`Repository: ${gitInfo.repository}`);
 	if (gitInfo.branch) write(`Branch: ${gitInfo.branch}`);
 
-	// Classify if requested
 	let tag = flags.tag;
 	if (!tag && flags.classify) {
 		write("Classifying session...");
@@ -96,12 +227,10 @@ async function runUpload(
 		if (tag) write(`Classified as: ${tag}`);
 	}
 
-	// Resolve organization
 	const organizationId =
 		flags.org ?? (await getProjectOrgId(sessionInfo.projectPath));
 	if (organizationId) write(`Organization: ${organizationId}`);
 
-	// Build request
 	const request: IngestRequest = {
 		sessionId: sessionInfo.sessionId,
 		projectPath: sessionInfo.projectPath,
@@ -114,7 +243,6 @@ async function runUpload(
 		organizationId,
 	};
 
-	// Upload or dry-run
 	if (flags.dryRun) {
 		const preview = {
 			...request,
@@ -144,18 +272,26 @@ async function runUpload(
 	}
 }
 
+async function runUpload(
+	flags: UploadFlags,
+	...sessions: string[]
+): Promise<void> {
+	if (sessions.length === 0) {
+		return runInteractiveUpload(flags);
+	}
+	return runSingleUpload(flags, sessions[0] as string);
+}
+
 export const uploadCommand = buildCommand({
 	loader: async () => ({ default: runUpload }),
 	parameters: {
 		positional: {
-			kind: "tuple",
-			parameters: [
-				{
-					brief: "Session ID or path to a session .jsonl file",
-					parse: String,
-					placeholder: "session",
-				},
-			],
+			kind: "array",
+			parameter: {
+				brief: "Session ID or path to a session .jsonl file",
+				parse: String,
+				placeholder: "session",
+			},
 		},
 		flags: {
 			tag: {
@@ -195,6 +331,7 @@ export const uploadCommand = buildCommand({
 		},
 	},
 	docs: {
-		brief: "Upload a Claude Code session transcript to the backend",
+		brief:
+			"Upload Claude Code session transcripts. No args = interactive project picker.",
 	},
 });
