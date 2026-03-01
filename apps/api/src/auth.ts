@@ -2,12 +2,14 @@ import * as schema from "@rudel/sql-schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, organization } from "better-auth/plugins";
+import { fetchGitHubHandle, notifySignup } from "./slack.js";
 
 export interface AuthConfig {
 	appURL: string;
 	secret?: string;
 	socialProviders?: Record<string, { clientId: string; clientSecret: string }>;
 	trustedOrigins?: string[];
+	slackWebhookUrl?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- drizzleAdapter accepts { [key: string]: any }
@@ -69,6 +71,27 @@ export function createAuth(db: object, config: AuthConfig) {
 										createdAt: new Date(),
 									},
 								});
+							}
+
+							if (config.slackWebhookUrl) {
+								let githubHandle: string | null = null;
+								const accounts = (await adapter.findMany({
+									model: "account",
+									where: [{ field: "userId", value: user.id }],
+								})) as Array<{ providerId: string; accountId: string }>;
+								const githubAccount = accounts.find(
+									(a) => a.providerId === "github",
+								);
+								if (githubAccount) {
+									githubHandle = await fetchGitHubHandle(
+										githubAccount.accountId,
+									);
+								}
+								await notifySignup(
+									config.slackWebhookUrl,
+									{ name: user.name, email: user.email },
+									githubHandle,
+								);
 							}
 						} catch (err) {
 							console.error(
