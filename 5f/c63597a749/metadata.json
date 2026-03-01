@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "5fc63597a749",
+  "strategy": "manual-commit",
+  "branch": "marc/oss-readiness",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "CODE_OF_CONDUCT.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5f/c63597a749/0/metadata.json",
+      "transcript": "/5f/c63597a749/0/full.jsonl",
+      "context": "/5f/c63597a749/0/context.md",
+      "content_hash": "/5f/c63597a749/0/content_hash.txt",
+      "prompt": "/5f/c63597a749/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 346,
+    "cache_creation_tokens": 32236,
+    "cache_read_tokens": 403880,
+    "output_tokens": 2882,
+    "api_call_count": 11
+  }
+}
