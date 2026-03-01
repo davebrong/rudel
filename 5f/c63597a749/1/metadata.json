@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "5fc63597a749",
+  "session_id": "b0757e12-0dd0-4a08-bd0c-2fc8a666b92d",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T02:42:53.213647Z",
+  "branch": "marc/oss-readiness",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "LICENSE"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 3047,
+    "cache_creation_tokens": 41421,
+    "cache_read_tokens": 613181,
+    "output_tokens": 2762,
+    "api_call_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T02:42:53.18113Z",
+    "agent_lines": 21,
+    "human_added": 280,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 301,
+    "agent_percentage": 6.976744186046512
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-mumbai/b0757e12-0dd0-4a08-bd0c-2fc8a666b92d.jsonl"
+}
