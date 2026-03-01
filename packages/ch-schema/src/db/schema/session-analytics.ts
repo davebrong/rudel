@@ -150,7 +150,7 @@ const rudel_session_analytics_mv = materializedView({
     dateDiff('minute', _session_date, _last_interaction_date) AS _duration_min
 
   SELECT
-    *,
+    * EXCEPT (session_date, last_interaction_date),
     _session_date as session_date,
     _last_interaction_date as last_interaction_date,
     _input_tokens as input_tokens,
