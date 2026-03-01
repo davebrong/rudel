@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { member, organization } from "@rudel/sql-schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getClickhouse } from "./clickhouse.js";
 import { db } from "./db.js";
 import { analyticsRouter } from "./handlers/analytics/index.js";
@@ -63,7 +63,12 @@ const ingestSessionHandler = os.ingestSession
 			const membership = await db
 				.select({ id: member.id })
 				.from(member)
-				.where(eq(member.organizationId, input.organizationId))
+				.where(
+					and(
+						eq(member.organizationId, input.organizationId),
+						eq(member.userId, context.user.id),
+					),
+				)
 				.limit(1);
 
 			if (membership.length === 0) {
