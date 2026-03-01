@@ -143,10 +143,16 @@ const rudel_session_analytics_mv = materializedView({
 
     arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '"name":"Skill"[^}]*"skill":"([^"]+)"'))) AS _skills,
     arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '"name":"Task"[^}]*"subagent_type":"([^"]+)"'))) AS _subagent_types,
-    arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '<command-name>/([^<]+)</command-name>'))) AS _slash_commands
+    arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '<command-name>/([^<]+)</command-name>'))) AS _slash_commands,
+
+    arrayMin(_timestamps) AS _session_date,
+    arrayMax(_timestamps) AS _last_interaction_date,
+    dateDiff('minute', _session_date, _last_interaction_date) AS _duration_min
 
   SELECT
     *,
+    _session_date as session_date,
+    _last_interaction_date as last_interaction_date,
     _input_tokens as input_tokens,
     _output_tokens as output_tokens,
     _cache_read as cache_read_input_tokens,
@@ -156,7 +162,7 @@ const rudel_session_analytics_mv = materializedView({
     _slash_commands as slash_commands,
     _subagent_types as subagent_types,
     toUInt32(length(_timestamps)) as total_interactions,
-    toUInt32(dateDiff('minute', arrayMin(_timestamps), arrayMax(_timestamps))) as actual_duration_min,
+    toUInt32(_duration_min) as actual_duration_min,
     if(length(_prompt_periods_sec) > 0, round(arrayAvg(_prompt_periods_sec), 2), 0) as avg_period_sec,
     if(
       length(_prompt_periods_sec) > 0,
@@ -191,23 +197,23 @@ const rudel_session_analytics_mv = materializedView({
     toUInt32(arraySum(_inference_gaps)) as inference_duration_sec,
     toUInt32(arraySum(_human_gaps)) as human_duration_sec,
     CASE
-      WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) <= 10
+      WHEN _duration_min <= 10
           AND (_input_tokens + _output_tokens) < 500000
           AND _output_tokens > 1000
       THEN 'quick_win'
-      WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) > 30
+      WHEN _duration_min > 30
           AND _output_tokens > 50000
           AND cs.git_sha IS NOT NULL AND cs.git_sha != ''
       THEN 'deep_work'
       WHEN (_input_tokens + _output_tokens) > 1000000
           AND (_output_tokens / nullif(_input_tokens, 0)) < 0.3
-          AND dateDiff('minute', cs.session_date, cs.last_interaction_date) > 20
+          AND _duration_min > 20
       THEN 'struggle'
       WHEN length(_skills) >= 3
           AND (cs.git_sha IS NULL OR cs.git_sha = '')
           AND (_input_tokens + _output_tokens) > 200000
       THEN 'exploration'
-      WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) < 3
+      WHEN _duration_min < 3
           AND _output_tokens < 500
       THEN 'abandoned'
       ELSE 'standard'
@@ -218,7 +224,7 @@ const rudel_session_analytics_mv = materializedView({
       + (if((_output_tokens / nullif(_input_tokens, 0)) > 0.5, 15, 0))
       + (least(toUInt32(length(_skills)), 3) * 5)
       - (if((_input_tokens + _output_tokens) > 1500000 AND (cs.git_sha IS NULL OR cs.git_sha = ''), 20, 0))
-      - (if(dateDiff('minute', cs.session_date, cs.last_interaction_date) < 2 AND _output_tokens < 200, 30, 0))
+      - (if(_duration_min < 2 AND _output_tokens < 200, 30, 0))
       - (least(toUInt32(
           length(extractAll(cs.content, '"isApiErrorMessage":true'))
           + length(extractAll(cs.content, '"is_error":true'))
