@@ -47,6 +47,24 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 | `APP_URL` | No | API base URL (default: `http://localhost:4010`) |
 | `ALLOWED_ORIGIN` | No | CORS origin (default: `http://localhost:4011`) |
 
+## Local chkit development
+
+To test local chkit changes without publishing:
+
+```bash
+# Link to local chkit (at /Users/marc/Workspace/chkit or CHKIT_PATH)
+bun run chkit:link
+
+# Restore to published versions
+bun run chkit:unlink
+```
+
+`chkit:link` rewrites the root `package.json` overrides to `file:` paths pointing at your local chkit checkout and runs `bun install`. It also installs a pre-commit hook that blocks commits with `file:` overrides active.
+
+`chkit:unlink` restores overrides to the version declared in `packages/ch-schema/package.json` and runs `bun install`.
+
+CI runs `scripts/check-overrides.ts` before `bun install` to catch any accidentally committed `file:` overrides.
+
 ## Local Development
 
 There are two ways to run the app locally:

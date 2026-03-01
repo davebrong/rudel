@@ -15,7 +15,9 @@
 		"deploy": "turbo run build",
 		"dev:local": "bash scripts/dev-local.sh",
 		"infra:up": "docker compose up -d",
-		"infra:down": "docker compose down"
+		"infra:down": "docker compose down",
+		"chkit:link": "bun scripts/chkit-link.ts link",
+		"chkit:unlink": "bun scripts/chkit-link.ts unlink"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.0",
@@ -31,8 +33,14 @@
 		"packages/*"
 	],
 	"overrides": {
+		"chkit": "0.1.0-beta.9",
 		"@chkit/core": "0.1.0-beta.9",
-		"@chkit/clickhouse": "0.1.0-beta.9"
+		"@chkit/clickhouse": "0.1.0-beta.9",
+		"@chkit/codegen": "0.1.0-beta.9",
+		"@chkit/plugin-backfill": "0.1.0-beta.9",
+		"@chkit/plugin-codegen": "0.1.0-beta.9",
+		"@chkit/plugin-obsessiondb": "0.1.0-beta.9",
+		"@chkit/plugin-pull": "0.1.0-beta.9"
 	},
 	"dependencies": {
 		"postgres": "^3.4.8"
