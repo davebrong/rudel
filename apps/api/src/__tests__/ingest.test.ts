@@ -1,7 +1,11 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { IngestSessionInput } from "@rudel/api-routes";
 import { createClickHouseExecutor } from "../clickhouse.js";
-import { buildSessionRow, ingestSession } from "../ingest.js";
+import {
+	buildSessionRow,
+	extractTimestampRange,
+	ingestSession,
+} from "../ingest.js";
 
 const sampleInput: IngestSessionInput = {
 	sessionId: "test-session-abc",
@@ -62,25 +66,82 @@ describe("buildSessionRow", () => {
 		expect(row.subagents).toEqual({});
 	});
 
-	test("sets timestamps and default token values", () => {
-		const row = buildSessionRow(sampleInput, sampleContext);
+	test("extracts session_date and last_interaction_date from JSONL content", () => {
+		const content = [
+			'{"type":"user","timestamp":"2026-02-15T10:00:00Z","message":"hello"}',
+			'{"type":"assistant","timestamp":"2026-02-15T10:05:00Z","message":"hi"}',
+			'{"type":"user","timestamp":"2026-02-15T10:10:00Z","message":"bye"}',
+		].join("\n");
 
-		expect(row.session_date).toBeTruthy();
-		expect(row.last_interaction_date).toBeTruthy();
-		expect(row.ingested_at).toBeTruthy();
-		expect(row.input_tokens).toBe("0");
-		expect(row.output_tokens).toBe("0");
-		expect(row.cache_read_input_tokens).toBe("0");
-		expect(row.cache_creation_input_tokens).toBe("0");
-		expect(row.total_tokens).toBe("0");
+		const input: IngestSessionInput = {
+			...sampleInput,
+			content,
+		};
+
+		const row = buildSessionRow(input, sampleContext);
+
+		expect(row.session_date).toBe("2026-02-15 10:00:00");
+		expect(row.last_interaction_date).toBe("2026-02-15 10:10:00");
+		expect(row.session_date).not.toBe(row.ingested_at);
 	});
 
-	test("sets empty arrays for metadata fields", () => {
+	test("falls back to now when content has no timestamps", () => {
 		const row = buildSessionRow(sampleInput, sampleContext);
 
-		expect(row.skills).toEqual([]);
-		expect(row.slash_commands).toEqual([]);
-		expect(row.subagent_types).toEqual([]);
+		expect(row.session_date).toBe(row.ingested_at);
+		expect(row.last_interaction_date).toBe(row.ingested_at);
+	});
+});
+
+describe("extractTimestampRange", () => {
+	test("returns min/max timestamps from user and assistant lines", () => {
+		const content = [
+			'{"type":"user","timestamp":"2026-02-15T10:00:00Z","message":"hello"}',
+			'{"type":"assistant","timestamp":"2026-02-15T10:05:00Z","message":"hi"}',
+			'{"type":"user","timestamp":"2026-02-15T10:10:00Z","message":"bye"}',
+		].join("\n");
+
+		const result = extractTimestampRange(content);
+
+		expect(result).toEqual({
+			sessionDate: "2026-02-15T10:00:00Z",
+			lastInteractionDate: "2026-02-15T10:10:00Z",
+		});
+	});
+
+	test("ignores non-user/assistant lines", () => {
+		const content = [
+			'{"type":"system","timestamp":"2026-02-15T09:00:00Z"}',
+			'{"type":"user","timestamp":"2026-02-15T10:00:00Z","message":"hello"}',
+			'{"type":"progress","timestamp":"2026-02-15T10:30:00Z"}',
+		].join("\n");
+
+		const result = extractTimestampRange(content);
+
+		expect(result).toEqual({
+			sessionDate: "2026-02-15T10:00:00Z",
+			lastInteractionDate: "2026-02-15T10:00:00Z",
+		});
+	});
+
+	test("returns null when no timestamps found", () => {
+		expect(extractTimestampRange("not json")).toBeNull();
+		expect(extractTimestampRange("")).toBeNull();
+		expect(extractTimestampRange('{"type":"user"}')).toBeNull();
+	});
+
+	test("skips lines without timestamp field", () => {
+		const content = [
+			'{"type":"user","message":"no timestamp"}',
+			'{"type":"assistant","timestamp":"2026-02-15T10:05:00Z","message":"hi"}',
+		].join("\n");
+
+		const result = extractTimestampRange(content);
+
+		expect(result).toEqual({
+			sessionDate: "2026-02-15T10:05:00Z",
+			lastInteractionDate: "2026-02-15T10:05:00Z",
+		});
 	});
 });
 

@@ -209,7 +209,7 @@ bun run ch:drift
 bun run chcli -- -q "SELECT count() FROM rudel.session_analytics" -F pretty
 
 # Run a SQL file against CI
-bun run chcli -- -f scripts/backfill.sql -v
+bun run chcli -- -f scripts/example.sql -v
 
 # Query PRD
 bun run chcli:prd -- -q "SHOW TABLES FROM rudel" -F pretty
@@ -250,7 +250,7 @@ To drop everything and recreate:
 
 **Codegen EPERM on Windows.** `bun run ch:codegen` may fail with `EPERM: operation not permitted, rename .tmp -> chkit-types.ts` when VSCode has the file open. Workaround: close the file in the editor, or manually copy the `.tmp` file content over `chkit-types.ts` and delete the `.tmp` files.
 
-**INSERT INTO with SELECT * column mismatch.** When backfilling `session_analytics` from `claude_sessions`, ClickHouse matches INSERT columns by position, not name. Since the MV computes columns in a different order than the table definition, always use an explicit column list in the INSERT INTO clause. See `scripts/backfill.sql` for the working example.
+**INSERT INTO with SELECT * column mismatch.** When backfilling `session_analytics` from `claude_sessions`, ClickHouse matches INSERT columns by position, not name. Since the MV computes columns in a different order than the table definition, always use an explicit column list in the INSERT INTO clause.
 
 **`bun run` resolves binaries from local `node_modules/.bin/`, not global PATH.** When running package.json scripts, `bun run` looks for binaries in `node_modules/.bin/` first. If a tool like `chcli` is only installed globally, `bun run` won't find it. Fix: add the tool as a local devDependency (e.g., `@obsessiondb/chcli` in `packages/ch-schema`). Bun also rewrites `npx` to `bun x` in scripts, which has the same local-first resolution behavior.
 
@@ -270,14 +270,25 @@ To drop everything and recreate:
 
 ### Backfilling session_analytics
 
-To backfill `session_analytics` from existing `claude_sessions` data (e.g., after recreating the table), use the backfill script:
+To backfill `session_analytics` from existing `claude_sessions` data (e.g., after recreating the table), use the `@chkit/plugin-backfill` plugin.
+
+The plugin uses `session_date` for time windowing, configured via `defaults.timeColumn` in the `backfill()` plugin config in `clickhouse.config.ts`. The `--time-column` CLI flag can also override this explicitly.
 
 ```bash
-# From packages/ch-schema — runs against CI
-bun run ch:query scripts/backfill.sql
-```
+# From packages/ch-schema
 
-The backfill script (`scripts/backfill.sql`) runs the same WITH/SELECT logic as the MV but as an INSERT INTO ... SELECT with explicit column lists and `SETTINGS async_insert=0`. It deduplicates via `QUALIFY ROW_NUMBER() OVER (PARTITION BY session_id ORDER BY ingested_at DESC) = 1`.
+# Preview what the backfill will do
+bun run ch:backfill:plan -- --target rudel.session_analytics --from 2025-01-01 --to 2026-03-01        # CI
+bun run ch:backfill:plan:prd -- --target rudel.session_analytics --from 2025-01-01 --to 2026-03-01    # PRD
+
+# Run the backfill
+bun run ch:backfill:run -- --plan-id <plan-id>         # CI
+bun run ch:backfill:run:prd -- --plan-id <plan-id>     # PRD
+
+# Check backfill status
+bun run ch:backfill:status -- --plan-id <plan-id>      # CI
+bun run ch:backfill:status:prd -- --plan-id <plan-id>  # PRD
+```
 
 ### Codegen (TypeScript types)
 

@@ -93,18 +93,10 @@ describe("ingestRudelClaudeSessions", () => {
 		repository: null,
 		content: "test session content",
 		subagents: {},
-		skills: ["code:testing"],
-		slash_commands: [],
-		subagent_types: [],
 		ingested_at: now,
 		user_id: "user_test",
 		git_branch: "main",
 		git_sha: null,
-		input_tokens: "100",
-		output_tokens: "200",
-		cache_read_input_tokens: "0",
-		cache_creation_input_tokens: "0",
-		total_tokens: "300",
 		tag: "integration-test",
 	};
 
@@ -125,7 +117,7 @@ describe("ingestRudelClaudeSessions", () => {
 	it("rejects invalid data with validate option", async () => {
 		const badRow = {
 			...row,
-			input_tokens: 999,
+			session_id: 999,
 		} as unknown as RudelClaudeSessionsRow;
 		expect(
 			ingestRudelClaudeSessions(executor, [badRow], { validate: true }),
