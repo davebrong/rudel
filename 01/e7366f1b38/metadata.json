@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "01e7366f1b38",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-ingest-auth-check",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/router-auth.test.ts",
+    "apps/api/src/router.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/01/e7366f1b38/0/metadata.json",
+      "transcript": "/01/e7366f1b38/0/full.jsonl",
+      "context": "/01/e7366f1b38/0/context.md",
+      "content_hash": "/01/e7366f1b38/0/content_hash.txt",
+      "prompt": "/01/e7366f1b38/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 76,
+    "cache_creation_tokens": 138903,
+    "cache_read_tokens": 2630551,
+    "output_tokens": 17134,
+    "api_call_count": 44
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "01e7366f1b38",
+  "session_id": "5b1e7ab3-4658-4bbd-9f29-3d3b1a96fb70",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T02:38:34.194441Z",
+  "branch": "marc/fix-ingest-auth-check",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/router-auth.test.ts",
+    "apps/api/src/router.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 76,
+    "cache_creation_tokens": 138903,
+    "cache_read_tokens": 2630551,
+    "output_tokens": 17134,
+    "api_call_count": 44
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T02:38:33.896313Z",
+    "agent_lines": 123,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 123,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-florence/5b1e7ab3-4658-4bbd-9f29-3d3b1a96fb70.jsonl"
+}
