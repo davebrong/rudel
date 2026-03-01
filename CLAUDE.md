@@ -311,3 +311,11 @@ bun run verify
 ```
 
 This runs type checking, linting, and tests across the monorepo. Do not push or create a PR if `bun run verify` fails.
+
+## Pull Request Titles
+
+PR titles **must** use conventional commit format — this is enforced by CI (`pr-title.yml`). Use one of these prefixes:
+
+`feat:` | `fix:` | `docs:` | `style:` | `refactor:` | `perf:` | `test:` | `build:` | `ci:` | `chore:` | `revert:`
+
+Examples: `feat: add user dashboard`, `fix: resolve login redirect loop`
