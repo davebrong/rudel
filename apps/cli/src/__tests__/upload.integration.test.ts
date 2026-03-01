@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -36,7 +36,33 @@ const SAMPLE_SUBAGENT_CONTENT = JSON.stringify({
 });
 
 const CLAUDE_PROJECTS_DIR = join(homedir(), ".claude", "projects");
-const hasClaudeProjects = existsSync(CLAUDE_PROJECTS_DIR);
+
+function hasRealClaudeSessions(): boolean {
+	if (!existsSync(CLAUDE_PROJECTS_DIR)) return false;
+	try {
+		for (const dir of readdirSync(CLAUDE_PROJECTS_DIR)) {
+			try {
+				const files = readdirSync(join(CLAUDE_PROJECTS_DIR, dir));
+				if (
+					files.some(
+						(f) =>
+							f.endsWith(".jsonl") &&
+							!f.startsWith("agent-") &&
+							f !== "sessions-index.json",
+					)
+				)
+					return true;
+			} catch {
+				continue;
+			}
+		}
+	} catch {
+		/* dir not readable */
+	}
+	return false;
+}
+
+const hasClaudeProjects = hasRealClaudeSessions();
 
 let tempDir: string;
 
