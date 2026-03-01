@@ -21,7 +21,7 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 | Package | Description |
 |---------|-------------|
 | `packages/api-routes` (`@rudel/api-routes`) | Shared RPC contract (`@orpc/contract` + Zod schemas). Single source of truth for the API interface. |
-| `packages/ch-schema` (`@rudel/ch-schema`) | ClickHouse table schema (`rudel.claude_sessions`, `rudel.session_analytics`), generated TypeScript types, and ingest functions via `chkit`. |
+| `packages/ch-schema` (`@rudel/ch-schema`) | ClickHouse table schema (`rudel.claude_sessions`, `rudel.session_analytics`), generated TypeScript types, and ingest functions via `chkit`. Has two entry points: `@rudel/ch-schema` (full — includes schema definitions that pull in `@chkit/core` and `@clickhouse/client`) and `@rudel/ch-schema/generated` (lightweight — only generated types and ingest functions). **Use `@rudel/ch-schema/generated`** for runtime imports to avoid loading heavy ClickHouse dependencies. |
 | `packages/sql-schema` (`@rudel/sql-schema`) | Drizzle ORM schema for Postgres auth tables (`user`, `session`, `account`, `verification`). |
 | `packages/typescript-config` (`@rudel/typescript-config`) | Shared `tsconfig` base files (`base.json`, `node.json`, `react-library.json`). |
 
@@ -267,6 +267,8 @@ To drop everything and recreate:
 **`organization_id` = `user.id` in the API.** The API sets `organizationId: context.user.id` (see `apps/api/src/router.ts`). When testing the frontend locally, the user ID from the Postgres auth database must match the `organization_id` in ClickHouse data. Use `scripts/duplicate_org.sql` to copy data with a different org_id for testing.
 
 **Stale generated types after schema changes.** After modifying `src/db/schema/*.ts`, the generated `chkit-types.ts` will be out of sync. Always run `bun run ch:codegen` (or manually copy the `.tmp` file if EPERM). The old types may have columns that no longer exist or be missing new columns — this won't cause build errors if nothing imports them yet, but will cause runtime issues when consumed.
+
+**`@rudel/ch-schema` barrel import pulls in `@clickhouse/client`.** The root entry point (`@rudel/ch-schema`) re-exports schema definitions that import `@chkit/core`, which transitively loads `@clickhouse/client` (a native Node.js client). This causes `SyntaxError: Export named '...' not found` failures on Linux Bun in CI. Always use `@rudel/ch-schema/generated` for runtime imports that only need types and ingest functions.
 
 ### Backfilling session_analytics
 
