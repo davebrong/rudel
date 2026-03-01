@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "a0be092435d2",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-invite-redirect",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/auth/login-form.tsx",
+    "apps/web/src/components/auth/signup-form.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a0/be092435d2/0/metadata.json",
+      "transcript": "/a0/be092435d2/0/full.jsonl",
+      "context": "/a0/be092435d2/0/context.md",
+      "content_hash": "/a0/be092435d2/0/content_hash.txt",
+      "prompt": "/a0/be092435d2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 639,
+    "cache_creation_tokens": 48247,
+    "cache_read_tokens": 487246,
+    "output_tokens": 10116,
+    "api_call_count": 11
+  }
+}
