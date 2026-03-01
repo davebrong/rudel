@@ -31,6 +31,7 @@ const auth = createAuth(db, {
 	secret: process.env.BETTER_AUTH_SECRET,
 	socialProviders,
 	trustedOrigins,
+	slackWebhookUrl: process.env.SLACK_WEBHOOK_URL,
 });
 
 const rpcHandler = new RPCHandler(router);
