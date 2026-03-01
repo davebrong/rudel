@@ -3,8 +3,9 @@
   "checkpoint_id": "a0be092435d2",
   "strategy": "manual-commit",
   "branch": "marc/fix-invite-redirect",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
+    "apps/api/src/handlers/analytics/sessions.ts",
     "apps/web/src/App.tsx",
     "apps/web/src/components/auth/login-form.tsx",
     "apps/web/src/components/auth/signup-form.tsx"
@@ -16,13 +17,20 @@
       "context": "/a0/be092435d2/0/context.md",
       "content_hash": "/a0/be092435d2/0/content_hash.txt",
       "prompt": "/a0/be092435d2/0/prompt.txt"
+    },
+    {
+      "metadata": "/a0/be092435d2/1/metadata.json",
+      "transcript": "/a0/be092435d2/1/full.jsonl",
+      "context": "/a0/be092435d2/1/context.md",
+      "content_hash": "/a0/be092435d2/1/content_hash.txt",
+      "prompt": "/a0/be092435d2/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 639,
-    "cache_creation_tokens": 48247,
-    "cache_read_tokens": 487246,
-    "output_tokens": 10116,
-    "api_call_count": 11
+    "input_tokens": 728,
+    "cache_creation_tokens": 118592,
+    "cache_read_tokens": 1072919,
+    "output_tokens": 14829,
+    "api_call_count": 26
   }
 }
