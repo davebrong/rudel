@@ -59,3 +59,15 @@ packages/
 ## Self-Hosting
 
 See [docs/self-hosting.md](docs/self-hosting.md) for deploying your own instance.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, development workflow, and PR guidelines.
+
+## Security
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md). Do not open public issues for security concerns.
+
+## License
+
+[MIT](LICENSE)
