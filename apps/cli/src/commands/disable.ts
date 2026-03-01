@@ -1,20 +1,17 @@
 import { buildCommand } from "@stricli/core";
-import {
-	getClaudeSettingsPath,
-	isHookEnabled,
-	removeHook,
-} from "../lib/claude-settings.js";
+import { getDefaultAgent } from "../lib/agents/index.js";
 
 async function runDisable(): Promise<void> {
 	const write = (msg: string) => process.stdout.write(`${msg}\n`);
+	const agent = getDefaultAgent();
 
-	if (!isHookEnabled()) {
+	if (!agent.isHookInstalled()) {
 		write("Auto-upload hook is not enabled.");
 		return;
 	}
 
-	removeHook();
-	write(`Auto-upload hook removed from ${getClaudeSettingsPath()}`);
+	agent.removeHook();
+	write(`Auto-upload hook removed from ${agent.getHookSettingsPath()}`);
 }
 
 export const disableCommand = buildCommand({

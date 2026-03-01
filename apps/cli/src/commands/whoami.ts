@@ -1,37 +1,22 @@
 import { buildCommand } from "@stricli/core";
-import { loadCredentials } from "../lib/credentials.js";
+import { verifyAuth } from "../lib/auth.js";
 
 async function runWhoami(): Promise<void> {
 	const write = (msg: string) => process.stdout.write(`${msg}\n`);
 	const writeError = (msg: string) => process.stderr.write(`${msg}\n`);
 
-	const credentials = loadCredentials();
-	if (!credentials) {
-		write("Not logged in. Run `rudel login` to authenticate.");
+	const result = await verifyAuth();
+	if (!result.authenticated) {
+		if (result.reason === "no_credentials") {
+			write("Not logged in. Run `rudel login` to authenticate.");
+		} else {
+			writeError(`Error: ${result.message}`);
+			process.exitCode = 1;
+		}
 		return;
 	}
 
-	const response = await fetch(`${credentials.apiBaseUrl}/rpc/me`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${credentials.token}`,
-		},
-		body: JSON.stringify({}),
-	});
-
-	if (!response.ok) {
-		writeError(
-			"Session expired or invalid. Run `rudel login` to re-authenticate.",
-		);
-		process.exitCode = 1;
-		return;
-	}
-
-	const body = (await response.json()) as {
-		json: { id: string; email: string; name: string };
-	};
-	write(`Logged in as ${body.json.name} (${body.json.email})`);
+	write(`Logged in as ${result.user.name} (${result.user.email})`);
 }
 
 export const whoamiCommand = buildCommand({

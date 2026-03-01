@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { $ } from "bun";
 
@@ -11,9 +12,7 @@ interface ProjectsConfig {
 }
 
 function getConfigDir(): string {
-	return (
-		process.env.RUDEL_CONFIG_DIR ?? join(process.env.HOME ?? "~", ".rudel")
-	);
+	return process.env.RUDEL_CONFIG_DIR ?? join(homedir(), ".rudel");
 }
 
 function getProjectsConfigPath(): string {

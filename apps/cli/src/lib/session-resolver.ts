@@ -89,7 +89,7 @@ function validateNotSubagent(filename: string): void {
  *
  * Example: "-Users-marc-Workspace-claude-marketplace" -> "/Users/marc/Workspace/claude-marketplace"
  */
-async function decodeProjectPath(encodedDir: string): Promise<string> {
+export async function decodeProjectPath(encodedDir: string): Promise<string> {
 	const parts = encodedDir.replace(/^-/, "").split("-");
 
 	async function findPath(

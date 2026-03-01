@@ -5,17 +5,16 @@ import {
 	rmSync,
 	writeFileSync,
 } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 
-interface Credentials {
+export interface Credentials {
 	token: string;
 	apiBaseUrl: string;
 }
 
 function getConfigDir(): string {
-	return (
-		process.env.RUDEL_CONFIG_DIR ?? join(process.env.HOME ?? "~", ".rudel")
-	);
+	return process.env.RUDEL_CONFIG_DIR ?? join(homedir(), ".rudel");
 }
 
 function getCredentialsPath(): string {
