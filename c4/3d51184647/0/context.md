@@ -30,3 +30,11 @@ Continue from where you left off.
 
 commit current chnages. and then merge main into this branch
 
+### Prompt 7
+
+if we are fully rebased and merged with main, why dont I see those 2 lines (on main) in root package.json
+```
+		"chkit:link": "bun scripts/chkit-link.ts link",
+		"chkit:unlink": "bun scripts/chkit-link.ts unlink"
+```
+

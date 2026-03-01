@@ -5,11 +5,7 @@
   "branch": "marc/num-6593-rudel-org-invites-not-working-v1",
   "checkpoints_count": 1,
   "files_touched": [
-    "package.json",
-    "packages/ch-schema/chx/meta/backfill/events/f918bdf1cfae5350.ndjson",
-    "packages/ch-schema/chx/meta/backfill/plans/f918bdf1cfae5350.json",
-    "packages/ch-schema/chx/meta/backfill/runs/f918bdf1cfae5350.json",
-    "packages/ch-schema/package.json"
+    "package.json"
   ],
   "sessions": [
     {
@@ -21,10 +17,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 5336,
-    "cache_creation_tokens": 199147,
-    "cache_read_tokens": 1950218,
-    "output_tokens": 11464,
-    "api_call_count": 35
+    "input_tokens": 13,
+    "cache_creation_tokens": 6259,
+    "cache_read_tokens": 846501,
+    "output_tokens": 2111,
+    "api_call_count": 11
   }
 }
