@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "07929c95f8f3",
+  "session_id": "ad0a4b7a-7d11-458c-bdf3-9db00e519df2",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T01:20:30.791483Z",
+  "branch": "marc/add-team-switcher",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "CLAUDE.md",
+    "package.json",
+    "scripts/check-overrides.ts",
+    "scripts/chkit-link.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 42,
+    "cache_creation_tokens": 79848,
+    "cache_read_tokens": 699272,
+    "output_tokens": 5190,
+    "api_call_count": 17
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T01:20:30.661746Z",
+    "agent_lines": 119,
+    "human_added": 93,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 212,
+    "agent_percentage": 56.132075471698116
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-da-nang-v1/ad0a4b7a-7d11-458c-bdf3-9db00e519df2.jsonl"
+}

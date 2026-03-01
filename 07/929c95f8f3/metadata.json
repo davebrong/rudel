@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "07929c95f8f3",
+  "strategy": "manual-commit",
+  "branch": "marc/add-team-switcher",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "CLAUDE.md",
+    "package.json",
+    "scripts/check-overrides.ts",
+    "scripts/chkit-link.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/07/929c95f8f3/0/metadata.json",
+      "transcript": "/07/929c95f8f3/0/full.jsonl",
+      "context": "/07/929c95f8f3/0/context.md",
+      "content_hash": "/07/929c95f8f3/0/content_hash.txt",
+      "prompt": "/07/929c95f8f3/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 42,
+    "cache_creation_tokens": 79848,
+    "cache_read_tokens": 699272,
+    "output_tokens": 5190,
+    "api_call_count": 17
+  }
+}
