@@ -19,6 +19,14 @@ function getCallbackURL(): string {
 	if (cliCallback && state) {
 		return `/?cli_callback=${encodeURIComponent(cliCallback)}&state=${encodeURIComponent(state)}`;
 	}
+	const redirect = params.get("redirect");
+	if (redirect) {
+		return `/?redirect=${encodeURIComponent(redirect)}`;
+	}
+	const path = window.location.pathname;
+	if (path !== "/" && path !== "") {
+		return `/?redirect=${encodeURIComponent(path)}`;
+	}
 	return "/";
 }
 

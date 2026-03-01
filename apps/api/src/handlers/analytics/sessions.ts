@@ -18,60 +18,32 @@ const sortByMap: Record<string, "date" | "duration" | "interactions"> = {
 const list = os.analytics.sessions.list
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		console.log("[list] orgId:", context.organizationId, "days:", input.days);
-		try {
-			const result = await getSessionAnalytics(context.organizationId, {
-				days: input.days,
-				user_id: input.userId,
-				project_path: input.projectPath,
-				repository: input.repository,
-				limit: input.limit,
-				offset: input.offset,
-				sort_by: sortByMap[input.sortBy] ?? "date",
-				sort_order: input.sortOrder,
-			});
-			console.log("[list] OK, rows:", result.length);
-			return result;
-		} catch (e) {
-			console.error("[list] ERROR:", e);
-			throw e;
-		}
+		return getSessionAnalytics(context.organizationId, {
+			days: input.days,
+			user_id: input.userId,
+			project_path: input.projectPath,
+			repository: input.repository,
+			limit: input.limit,
+			offset: input.offset,
+			sort_by: sortByMap[input.sortBy] ?? "date",
+			sort_order: input.sortOrder,
+		});
 	});
 
 const summary = os.analytics.sessions.summary
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		try {
-			const result = await getSessionAnalyticsSummary(context.organizationId, {
-				days: input.days,
-			});
-			console.log("[summary] OK:", JSON.stringify(result));
-			return result;
-		} catch (e) {
-			console.error("[summary] ERROR:", e);
-			throw e;
-		}
+		return getSessionAnalyticsSummary(context.organizationId, {
+			days: input.days,
+		});
 	});
 
 const summaryComparison = os.analytics.sessions.summaryComparison
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		try {
-			const result = await getSessionAnalyticsSummaryComparison(
-				context.organizationId,
-				{
-					days: input.days,
-				},
-			);
-			console.log(
-				"[summaryComparison] OK:",
-				JSON.stringify(result).slice(0, 300),
-			);
-			return result;
-		} catch (e) {
-			console.error("[summaryComparison] ERROR:", e);
-			throw e;
-		}
+		return getSessionAnalyticsSummaryComparison(context.organizationId, {
+			days: input.days,
+		});
 	});
 
 const dimensionAnalysis = os.analytics.sessions.dimensionAnalysis

@@ -36,6 +36,14 @@ function getCliParams(): { cliCallback: string; state: string } | null {
 	return { cliCallback, state };
 }
 
+function getValidRedirect(): string | null {
+	const params = new URLSearchParams(window.location.search);
+	const redirect = params.get("redirect");
+	if (!redirect) return null;
+	if (!redirect.startsWith("/") || redirect.startsWith("//")) return null;
+	return redirect;
+}
+
 function App() {
 	const { data: session, isPending } = authClient.useSession();
 	const [page, setPage] = useState<Page>("login");
@@ -88,7 +96,10 @@ function App() {
 
 	return (
 		<Routes>
-			<Route path="/" element={<Navigate to="/dashboard" replace />} />
+			<Route
+				path="/"
+				element={<Navigate to={getValidRedirect() || "/dashboard"} replace />}
+			/>
 			<Route
 				path="/invitation/:invitationId"
 				element={<AcceptInvitationPage />}
