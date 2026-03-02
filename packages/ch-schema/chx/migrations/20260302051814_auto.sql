@@ -19,4 +19,4 @@ ALTER TABLE rudel.session_analytics ADD COLUMN IF NOT EXISTS `git_remote` String
 ALTER TABLE rudel.session_analytics ADD COLUMN IF NOT EXISTS `package_name` String DEFAULT '''''';
 
 -- operation: alter_table_add_index key=table:rudel.session_analytics:index:idx_git_remote risk=caution
-ALTER TABLE rudel.session_analytics ADD INDEX IF NOT EXISTS `idx_git_remote` (git_remote) TYPE set GRANULARITY 4;
+ALTER TABLE rudel.session_analytics ADD INDEX IF NOT EXISTS `idx_git_remote` (git_remote) TYPE set(0) GRANULARITY 4;
