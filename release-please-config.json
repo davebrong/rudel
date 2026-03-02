@@ -8,8 +8,7 @@
 		"apps/cli": {
 			"release-type": "node",
 			"component": "rudel",
-			"changelog-path": "CHANGELOG.md",
-			"extra-files": [{ "type": "generic", "path": "src/app.ts" }]
+			"changelog-path": "CHANGELOG.md"
 		}
 	}
 }

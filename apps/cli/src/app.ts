@@ -1,4 +1,5 @@
 import { buildApplication, buildRouteMap } from "@stricli/core";
+import pkg from "../package.json";
 import { disableCommand } from "./commands/disable.js";
 import { enableCommand } from "./commands/enable.js";
 import { hooksRouteMap } from "./commands/hooks/index.js";
@@ -28,7 +29,7 @@ const routes = buildRouteMap({
 export const app = buildApplication(routes, {
 	name: "rudel",
 	versionInfo: {
-		currentVersion: "0.1.4", // x-release-please-version
+		currentVersion: pkg.version,
 	},
 	scanner: {
 		caseStyle: "allow-kebab-for-camel",
