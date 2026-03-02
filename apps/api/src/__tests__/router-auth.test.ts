@@ -17,6 +17,7 @@ mock.module("../clickhouse.js", () => ({ getClickhouse: () => ({}) }));
 mock.module("../ingest.js", () => ({
 	ingestSession: mockIngestSession,
 	buildSessionRow: mock(() => ({})),
+	extractTimestampRange: mock(() => null),
 }));
 mock.module("../handlers/analytics/index.js", () => ({
 	analyticsRouter: {},
