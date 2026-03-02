@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "6cf2b31464cb",
+  "session_id": "2bc84e29-0111-4162-baa0-af11b5b9daa7",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T02:09:47.809215Z",
+  "branch": "marc/fix-release-ci",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/release.yml",
+    "release-please-config.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "e8c90f72-75a2-48c8-b5d4-28870f2bf655",
+  "token_usage": {
+    "input_tokens": 89,
+    "cache_creation_tokens": 86625,
+    "cache_read_tokens": 1273793,
+    "output_tokens": 5858,
+    "api_call_count": 28
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T02:09:47.676998Z",
+    "agent_lines": 10,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 10,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-honolulu/2bc84e29-0111-4162-baa0-af11b5b9daa7.jsonl"
+}
