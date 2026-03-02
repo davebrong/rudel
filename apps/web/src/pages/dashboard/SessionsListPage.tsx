@@ -9,6 +9,23 @@ import { MultiSelect } from "@/components/analytics/MultiSelect";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { DimensionAnalysisChart } from "@/components/charts/DimensionAnalysisChart";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
@@ -200,24 +217,29 @@ export function SessionsListPage() {
 						>
 							Measure (Y-Axis)
 						</label>
-						<select
-							id="sessions-metric-select"
+						<Select
 							value={selectedMetric}
-							onChange={(e) =>
-								setSelectedMetric(
-									e.target.value as DimensionAnalysisInput["metric"],
-								)
+							onValueChange={(v) =>
+								setSelectedMetric(v as DimensionAnalysisInput["metric"])
 							}
-							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 						>
-							<option value="session_count">Session Count</option>
-							<option value="avg_duration">Avg Duration (min)</option>
-							<option value="total_duration">Total Duration (hours)</option>
-							<option value="avg_tokens">Avg Tokens</option>
-							<option value="total_tokens">Total Tokens</option>
-							<option value="avg_success_score">Avg Success Score</option>
-							<option value="total_errors">Total Errors</option>
-						</select>
+							<SelectTrigger className="w-full">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="session_count">Session Count</SelectItem>
+								<SelectItem value="avg_duration">Avg Duration (min)</SelectItem>
+								<SelectItem value="total_duration">
+									Total Duration (hours)
+								</SelectItem>
+								<SelectItem value="avg_tokens">Avg Tokens</SelectItem>
+								<SelectItem value="total_tokens">Total Tokens</SelectItem>
+								<SelectItem value="avg_success_score">
+									Avg Success Score
+								</SelectItem>
+								<SelectItem value="total_errors">Total Errors</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 					<div>
 						<label
@@ -226,23 +248,24 @@ export function SessionsListPage() {
 						>
 							Group By (X-Axis)
 						</label>
-						<select
-							id="sessions-dimension-select"
+						<Select
 							value={selectedDimension}
-							onChange={(e) =>
-								setSelectedDimension(
-									e.target.value as DimensionAnalysisInput["dimension"],
-								)
+							onValueChange={(v) =>
+								setSelectedDimension(v as DimensionAnalysisInput["dimension"])
 							}
-							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 						>
-							<option value="session_archetype">Session Type</option>
-							<option value="model_used">Model Used</option>
-							<option value="user_id">User/Developer</option>
-							<option value="project_path">Project</option>
-							<option value="repository">Repository</option>
-							<option value="has_commit">Has Commit</option>
-						</select>
+							<SelectTrigger className="w-full">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="session_archetype">Session Type</SelectItem>
+								<SelectItem value="model_used">Model Used</SelectItem>
+								<SelectItem value="user_id">User/Developer</SelectItem>
+								<SelectItem value="project_path">Project</SelectItem>
+								<SelectItem value="repository">Repository</SelectItem>
+								<SelectItem value="has_commit">Has Commit</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 					<div>
 						<label
@@ -251,23 +274,27 @@ export function SessionsListPage() {
 						>
 							Split By (Optional)
 						</label>
-						<select
-							id="sessions-splitby-select"
-							value={selectedSplitBy}
-							onChange={(e) => {
+						<Select
+							value={selectedSplitBy || "none"}
+							onValueChange={(v) => {
+								const value = v === "none" ? "" : v;
 								setSelectedSplitBy(
-									e.target.value as DimensionAnalysisInput["dimension"] | "",
+									value as DimensionAnalysisInput["dimension"] | "",
 								);
-								if (!e.target.value) setShowPercentage(false);
+								if (!value) setShowPercentage(false);
 							}}
-							className="w-full px-3 py-2 border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 						>
-							<option value="">None</option>
-							<option value="session_archetype">Session Type</option>
-							<option value="model_used">Model Used</option>
-							<option value="user_id">User/Developer</option>
-							<option value="repository">Repository</option>
-						</select>
+							<SelectTrigger className="w-full">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="none">None</SelectItem>
+								<SelectItem value="session_archetype">Session Type</SelectItem>
+								<SelectItem value="model_used">Model Used</SelectItem>
+								<SelectItem value="user_id">User/Developer</SelectItem>
+								<SelectItem value="repository">Repository</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 				</div>
 
@@ -276,29 +303,17 @@ export function SessionsListPage() {
 						<span className="text-sm text-muted">
 							{showPercentage ? "Showing as %" : "Showing absolute values"}
 						</span>
-						<button
-							type="button"
-							onClick={() => setShowPercentage(!showPercentage)}
-							className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
-							style={{
-								backgroundColor: showPercentage
-									? "var(--color-accent)"
-									: "var(--color-border)",
-							}}
-						>
-							<span
-								className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-									showPercentage ? "translate-x-6" : "translate-x-1"
-								}`}
-							/>
-						</button>
+						<Switch
+							checked={showPercentage}
+							onCheckedChange={setShowPercentage}
+						/>
 					</div>
 				)}
 
 				{dimensionLoading ? (
 					<div className="flex items-center justify-center h-64">
 						<div className="text-center">
-							<div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-accent border-r-transparent mb-2" />
+							<Spinner className="mb-2" />
 							<p className="text-muted">Loading chart...</p>
 						</div>
 					</div>
@@ -340,95 +355,93 @@ export function SessionsListPage() {
 					</div>
 				</div>
 
-				<div className="overflow-x-auto">
-					<table className="min-w-full divide-y divide-border">
-						<thead className="bg-surface">
-							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Session ID
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Date
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									User
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Project
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Duration
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Success Score
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Cost
-								</th>
-							</tr>
-						</thead>
-						<tbody className="bg-input divide-y divide-border">
-							{filteredSessions.map((session) => (
-								<tr
-									key={session.session_id}
-									className="hover:bg-hover cursor-pointer"
-								>
-									<td className="px-6 py-4 whitespace-nowrap text-sm">
-										<Link
-											to={`/dashboard/sessions/${session.session_id}`}
-											className="text-accent hover:text-accent-hover hover:underline font-mono text-xs"
-										>
-											{session.session_id.slice(0, 8)}...
-										</Link>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-										{new Date(session.session_date).toLocaleDateString()}
-										<br />
-										<span className="text-xs text-muted">
-											{new Date(session.session_date).toLocaleTimeString()}
-										</span>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-subheading">
-										{formatUsername(session.user_id, userMapRecord)}
-									</td>
-									<td className="px-6 py-4 text-sm text-foreground">
-										<div
-											className="max-w-xs truncate"
-											title={session.project_path}
-										>
-											{session.project_path.split("/").pop() ||
-												session.project_path}
-										</div>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-										{session.duration_min.toFixed(0)} min
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm">
-										<span
-											className={`font-semibold ${
-												session.success_score >= 70
-													? "text-status-success-icon"
-													: session.success_score >= 40
-														? "text-status-warning-icon"
-														: "text-status-error-icon"
-											}`}
-										>
-											{session.success_score.toFixed(0)}
-										</span>
-										<span className="text-xs text-muted"> / 100</span>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-mono">
-										$
-										{calculateCost(
-											session.input_tokens,
-											session.output_tokens,
-										).toFixed(4)}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+				<Table>
+					<TableHeader className="bg-surface">
+						<TableRow>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Session ID
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Date
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								User
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Project
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Duration
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Success Score
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Cost
+							</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody className="bg-input">
+						{filteredSessions.map((session) => (
+							<TableRow
+								key={session.session_id}
+								className="hover:bg-hover cursor-pointer"
+							>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+									<Link
+										to={`/dashboard/sessions/${session.session_id}`}
+										className="text-accent hover:text-accent-hover hover:underline font-mono text-xs"
+									>
+										{session.session_id.slice(0, 8)}...
+									</Link>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+									{new Date(session.session_date).toLocaleDateString()}
+									<br />
+									<span className="text-xs text-muted">
+										{new Date(session.session_date).toLocaleTimeString()}
+									</span>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-subheading">
+									{formatUsername(session.user_id, userMapRecord)}
+								</TableCell>
+								<TableCell className="px-6 py-4 text-sm text-foreground">
+									<div
+										className="max-w-xs truncate"
+										title={session.project_path}
+									>
+										{session.project_path.split("/").pop() ||
+											session.project_path}
+									</div>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+									{session.duration_min.toFixed(0)} min
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+									<span
+										className={`font-semibold ${
+											session.success_score >= 70
+												? "text-status-success-icon"
+												: session.success_score >= 40
+													? "text-status-warning-icon"
+													: "text-status-error-icon"
+										}`}
+									>
+										{session.success_score.toFixed(0)}
+									</span>
+									<span className="text-xs text-muted"> / 100</span>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-mono">
+									$
+									{calculateCost(
+										session.input_tokens,
+										session.output_tokens,
+									).toFixed(4)}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
 			</AnalyticsCard>
 		</div>
 	);

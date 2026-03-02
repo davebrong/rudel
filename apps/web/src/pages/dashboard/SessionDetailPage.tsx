@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { ConversationList } from "@/components/sessions/conversation/ConversationList";
 import { SessionHeader } from "@/components/sessions/SessionHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/useSession";
 import { orpc } from "@/lib/orpc";
 
@@ -19,14 +20,14 @@ export function SessionDetailPage() {
 		return (
 			<div className="flex flex-col h-full">
 				<div className="border-b p-4 space-y-3">
-					<div className="h-8 w-48 bg-muted animate-pulse rounded" />
-					<div className="h-4 w-64 bg-muted animate-pulse rounded" />
-					<div className="h-6 w-96 bg-muted animate-pulse rounded" />
+					<Skeleton className="h-8 w-48" />
+					<Skeleton className="h-4 w-64" />
+					<Skeleton className="h-6 w-96" />
 				</div>
 				<div className="flex-1 p-4">
 					<div className="space-y-4">
 						{["sk-1", "sk-2", "sk-3", "sk-4", "sk-5"].map((id) => (
-							<div key={id} className="h-24 bg-muted animate-pulse rounded" />
+							<Skeleton key={id} className="h-24" />
 						))}
 					</div>
 				</div>
