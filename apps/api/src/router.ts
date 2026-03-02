@@ -121,13 +121,22 @@ const getOrganizationSessionCount = os.getOrganizationSessionCount
 const deleteOrganization = os.deleteOrganization
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
+		const orgId = input.organizationId;
+		const userId = context.user.id;
+		console.log(
+			`[deleteOrganization] user=${userId} org=${orgId} migrateSessionsTo=${input.migrateSessionsTo ?? "none"}`,
+		);
+
 		// Check user has more than one org
 		const memberships = await db
 			.select({ organizationId: member.organizationId })
 			.from(member)
-			.where(eq(member.userId, context.user.id));
+			.where(eq(member.userId, userId));
 
 		if (memberships.length <= 1) {
+			console.log(
+				`[deleteOrganization] rejected: user=${userId} has only ${memberships.length} org(s)`,
+			);
 			throw new ORPCError("BAD_REQUEST", {
 				message: "Cannot delete your only organization",
 			});
@@ -139,61 +148,86 @@ const deleteOrganization = os.deleteOrganization
 			.from(member)
 			.where(
 				and(
-					eq(member.organizationId, input.organizationId),
-					eq(member.userId, context.user.id),
+					eq(member.organizationId, orgId),
+					eq(member.userId, userId),
 					eq(member.role, "owner"),
 				),
 			)
 			.limit(1);
 
 		if (ownership.length === 0) {
+			console.log(
+				`[deleteOrganization] rejected: user=${userId} is not owner of org=${orgId}`,
+			);
 			throw new ORPCError("FORBIDDEN", {
 				message: "Only the organization owner can delete it",
 			});
 		}
 
-		if (input.migrateSessionsTo) {
-			if (input.migrateSessionsTo === input.organizationId) {
-				throw new ORPCError("BAD_REQUEST", {
-					message: "Cannot migrate sessions to the same organization",
-				});
+		try {
+			if (input.migrateSessionsTo) {
+				if (input.migrateSessionsTo === orgId) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: "Cannot migrate sessions to the same organization",
+					});
+				}
+
+				// Verify user is a member of the target org
+				const targetMembership = await db
+					.select({ id: member.id })
+					.from(member)
+					.where(
+						and(
+							eq(member.organizationId, input.migrateSessionsTo),
+							eq(member.userId, userId),
+						),
+					)
+					.limit(1);
+
+				if (targetMembership.length === 0) {
+					console.log(
+						`[deleteOrganization] rejected: user=${userId} not member of target org=${input.migrateSessionsTo}`,
+					);
+					throw new ORPCError("FORBIDDEN", {
+						message: "Not a member of the target organization",
+					});
+				}
+
+				console.log(
+					`[deleteOrganization] migrating sessions from org=${orgId} to org=${input.migrateSessionsTo}`,
+				);
+				await migrateOrgSessions(orgId, input.migrateSessionsTo);
+				console.log(`[deleteOrganization] session migration complete`);
+			} else {
+				console.log(
+					`[deleteOrganization] deleting ClickHouse sessions for org=${orgId}`,
+				);
+				await deleteOrgSessions(orgId);
+				console.log(
+					`[deleteOrganization] ClickHouse session deletion complete`,
+				);
 			}
 
-			// Verify user is a member of the target org
-			const targetMembership = await db
-				.select({ id: member.id })
-				.from(member)
-				.where(
-					and(
-						eq(member.organizationId, input.migrateSessionsTo),
-						eq(member.userId, context.user.id),
-					),
-				)
-				.limit(1);
+			// Delete the organization from Postgres (cascade handles member + invitation)
+			console.log(`[deleteOrganization] deleting org=${orgId} from Postgres`);
+			await db.delete(organization).where(eq(organization.id, orgId));
 
-			if (targetMembership.length === 0) {
-				throw new ORPCError("FORBIDDEN", {
-					message: "Not a member of the target organization",
-				});
-			}
+			// Clear activeOrganizationId on user sessions that reference the deleted org
+			console.log(
+				`[deleteOrganization] clearing activeOrganizationId references for org=${orgId}`,
+			);
+			await db
+				.update(session)
+				.set({ activeOrganizationId: null })
+				.where(eq(session.activeOrganizationId, orgId));
 
-			await migrateOrgSessions(input.organizationId, input.migrateSessionsTo);
-		} else {
-			await deleteOrgSessions(input.organizationId);
+			console.log(`[deleteOrganization] success for org=${orgId}`);
+			return { success: true as const };
+		} catch (error) {
+			if (error instanceof ORPCError) throw error;
+			console.error(`[deleteOrganization] failed for org=${orgId}:`, error);
+			throw error;
 		}
-
-		// Delete the organization from Postgres (cascade handles member + invitation)
-		await db
-			.delete(organization)
-			.where(eq(organization.id, input.organizationId));
-
-		// Clear activeOrganizationId on user sessions that reference the deleted org
-		await db
-			.update(session)
-			.set({ activeOrganizationId: null })
-			.where(eq(session.activeOrganizationId, input.organizationId));
-
-		return { success: true as const };
 	});
 
 export const router = os.router({
