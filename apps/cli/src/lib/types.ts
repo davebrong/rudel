@@ -21,6 +21,7 @@ export interface UploadResult {
 	success: boolean;
 	status?: number;
 	error?: string;
+	attempts?: number;
 }
 
 export const DEFAULT_ENDPOINT = "https://app.rudel.ai/rpc";

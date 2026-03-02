@@ -1,4 +1,4 @@
-import { createORPCClient } from "@orpc/client";
+import { createORPCClient, ORPCError } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
 import type { contract, IngestSessionInput } from "@rudel/api-routes";
@@ -7,8 +7,37 @@ import type { UploadResult } from "./types.js";
 export interface UploadConfig {
 	endpoint: string;
 	token: string;
+	onRetry?: (attempt: number, maxAttempts: number, error: string) => void;
 }
 
+const RETRYABLE_STATUS_CODES = new Set([502, 503, 429]);
+const MAX_ATTEMPTS = 3;
+const BASE_DELAY_MS = 1_000;
+
+function isRetryable(error: unknown): boolean {
+	if (error instanceof ORPCError) {
+		return RETRYABLE_STATUS_CODES.has(error.status);
+	}
+	if (error instanceof TypeError) {
+		return true; // network errors (fetch failures)
+	}
+	return false;
+}
+
+function formatError(error: unknown): string {
+	if (error instanceof ORPCError) {
+		return `${error.status} ${error.message}`;
+	}
+	if (error instanceof Error) {
+		return error.message;
+	}
+	return String(error);
+}
+
+/**
+ * Upload a session transcript to the backend via oRPC.
+ * Retries on transient errors (502, 503, 429) with exponential backoff.
+ */
 export async function uploadSession(
 	request: IngestSessionInput,
 	config: UploadConfig,
@@ -22,10 +51,31 @@ export async function uploadSession(
 
 	const client: ContractRouterClient<typeof contract> = createORPCClient(link);
 
-	try {
-		await client.ingestSession(request);
-		return { success: true, status: 200 };
-	} catch (error) {
-		return { success: false, error: String(error) };
+	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+		try {
+			await client.ingestSession(request);
+			return { success: true, status: 200, attempts: attempt };
+		} catch (error) {
+			const errorMessage = formatError(error);
+
+			if (isRetryable(error) && attempt < MAX_ATTEMPTS) {
+				config.onRetry?.(attempt, MAX_ATTEMPTS, errorMessage);
+				const delay = BASE_DELAY_MS * 2 ** (attempt - 1);
+				await new Promise((resolve) => setTimeout(resolve, delay));
+				continue;
+			}
+
+			return {
+				success: false,
+				error: errorMessage,
+				attempts: attempt,
+			};
+		}
 	}
+
+	return {
+		success: false,
+		error: "Max retries exceeded",
+		attempts: MAX_ATTEMPTS,
+	};
 }

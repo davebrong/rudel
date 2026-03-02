@@ -3,6 +3,10 @@ import { type AgentAdapter, getAvailableAdapters } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
 import { createApiClient } from "../lib/api-client.js";
 import { verifyAuth } from "../lib/auth.js";
+import {
+	recordFailedUpload,
+	removeFailedUpload,
+} from "../lib/failed-uploads.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId, setProjectOrgId } from "../lib/project-config.js";
 import { uploadSession } from "../lib/uploader.js";
@@ -134,12 +138,15 @@ async function runEnable(): Promise<void> {
 		if (p.isCancel(shouldUpload) || !shouldUpload) continue;
 
 		const gitInfo = await getGitInfo(cwd);
+		let succeeded = 0;
 		let failed = 0;
+		const errors: Array<{ sessionId: string; error: string }> = [];
 
 		await p.tasks(
 			sessions.map((session, i) => ({
 				title: `[${i + 1}/${sessions.length}] ${session.sessionId}`,
 				task: async (message: (msg: string) => void) => {
+					const prefix = `[${i + 1}/${sessions.length}]`;
 					try {
 						message("Building upload request...");
 						const request = await adapter.buildUploadRequest(session, {
@@ -151,23 +158,70 @@ async function runEnable(): Promise<void> {
 						const result = await uploadSession(request, {
 							endpoint,
 							token: credentials.token,
+							onRetry: (attempt, maxAttempts, error) => {
+								message(
+									`${prefix} Retrying (${attempt}/${maxAttempts}) after ${error}...`,
+								);
+							},
 						});
 
-						if (result.success) return "Uploaded";
+						if (result.success) {
+							succeeded++;
+							await removeFailedUpload(session.sessionId);
+							const retryNote =
+								result.attempts && result.attempts > 1
+									? ` (after ${result.attempts} attempts)`
+									: "";
+							return `Uploaded${retryNote}`;
+						}
 						failed++;
+						const uploadError = result.error ?? "Unknown error";
+						errors.push({ sessionId: session.sessionId, error: uploadError });
+						await recordFailedUpload({
+							sessionId: session.sessionId,
+							transcriptPath: session.transcriptPath,
+							projectPath: session.projectPath,
+							source: adapter.source,
+							organizationId: selectedOrgId,
+							error: uploadError,
+						});
 						return `Failed: ${result.error}`;
 					} catch (error) {
 						failed++;
-						return `Error: ${error instanceof Error ? error.message : String(error)}`;
+						const errorMessage =
+							error instanceof Error ? error.message : String(error);
+						errors.push({ sessionId: session.sessionId, error: errorMessage });
+						await recordFailedUpload({
+							sessionId: session.sessionId,
+							transcriptPath: session.transcriptPath,
+							projectPath: session.projectPath,
+							source: adapter.source,
+							organizationId: selectedOrgId,
+							error: errorMessage,
+						});
+						return `Error: ${errorMessage}`;
 					}
 				},
 			})),
 		);
 
+		if (succeeded > 0) {
+			p.log.success(`${succeeded} ${adapter.name} session(s) uploaded`);
+		}
 		if (failed > 0) {
 			p.log.error(`${failed} ${adapter.name} session(s) failed`);
-			totalFailed += failed;
+			for (const err of errors.slice(0, 5)) {
+				p.log.warn(`  ${err.sessionId}: ${err.error}`);
+			}
+			if (errors.length > 5) {
+				p.log.warn(`  ...and ${errors.length - 5} more`);
+			}
 		}
+		totalFailed += failed;
+	}
+
+	if (totalFailed > 0) {
+		p.log.info("Run `rudel upload --retry` to retry failed uploads.");
 	}
 
 	p.outro("Done!");

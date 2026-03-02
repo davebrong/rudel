@@ -2,6 +2,10 @@ import { getLogger } from "@logtape/logtape";
 import { claudeCodeAdapter, type SessionFile } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
 import { loadCredentials } from "../../../lib/credentials.js";
+import {
+	recordFailedUpload,
+	removeFailedUpload,
+} from "../../../lib/failed-uploads.js";
 import { getGitInfo } from "../../../lib/git-info.js";
 import { getProjectOrgId } from "../../../lib/project-config.js";
 import { uploadSession } from "../../../lib/uploader.js";
@@ -55,11 +59,37 @@ async function runSessionEnd(): Promise<void> {
 
 		const apiBase = process.env.RUDEL_API_BASE ?? credentials.apiBaseUrl;
 		const endpoint = `${apiBase}/rpc`;
-		await uploadSession(request, { endpoint, token: credentials.token });
-
-		logger.info("Upload successful for session {sessionId}", {
-			sessionId: input.session_id,
+		const result = await uploadSession(request, {
+			endpoint,
+			token: credentials.token,
+			onRetry: (attempt, maxAttempts, error) => {
+				logger.warn(
+					"Retrying upload for {sessionId} ({attempt}/{maxAttempts}): {error}",
+					{ sessionId: input.session_id, attempt, maxAttempts, error },
+				);
+			},
 		});
+
+		if (result.success) {
+			logger.info(
+				"Upload successful for session {sessionId} (attempts: {attempts})",
+				{ sessionId: input.session_id, attempts: result.attempts },
+			);
+			await removeFailedUpload(input.session_id);
+		} else {
+			logger.error("Upload failed for session {sessionId}: {error}", {
+				sessionId: input.session_id,
+				error: result.error,
+			});
+			await recordFailedUpload({
+				sessionId: input.session_id,
+				transcriptPath: input.transcript_path,
+				projectPath: input.cwd,
+				source: "claude-code",
+				organizationId,
+				error: result.error ?? "Unknown error",
+			});
+		}
 	} catch (error) {
 		logger.error("Session end hook failed: {error}", { error });
 	} finally {
