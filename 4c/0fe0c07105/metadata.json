@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4c0fe0c07105",
+  "strategy": "manual-commit",
+  "branch": "marc/invite-accept-flow",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/analytics/Breadcrumb.tsx",
+    "apps/web/src/components/analytics/Sidebar.tsx",
+    "apps/web/src/hooks/useUserInvitations.ts",
+    "apps/web/src/pages/AcceptInvitationPage.tsx",
+    "apps/web/src/pages/dashboard/InvitationsPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4c/0fe0c07105/0/metadata.json",
+      "transcript": "/4c/0fe0c07105/0/full.jsonl",
+      "context": "/4c/0fe0c07105/0/context.md",
+      "content_hash": "/4c/0fe0c07105/0/content_hash.txt",
+      "prompt": "/4c/0fe0c07105/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 83,
+    "cache_creation_tokens": 153544,
+    "cache_read_tokens": 3005606,
+    "output_tokens": 11887,
+    "api_call_count": 48
+  }
+}
