@@ -112,6 +112,17 @@ export const contract = {
 	ingestSession: oc
 		.input(IngestSessionInputSchema)
 		.output(IngestSessionOutputSchema),
+	getOrganizationSessionCount: oc
+		.input(z.object({ organizationId: z.string() }))
+		.output(z.object({ count: z.number() })),
+	deleteOrganization: oc
+		.input(
+			z.object({
+				organizationId: z.string(),
+				migrateSessionsTo: z.string().optional(),
+			}),
+		)
+		.output(z.object({ success: z.literal(true) })),
 	analytics: {
 		overview: {
 			kpis: oc.input(DaysInputSchema).output(OverviewKPIsSchema),

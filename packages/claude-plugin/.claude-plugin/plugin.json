@@ -1,0 +1,23 @@
+{
+	"name": "gazed",
+	"description": "Gazed session tracking plugin for Claude Code",
+	"version": "0.1.0",
+	"author": {
+		"name": "Marc Hoeffl",
+		"email": "marc.hoeffl@gmail.com"
+	},
+	"hooks": {
+		"SessionEnd": [
+			{
+				"matcher": "*",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bunx @gazed/cli hook-upload",
+						"async": true
+					}
+				]
+			}
+		]
+	}
+}
