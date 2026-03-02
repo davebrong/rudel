@@ -61,6 +61,9 @@ describe("CLI upload to local API", () => {
 		// and the restarted server's ClickHouse connection can be slow to warm up.
 		// Each attempt has a per-call timeout so a hanging request doesn't
 		// consume the entire test timeout and block retries.
+		// Note: uploadSession itself retries up to 3 times with exponential backoff
+		// (1s, 2s delays), so a full internal cycle can take ~20s. The per-attempt
+		// timeout must exceed this to avoid cutting off mid-retry.
 		let result = { success: false, error: "not attempted" } as Awaited<
 			ReturnType<typeof uploadSession>
 		>;
@@ -70,7 +73,7 @@ describe("CLI upload to local API", () => {
 					endpoint: server.rpcUrl,
 					token: bearerToken,
 				}),
-				Bun.sleep(15_000).then(
+				Bun.sleep(25_000).then(
 					() =>
 						({ success: false, error: "attempt timed out" }) as Awaited<
 							ReturnType<typeof uploadSession>
@@ -86,7 +89,7 @@ describe("CLI upload to local API", () => {
 			throw new Error(`uploadSession failed after 3 attempts: ${result.error}`);
 		}
 		expect(result.status).toBe(200);
-	}, 60_000);
+	}, 90_000);
 
 	test("full CLI upload via subprocess to local API", async () => {
 		expect(bearerToken).toBeTruthy();
@@ -140,7 +143,7 @@ describe("CLI upload to local API", () => {
 				},
 			);
 
-			const timeout = setTimeout(() => proc.kill(), 15_000);
+			const timeout = setTimeout(() => proc.kill(), 25_000);
 			const [exitCode, stdout, stderr] = await Promise.all([
 				proc.exited,
 				new Response(proc.stdout).text(),
@@ -166,7 +169,7 @@ describe("CLI upload to local API", () => {
 			);
 		}
 		expect(lastExitCode).toBe(0);
-	}, 60_000);
+	}, 90_000);
 
 	test("rejects unauthenticated requests", async () => {
 		const request: IngestSessionInput = {

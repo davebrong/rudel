@@ -8,13 +8,11 @@ import {
 	type SessionFile,
 } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
+import type { BatchUploadItem } from "../lib/batch-upload.js";
+import { renderBatchSummary, runBatchUpload } from "../lib/batch-upload-ui.js";
 import { classifySession } from "../lib/classifier.js";
 import { loadCredentials } from "../lib/credentials.js";
-import {
-	loadFailedUploads,
-	recordFailedUpload,
-	removeFailedUpload,
-} from "../lib/failed-uploads.js";
+import { loadFailedUploads } from "../lib/failed-uploads.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId } from "../lib/project-config.js";
 import { resolveSession } from "../lib/session-resolver.js";
@@ -32,6 +30,7 @@ interface UploadFlags {
 	dryRun: boolean;
 	org?: string;
 	retry: boolean;
+	concurrency: number;
 }
 
 async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
@@ -124,108 +123,70 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 		token: credentials?.token ?? "",
 	};
 
-	const uploadSpin = p.spinner();
-	uploadSpin.start("Uploading sessions...");
-
-	let succeeded = 0;
-	let failed = 0;
-	let completed = 0;
-	const errors: Array<{ sessionId: string; project: string; error: string }> =
-		[];
+	// Flatten all sessions with their project context for concurrent upload
+	const work: Array<{
+		session: (typeof selected)[number]["sessions"][number];
+		project: ScannedProject;
+		adapter: ReturnType<typeof getAdapter>;
+		gitInfo: Awaited<ReturnType<typeof getGitInfo>>;
+		organizationId: string | undefined;
+	}> = [];
 
 	for (const project of selected) {
 		const adapter = getAdapter(project.source);
 		const gitInfo = await getGitInfo(project.projectPath);
 		const organizationId =
 			flags.org ?? (await getProjectOrgId(project.projectPath));
-
 		for (const session of project.sessions) {
-			completed++;
-			uploadSpin.message(`[${completed}/${totalSessions}] Uploading...`);
+			work.push({ session, project, adapter, gitInfo, organizationId });
+		}
+	}
 
-			try {
-				const request = await adapter.buildUploadRequest(session, {
-					tag: flags.tag,
-					gitInfo,
-					organizationId,
-				});
+	type InteractiveItem = BatchUploadItem & {
+		session: (typeof work)[number]["session"];
+		adapter: (typeof work)[number]["adapter"];
+		gitInfo: (typeof work)[number]["gitInfo"];
+	};
 
-				if (!flags.tag && flags.classify) {
-					const classified = await classifySession(request.content);
-					if (classified) {
-						(request as { tag?: string }).tag = classified;
-					}
+	const items: InteractiveItem[] = work.map((w) => ({
+		sessionId: w.session.sessionId,
+		label: `${w.project.displayPath}/${w.session.sessionId}`,
+		transcriptPath: w.session.transcriptPath,
+		projectPath: w.session.projectPath,
+		source: w.project.source,
+		organizationId: w.organizationId,
+		session: w.session,
+		adapter: w.adapter,
+		gitInfo: w.gitInfo,
+	}));
+
+	const summary = await runBatchUpload({
+		items,
+		label: "Uploading sessions...",
+		concurrency: flags.concurrency,
+		upload: async (item, onRetry) => {
+			const request = await item.adapter.buildUploadRequest(item.session, {
+				tag: flags.tag,
+				gitInfo: item.gitInfo,
+				organizationId: item.organizationId,
+			});
+
+			if (!flags.tag && flags.classify) {
+				const classified = await classifySession(request.content);
+				if (classified) {
+					(request as { tag?: string }).tag = classified;
 				}
-
-				if (flags.dryRun) {
-					succeeded++;
-					continue;
-				}
-
-				const result = await uploadSession(request, {
-					...uploadConfig,
-					onRetry: (attempt, maxAttempts, error) => {
-						uploadSpin.message(
-							`[${completed}/${totalSessions}] Retrying (${attempt}/${maxAttempts}) after ${error}`,
-						);
-					},
-				});
-				if (result.success) {
-					succeeded++;
-					await removeFailedUpload(session.sessionId);
-				} else {
-					failed++;
-					const error = result.error ?? "Unknown error";
-					errors.push({
-						sessionId: session.sessionId,
-						project: project.displayPath,
-						error,
-					});
-					await recordFailedUpload({
-						sessionId: session.sessionId,
-						transcriptPath: session.transcriptPath,
-						projectPath: session.projectPath,
-						source: project.source,
-						organizationId,
-						error,
-					});
-				}
-			} catch (error) {
-				failed++;
-				const errorMessage =
-					error instanceof Error ? error.message : String(error);
-				errors.push({
-					sessionId: session.sessionId,
-					project: project.displayPath,
-					error: errorMessage,
-				});
-				await recordFailedUpload({
-					sessionId: session.sessionId,
-					transcriptPath: session.transcriptPath,
-					projectPath: session.projectPath,
-					source: project.source,
-					organizationId,
-					error: errorMessage,
-				});
 			}
-		}
-	}
 
-	uploadSpin.stop("Upload complete");
+			if (flags.dryRun) {
+				return { success: true };
+			}
 
-	if (succeeded > 0) {
-		p.log.success(`${succeeded} session(s) uploaded successfully`);
-	}
-	if (failed > 0) {
-		p.log.error(`${failed} session(s) failed`);
-		for (const err of errors.slice(0, 5)) {
-			p.log.warn(`  ${err.project}/${err.sessionId}: ${err.error}`);
-		}
-		if (errors.length > 5) {
-			p.log.warn(`  ...and ${errors.length - 5} more`);
-		}
-		p.log.info("Run `rudel upload --retry` to retry failed uploads.");
-	}
+			return uploadSession(request, { ...uploadConfig, onRetry });
+		},
+	});
+
+	renderBatchSummary(summary, { showRetryHint: summary.failed > 0 });
 
 	if (flags.dryRun) {
 		p.outro("Dry run complete — no sessions were uploaded.");
@@ -233,7 +194,7 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 		p.outro("Done!");
 	}
 
-	if (failed > 0) {
+	if (summary.failed > 0) {
 		process.exitCode = 1;
 	}
 }
@@ -380,83 +341,59 @@ async function runRetryUpload(flags: UploadFlags): Promise<void> {
 	}
 
 	const endpoint = flags.endpoint;
-	let succeeded = 0;
-	let failed = 0;
 
-	await p.tasks(
-		failures.map((failure, i) => ({
-			title: `[${i + 1}/${failures.length}] ${failure.sessionId}`,
-			task: async (message: (msg: string) => void) => {
-				const prefix = `[${i + 1}/${failures.length}]`;
-				try {
-					message("Building upload request...");
-					const adapter = failure.source
-						? getAdapter(failure.source)
-						: claudeCodeAdapter;
-					const sessionFile: SessionFile = {
-						sessionId: failure.sessionId,
-						transcriptPath: failure.transcriptPath,
-						projectPath: failure.projectPath,
-					};
-					const gitInfo = await getGitInfo(failure.projectPath);
-					const organizationId =
-						flags.org ??
-						failure.organizationId ??
-						(await getProjectOrgId(failure.projectPath));
+	type RetryItem = BatchUploadItem & {
+		failure: (typeof failures)[number];
+	};
 
-					const request = await adapter.buildUploadRequest(sessionFile, {
-						tag: flags.tag,
-						gitInfo,
-						organizationId,
-					});
+	const items: RetryItem[] = failures.map((f) => ({
+		sessionId: f.sessionId,
+		label: f.sessionId,
+		transcriptPath: f.transcriptPath,
+		projectPath: f.projectPath,
+		source: f.source,
+		organizationId: f.organizationId,
+		failure: f,
+	}));
 
-					message("Uploading...");
-					const result = await uploadSession(request, {
-						endpoint,
-						token: credentials.token,
-						onRetry: (attempt, maxAttempts, error) => {
-							message(
-								`${prefix} Retrying (${attempt}/${maxAttempts}) after ${error}...`,
-							);
-						},
-					});
+	const summary = await runBatchUpload({
+		items,
+		label: "Retrying uploads...",
+		concurrency: flags.concurrency,
+		upload: async (item, onRetry) => {
+			const adapter = item.failure.source
+				? getAdapter(item.failure.source)
+				: claudeCodeAdapter;
+			const sessionFile: SessionFile = {
+				sessionId: item.failure.sessionId,
+				transcriptPath: item.failure.transcriptPath,
+				projectPath: item.failure.projectPath,
+			};
+			const gitInfo = await getGitInfo(item.failure.projectPath);
+			const organizationId =
+				flags.org ??
+				item.failure.organizationId ??
+				(await getProjectOrgId(item.failure.projectPath));
 
-					if (result.success) {
-						succeeded++;
-						await removeFailedUpload(failure.sessionId);
-						const retryNote =
-							result.attempts && result.attempts > 1
-								? ` (after ${result.attempts} attempts)`
-								: "";
-						return `Uploaded${retryNote}`;
-					}
-					failed++;
-					await recordFailedUpload({
-						...failure,
-						error: result.error ?? "Unknown error",
-					});
-					return `Failed: ${result.error}`;
-				} catch (error) {
-					failed++;
-					const errorMessage =
-						error instanceof Error ? error.message : String(error);
-					await recordFailedUpload({ ...failure, error: errorMessage });
-					return `Error: ${errorMessage}`;
-				}
-			},
-		})),
-	);
+			const request = await adapter.buildUploadRequest(sessionFile, {
+				tag: flags.tag,
+				gitInfo,
+				organizationId,
+			});
 
-	if (succeeded > 0) {
-		p.log.success(`${succeeded} session(s) uploaded`);
-	}
-	if (failed > 0) {
-		p.log.error(`${failed} session(s) still failing`);
-	}
+			return uploadSession(request, {
+				endpoint,
+				token: credentials.token,
+				onRetry,
+			});
+		},
+	});
+
+	renderBatchSummary(summary);
 
 	p.outro("Done!");
 
-	if (failed > 0) {
+	if (summary.failed > 0) {
 		process.exitCode = 1;
 	}
 }
@@ -519,6 +456,12 @@ export const uploadCommand = buildCommand({
 				brief: "Retry previously failed uploads",
 				default: false,
 			},
+			concurrency: {
+				kind: "parsed",
+				parse: Number,
+				brief: "Max concurrent uploads",
+				default: "5",
+			},
 		},
 		aliases: {
 			t: "tag",
@@ -526,6 +469,7 @@ export const uploadCommand = buildCommand({
 			n: "dryRun",
 			o: "org",
 			r: "retry",
+			j: "concurrency",
 		},
 	},
 	docs: {
