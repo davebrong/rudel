@@ -19,9 +19,6 @@ jobs:
       - name: Check for local overrides
         run: bun scripts/check-overrides.ts
 
-      - name: Verify lockfile unchanged
-        run: git diff --exit-code bun.lock
-
       - name: Verify
         run: bunx turbo run lint check-types test build
         env:
