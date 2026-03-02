@@ -8,6 +8,7 @@ import {
 	Users,
 } from "lucide-react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { CliSetupHint } from "@/components/analytics/CliSetupHint";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { InsightCard } from "@/components/analytics/InsightCard";
 import { PageHeader } from "@/components/analytics/PageHeader";
@@ -41,18 +42,22 @@ export function OverviewPage() {
 		orpc.analytics.overview.insights.queryOptions({ input: { days } }),
 	);
 
+	const hasData = !kpisLoading && kpis && kpis.distinct_sessions > 0;
+
 	return (
 		<div className="px-8 py-6">
 			<PageHeader
 				title="Dashboard Overview"
 				description="Track your team's Claude Code usage and metrics"
 				actions={
-					<DatePicker
-						startDate={startDate}
-						endDate={endDate}
-						onStartDateChange={setStartDate}
-						onEndDateChange={setEndDate}
-					/>
+					hasData ? (
+						<DatePicker
+							startDate={startDate}
+							endDate={endDate}
+							onStartDateChange={setStartDate}
+							onEndDateChange={setEndDate}
+						/>
+					) : undefined
 				}
 			/>
 
@@ -65,7 +70,9 @@ export function OverviewPage() {
 				</div>
 			)}
 
-			{!kpisLoading && kpis && (
+			{!kpisLoading && kpis && kpis.distinct_sessions === 0 && <CliSetupHint />}
+
+			{hasData && (
 				<>
 					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
 						<StatCard
