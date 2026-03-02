@@ -1,9 +1,15 @@
+import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import * as p from "@clack/prompts";
 import { buildCommand } from "@stricli/core";
-import { getDefaultAgent } from "../lib/agents/index.js";
+import { getAllAgents } from "../lib/agents/index.js";
+import type { CodingAgent } from "../lib/agents/types.js";
 import { createApiClient } from "../lib/api-client.js";
 import { verifyAuth } from "../lib/auth.js";
+import {
+	type IngestCodexRequest,
+	uploadCodexSession,
+} from "../lib/codex-uploader.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId, setProjectOrgId } from "../lib/project-config.js";
 import { findSessionsForCwd } from "../lib/project-scanner.js";
@@ -84,94 +90,159 @@ async function runEnable(): Promise<void> {
 
 	await setProjectOrgId(cwd, selectedOrgId);
 
-	// Install hook via agent abstraction
-	const agent = getDefaultAgent();
+	// Detect available agents and install hooks
+	const agents = getAllAgents();
+	let agentsToEnable: CodingAgent[];
 
-	if (agent.isHookInstalled()) {
-		p.log.info("Auto-upload hook is already enabled. Organization updated.");
+	if (agents.length > 1) {
+		const agentOptions: Array<{
+			value: CodingAgent;
+			label: string;
+			hint?: string;
+		}> = agents.map((a) => ({
+			value: a as CodingAgent,
+			label: a.name,
+			hint: a.isHookInstalled() ? "already enabled" : undefined,
+		}));
+		const selectedAgents = await p.multiselect({
+			message: "Select agents to enable auto-upload for",
+			options: agentOptions,
+			initialValues: agents as CodingAgent[],
+			required: true,
+		});
+
+		if (p.isCancel(selectedAgents)) {
+			p.cancel("Setup cancelled.");
+			return;
+		}
+		agentsToEnable = selectedAgents;
 	} else {
-		agent.installHook();
-		p.log.success(`Auto-upload hook enabled in ${agent.getHookSettingsPath()}`);
+		agentsToEnable = agents;
 	}
 
-	// Check for existing sessions to upload (uses same scan logic as `upload`)
-	const sessions = await findSessionsForCwd(cwd);
-	if (sessions.length === 0) {
-		p.outro("Done!");
-		return;
+	for (const agent of agentsToEnable) {
+		if (agent.isHookInstalled()) {
+			p.log.info(
+				`${agent.name}: Auto-upload hook is already enabled. Organization updated.`,
+			);
+		} else {
+			agent.installHook();
+			p.log.success(
+				`${agent.name}: Auto-upload hook enabled in ${agent.getHookSettingsPath()}`,
+			);
+		}
 	}
 
-	const shouldUpload = await p.confirm({
-		message: `Found ${sessions.length} previous session(s). Upload them now?`,
-		initialValue: false,
-	});
-
-	if (p.isCancel(shouldUpload) || !shouldUpload) {
-		p.outro("Done!");
-		return;
-	}
-
+	// Check for existing sessions to upload from all enabled agents
 	const endpoint = `${credentials.apiBaseUrl}/rpc`;
-	let failed = 0;
+	let totalFailed = 0;
 
-	await p.tasks(
-		sessions.map((session, i) => ({
-			title: `[${i + 1}/${sessions.length}] ${session.sessionId}`,
-			task: async (message) => {
-				message("Reading transcript...");
-				try {
-					const content = await readTranscript(session.transcriptPath);
-					const agentIds = extractAgentIds(content);
-					const sessionDir = dirname(session.transcriptPath);
-					const subagents =
-						agentIds.length > 0
-							? await readSubagentFiles(sessionDir, agentIds, session.sessionId)
-							: [];
+	for (const agent of agentsToEnable) {
+		const sessions = await agent.findProjectSessions(cwd);
+		if (sessions.length === 0) continue;
 
-					message("Resolving git info...");
-					const gitInfo = await getGitInfo(session.projectPath);
+		const shouldUpload = await p.confirm({
+			message: `Found ${sessions.length} previous ${agent.name} session(s). Upload them now?`,
+			initialValue: false,
+		});
 
-					const request: IngestRequest = {
-						sessionId: session.sessionId,
-						projectPath: session.projectPath,
-						repository: gitInfo.repository,
-						gitBranch: gitInfo.branch,
-						gitSha: gitInfo.sha,
-						content,
-						subagents: subagents.length > 0 ? subagents : undefined,
-						organizationId: selectedOrgId,
-					};
+		if (p.isCancel(shouldUpload) || !shouldUpload) continue;
 
-					message("Uploading...");
-					const result = await uploadSession(request, {
-						endpoint,
-						token: credentials.token,
-					});
+		const isCodex = agent.name === "OpenAI Codex";
+		let failed = 0;
 
-					if (result.success) {
-						return "Uploaded";
+		await p.tasks(
+			sessions.map((session, i) => ({
+				title: `[${i + 1}/${sessions.length}] ${session.sessionId}`,
+				task: async (message) => {
+					message("Reading transcript...");
+					try {
+						if (isCodex) {
+							const content = await readFile(session.transcriptPath, "utf-8");
+							message("Resolving git info...");
+							const gitInfo = await getGitInfo(session.projectPath);
+
+							const request: IngestCodexRequest = {
+								sessionId: session.sessionId,
+								projectPath: session.projectPath,
+								repository: gitInfo.repository,
+								gitBranch: gitInfo.branch,
+								gitSha: gitInfo.sha,
+								content,
+								organizationId: selectedOrgId,
+							};
+
+							message("Uploading...");
+							const result = await uploadCodexSession(request, {
+								endpoint,
+								token: credentials.token,
+							});
+
+							if (result.success) return "Uploaded";
+							failed++;
+							return `Failed: ${result.error}`;
+						}
+
+						const content = await readTranscript(session.transcriptPath);
+						const agentIds = extractAgentIds(content);
+						const sessionDir = dirname(session.transcriptPath);
+						const subagents =
+							agentIds.length > 0
+								? await readSubagentFiles(
+										sessionDir,
+										agentIds,
+										session.sessionId,
+									)
+								: [];
+
+						message("Resolving git info...");
+						const gitInfo = await getGitInfo(session.projectPath);
+
+						const request: IngestRequest = {
+							sessionId: session.sessionId,
+							projectPath: session.projectPath,
+							repository: gitInfo.repository,
+							gitBranch: gitInfo.branch,
+							gitSha: gitInfo.sha,
+							content,
+							subagents: subagents.length > 0 ? subagents : undefined,
+							organizationId: selectedOrgId,
+						};
+
+						message("Uploading...");
+						const result = await uploadSession(request, {
+							endpoint,
+							token: credentials.token,
+						});
+
+						if (result.success) return "Uploaded";
+						failed++;
+						return `Failed: ${result.error}`;
+					} catch (error) {
+						failed++;
+						return `Error: ${error instanceof Error ? error.message : String(error)}`;
 					}
-					failed++;
-					return `Failed: ${result.error}`;
-				} catch (error) {
-					failed++;
-					return `Error: ${error instanceof Error ? error.message : String(error)}`;
-				}
-			},
-		})),
-	);
+				},
+			})),
+		);
 
-	if (failed > 0) {
-		p.log.error(`${failed} session(s) failed`);
+		if (failed > 0) {
+			p.log.error(`${failed} ${agent.name} session(s) failed`);
+			totalFailed += failed;
+		}
 	}
 
 	p.outro("Done!");
+
+	if (totalFailed > 0) {
+		process.exitCode = 1;
+	}
 }
 
 export const enableCommand = buildCommand({
 	loader: async () => ({ default: runEnable }),
 	parameters: {},
 	docs: {
-		brief: "Enable automatic session upload via Claude Code hook",
+		brief: "Enable automatic session upload for coding agents",
 	},
 });

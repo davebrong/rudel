@@ -269,6 +269,7 @@ export const SessionAnalyticsSchema = z.object({
 	session_archetype: z.string(),
 	model_used: z.string(),
 	used_plan_mode: z.boolean(),
+	source: z.string().optional(),
 });
 
 export const SessionAnalyticsSummarySchema = z.object({
@@ -294,6 +295,7 @@ export const SessionListInputSchema = DaysInputSchema.extend({
 	userId: z.string().optional(),
 	projectPath: z.string().optional(),
 	repository: z.string().optional(),
+	source: z.string().optional(),
 	limit: z.number().int().positive().default(100),
 	offset: z.number().int().nonnegative().default(0),
 	sortBy: z
@@ -366,6 +368,7 @@ export const SessionDetailSchema = z.object({
 	total_interactions: z.number().optional(),
 	session_archetype: z.string().optional(),
 	model_used: z.string().optional(),
+	source: z.string().optional(),
 });
 
 export const SessionDetailInputSchema = z.object({

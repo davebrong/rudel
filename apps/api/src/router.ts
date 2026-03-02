@@ -5,6 +5,7 @@ import { getClickhouse } from "./clickhouse.js";
 import { db } from "./db.js";
 import { analyticsRouter } from "./handlers/analytics/index.js";
 import { ingestSession } from "./ingest.js";
+import { ingestCodexSession } from "./ingest-codex.js";
 import { authMiddleware, os } from "./middleware.js";
 import {
 	deleteOrgSessions,
@@ -84,6 +85,46 @@ const ingestSessionHandler = os.ingestSession
 		}
 
 		await ingestSession(getClickhouse(), input, {
+			userId: context.user.id,
+			organizationId: orgId,
+		});
+
+		return {
+			success: true as const,
+			sessionId: input.sessionId,
+		};
+	});
+
+const ingestCodexSessionHandler = os.ingestCodexSession
+	.use(authMiddleware)
+	.handler(async ({ input, context }) => {
+		const orgId =
+			input.organizationId ??
+			((context.session as Record<string, unknown>).activeOrganizationId as
+				| string
+				| null) ??
+			context.user.id;
+
+		if (input.organizationId) {
+			const membership = await db
+				.select({ id: member.id })
+				.from(member)
+				.where(
+					and(
+						eq(member.organizationId, input.organizationId),
+						eq(member.userId, context.user.id),
+					),
+				)
+				.limit(1);
+
+			if (membership.length === 0) {
+				throw new ORPCError("FORBIDDEN", {
+					message: "Not a member of the specified organization",
+				});
+			}
+		}
+
+		await ingestCodexSession(getClickhouse(), input, {
 			userId: context.user.id,
 			organizationId: orgId,
 		});
@@ -235,6 +276,7 @@ export const router = os.router({
 	me,
 	listMyOrganizations,
 	ingestSession: ingestSessionHandler,
+	ingestCodexSession: ingestCodexSessionHandler,
 	getOrganizationSessionCount,
 	deleteOrganization,
 	analytics: analyticsRouter,

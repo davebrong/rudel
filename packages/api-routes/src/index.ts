@@ -100,12 +100,29 @@ export const IngestSessionInputSchema = z.object({
 	organizationId: z.string().optional(),
 });
 
+export const IngestCodexSessionInputSchema = z.object({
+	sessionId: z.string(),
+	projectPath: z.string(),
+	repository: z.string().optional(),
+	gitBranch: z.string().optional(),
+	gitSha: z.string().optional(),
+	tag: SessionTagSchema.optional(),
+	content: z.string(),
+	organizationId: z.string().optional(),
+	cliVersion: z.string().optional(),
+	modelProvider: z.string().optional(),
+	codexSource: z.enum(["cli", "vscode"]).optional(),
+});
+
 export const IngestSessionOutputSchema = z.object({
 	success: z.literal(true),
 	sessionId: z.string(),
 });
 
 export type IngestSessionInput = z.infer<typeof IngestSessionInputSchema>;
+export type IngestCodexSessionInput = z.infer<
+	typeof IngestCodexSessionInputSchema
+>;
 
 export const contract = {
 	health: oc.output(HealthSchema),
@@ -113,6 +130,9 @@ export const contract = {
 	listMyOrganizations: oc.output(z.array(OrganizationSchema)),
 	ingestSession: oc
 		.input(IngestSessionInputSchema)
+		.output(IngestSessionOutputSchema),
+	ingestCodexSession: oc
+		.input(IngestCodexSessionInputSchema)
 		.output(IngestSessionOutputSchema),
 	getOrganizationSessionCount: oc
 		.input(z.object({ organizationId: z.string() }))

@@ -41,6 +41,11 @@ const rudel_session_analytics = table({
 		{ name: "cache_creation_input_tokens", type: "UInt64", default: "fn:0" },
 		{ name: "total_tokens", type: "UInt64", default: "fn:0" },
 		{ name: "tag", type: "String", nullable: true },
+		{
+			name: "source",
+			type: "LowCardinality(String)",
+			default: "'claude_code'",
+		},
 
 		// ── Computed metrics (populated by MV) ─────────────────────────
 		{ name: "total_interactions", type: "UInt32", default: "fn:0" },
@@ -93,6 +98,12 @@ const rudel_session_analytics = table({
 		{
 			name: "idx_git_remote",
 			expression: "git_remote",
+			type: "set",
+			granularity: 4,
+		},
+		{
+			name: "idx_source",
+			expression: "source",
 			type: "set",
 			granularity: 4,
 		},
@@ -161,6 +172,7 @@ const rudel_session_analytics_mv = materializedView({
     * EXCEPT (session_date, last_interaction_date),
     _session_date as session_date,
     _last_interaction_date as last_interaction_date,
+    'claude_code' as source,
     _input_tokens as input_tokens,
     _output_tokens as output_tokens,
     _cache_read as cache_read_input_tokens,
