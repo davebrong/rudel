@@ -75,7 +75,7 @@ async function runHookUpload(): Promise<void> {
 
 		const result = await uploadSession(request, {
 			endpoint,
-			apiKey: config.apiKey,
+			token: config.apiKey,
 		});
 
 		if (result.success) {
