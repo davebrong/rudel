@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "c7c88a4a656d",
+  "session_id": "6866be0e-b7d5-4d6f-b06e-2fa0226c9a0d",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:05:00.672197Z",
+  "branch": "marc/fix-shadcn-ui-consistency",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/ui/checkbox.tsx",
+    "apps/web/src/components/ui/dropdown-menu.tsx",
+    "apps/web/src/components/ui/popover.tsx",
+    "apps/web/src/components/ui/select.tsx",
+    "apps/web/src/components/ui/skeleton.tsx",
+    "apps/web/src/components/ui/spinner.tsx",
+    "apps/web/src/components/ui/switch.tsx",
+    "apps/web/src/components/ui/table.tsx",
+    "apps/web/src/components/ui/tooltip.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 621,
+    "cache_creation_tokens": 290915,
+    "cache_read_tokens": 3687151,
+    "output_tokens": 28684,
+    "api_call_count": 42
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:04:59.546443Z",
+    "agent_lines": 816,
+    "human_added": 1124,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1940,
+    "agent_percentage": 42.06185567010309
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-seville/6866be0e-b7d5-4d6f-b06e-2fa0226c9a0d.jsonl"
+}
