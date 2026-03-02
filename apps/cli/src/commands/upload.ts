@@ -10,6 +10,11 @@ import {
 import { buildCommand } from "@stricli/core";
 import { classifySession } from "../lib/classifier.js";
 import { loadCredentials } from "../lib/credentials.js";
+import {
+	loadFailedUploads,
+	recordFailedUpload,
+	removeFailedUpload,
+} from "../lib/failed-uploads.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId } from "../lib/project-config.js";
 import { resolveSession } from "../lib/session-resolver.js";
@@ -26,6 +31,7 @@ interface UploadFlags {
 	classify: boolean;
 	dryRun: boolean;
 	org?: string;
+	retry: boolean;
 }
 
 async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
@@ -156,23 +162,50 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 					continue;
 				}
 
-				const result = await uploadSession(request, uploadConfig);
+				const result = await uploadSession(request, {
+					...uploadConfig,
+					onRetry: (attempt, maxAttempts, error) => {
+						uploadSpin.message(
+							`[${completed}/${totalSessions}] Retrying (${attempt}/${maxAttempts}) after ${error}`,
+						);
+					},
+				});
 				if (result.success) {
 					succeeded++;
+					await removeFailedUpload(session.sessionId);
 				} else {
 					failed++;
+					const error = result.error ?? "Unknown error";
 					errors.push({
 						sessionId: session.sessionId,
 						project: project.displayPath,
-						error: result.error ?? "Unknown error",
+						error,
+					});
+					await recordFailedUpload({
+						sessionId: session.sessionId,
+						transcriptPath: session.transcriptPath,
+						projectPath: session.projectPath,
+						source: project.source,
+						organizationId,
+						error,
 					});
 				}
 			} catch (error) {
 				failed++;
+				const errorMessage =
+					error instanceof Error ? error.message : String(error);
 				errors.push({
 					sessionId: session.sessionId,
 					project: project.displayPath,
-					error: error instanceof Error ? error.message : String(error),
+					error: errorMessage,
+				});
+				await recordFailedUpload({
+					sessionId: session.sessionId,
+					transcriptPath: session.transcriptPath,
+					projectPath: session.projectPath,
+					source: project.source,
+					organizationId,
+					error: errorMessage,
 				});
 			}
 		}
@@ -191,6 +224,7 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 		if (errors.length > 5) {
 			p.log.warn(`  ...and ${errors.length - 5} more`);
 		}
+		p.log.info("Run `rudel upload --retry` to retry failed uploads.");
 	}
 
 	if (flags.dryRun) {
@@ -311,10 +345,129 @@ async function runSingleUpload(
 	}
 }
 
+async function runRetryUpload(flags: UploadFlags): Promise<void> {
+	const credentials = loadCredentials();
+	if (!credentials) {
+		p.log.error("Not authenticated. Run `rudel login` first.");
+		process.exitCode = 1;
+		return;
+	}
+
+	p.intro("rudel upload --retry");
+
+	const failures = await loadFailedUploads();
+	if (failures.length === 0) {
+		p.outro("No failed uploads to retry.");
+		return;
+	}
+
+	p.log.info(`Found ${failures.length} failed upload(s):`);
+	for (const f of failures.slice(0, 10)) {
+		p.log.warn(`  ${f.sessionId}: ${f.error} (${f.failedAt})`);
+	}
+	if (failures.length > 10) {
+		p.log.warn(`  ...and ${failures.length - 10} more`);
+	}
+
+	const shouldRetry = await p.confirm({
+		message: `Retry all ${failures.length} failed upload(s)?`,
+		initialValue: true,
+	});
+
+	if (p.isCancel(shouldRetry) || !shouldRetry) {
+		p.cancel("Retry cancelled.");
+		return;
+	}
+
+	const endpoint = flags.endpoint;
+	let succeeded = 0;
+	let failed = 0;
+
+	await p.tasks(
+		failures.map((failure, i) => ({
+			title: `[${i + 1}/${failures.length}] ${failure.sessionId}`,
+			task: async (message: (msg: string) => void) => {
+				const prefix = `[${i + 1}/${failures.length}]`;
+				try {
+					message("Building upload request...");
+					const adapter = failure.source
+						? getAdapter(failure.source)
+						: claudeCodeAdapter;
+					const sessionFile: SessionFile = {
+						sessionId: failure.sessionId,
+						transcriptPath: failure.transcriptPath,
+						projectPath: failure.projectPath,
+					};
+					const gitInfo = await getGitInfo(failure.projectPath);
+					const organizationId =
+						flags.org ??
+						failure.organizationId ??
+						(await getProjectOrgId(failure.projectPath));
+
+					const request = await adapter.buildUploadRequest(sessionFile, {
+						tag: flags.tag,
+						gitInfo,
+						organizationId,
+					});
+
+					message("Uploading...");
+					const result = await uploadSession(request, {
+						endpoint,
+						token: credentials.token,
+						onRetry: (attempt, maxAttempts, error) => {
+							message(
+								`${prefix} Retrying (${attempt}/${maxAttempts}) after ${error}...`,
+							);
+						},
+					});
+
+					if (result.success) {
+						succeeded++;
+						await removeFailedUpload(failure.sessionId);
+						const retryNote =
+							result.attempts && result.attempts > 1
+								? ` (after ${result.attempts} attempts)`
+								: "";
+						return `Uploaded${retryNote}`;
+					}
+					failed++;
+					await recordFailedUpload({
+						...failure,
+						error: result.error ?? "Unknown error",
+					});
+					return `Failed: ${result.error}`;
+				} catch (error) {
+					failed++;
+					const errorMessage =
+						error instanceof Error ? error.message : String(error);
+					await recordFailedUpload({ ...failure, error: errorMessage });
+					return `Error: ${errorMessage}`;
+				}
+			},
+		})),
+	);
+
+	if (succeeded > 0) {
+		p.log.success(`${succeeded} session(s) uploaded`);
+	}
+	if (failed > 0) {
+		p.log.error(`${failed} session(s) still failing`);
+	}
+
+	p.outro("Done!");
+
+	if (failed > 0) {
+		process.exitCode = 1;
+	}
+}
+
 async function runUpload(
 	flags: UploadFlags,
 	...sessions: string[]
 ): Promise<void> {
+	if (flags.retry) {
+		return runRetryUpload(flags);
+	}
 	if (sessions.length === 0) {
 		return runInteractiveUpload(flags);
 	}
@@ -361,12 +514,18 @@ export const uploadCommand = buildCommand({
 				brief: "Override the organization ID to upload to",
 				optional: true,
 			},
+			retry: {
+				kind: "boolean",
+				brief: "Retry previously failed uploads",
+				default: false,
+			},
 		},
 		aliases: {
 			t: "tag",
 			c: "classify",
 			n: "dryRun",
 			o: "org",
+			r: "retry",
 		},
 	},
 	docs: {

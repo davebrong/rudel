@@ -5,6 +5,10 @@ import {
 } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
 import { loadCredentials } from "../../../lib/credentials.js";
+import {
+	recordFailedUpload,
+	removeFailedUpload,
+} from "../../../lib/failed-uploads.js";
 import { getGitInfo } from "../../../lib/git-info.js";
 import { getProjectOrgId } from "../../../lib/project-config.js";
 import { uploadSession } from "../../../lib/uploader.js";
@@ -56,7 +60,23 @@ async function runTurnComplete(): Promise<void> {
 
 		const apiBase = process.env.RUDEL_API_BASE ?? credentials.apiBaseUrl;
 		const endpoint = `${apiBase}/rpc`;
-		await uploadSession(request, { endpoint, token: credentials.token });
+		const result = await uploadSession(request, {
+			endpoint,
+			token: credentials.token,
+		});
+
+		if (result.success) {
+			await removeFailedUpload(input.thread_id);
+		} else {
+			await recordFailedUpload({
+				sessionId: input.thread_id,
+				transcriptPath,
+				projectPath: input.cwd,
+				source: "codex",
+				organizationId,
+				error: result.error ?? "Unknown error",
+			});
+		}
 	} catch {
 		// Swallow all errors — this runs async in the background
 	}
