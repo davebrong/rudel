@@ -1,4 +1,9 @@
+import type {
+	DeveloperCostBreakdown,
+	ProjectCostBreakdown,
+} from "@rudel/api-routes";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
 	Activity,
 	DollarSign,
@@ -21,16 +26,9 @@ import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { formatUsername } from "@/lib/format";
@@ -78,6 +76,74 @@ export function ROIPage() {
 		}
 		return record;
 	}, [userMappings]);
+
+	const devCostColumns = useMemo<ColumnDef<DeveloperCostBreakdown>[]>(
+		() => [
+			{
+				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				id: "developer",
+				header: "Developer",
+				cell: ({ row }) => (
+					<span className="font-medium text-foreground">
+						{formatUsername(row.original.user_id, userMapRecord)}
+					</span>
+				),
+			},
+			{
+				accessorKey: "cost",
+				header: "Cost",
+				cell: ({ row }) => (
+					<span className="text-right text-subheading">
+						${row.original.cost.toFixed(2)}
+					</span>
+				),
+			},
+			{
+				accessorKey: "sessions",
+				header: "Sessions",
+				cell: ({ row }) => (
+					<span className="text-right text-subheading">
+						{row.original.sessions}
+					</span>
+				),
+			},
+		],
+		[userMapRecord],
+	);
+
+	const projectCostColumns = useMemo<ColumnDef<ProjectCostBreakdown>[]>(
+		() => [
+			{
+				accessorKey: "project_path",
+				header: "Project",
+				cell: ({ row }) => (
+					<span className="font-medium text-foreground truncate max-w-xs">
+						{row.original.project_path.split("/").pop() ||
+							row.original.project_path}
+					</span>
+				),
+			},
+			{
+				accessorKey: "cost",
+				header: "Cost",
+				cell: ({ row }) => (
+					<span className="text-right text-subheading">
+						${row.original.cost.toFixed(2)}
+					</span>
+				),
+			},
+			{
+				accessorKey: "sessions",
+				header: "Sessions",
+				cell: ({ row }) => (
+					<span className="text-right text-subheading">
+						{row.original.sessions}
+					</span>
+				),
+			},
+		],
+		[],
+	);
 
 	const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
 	const formatPercent = (value: number) =>
@@ -477,83 +543,27 @@ export function ROIPage() {
 					{/* Cost Breakdown Tables */}
 					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 						<AnalyticsCard>
-							<div className="mb-4">
-								<h3 className="text-lg font-semibold text-heading">
-									Developer Cost Breakdown
-								</h3>
-							</div>
-							<Table>
-								<TableHeader className="bg-surface">
-									<TableRow>
-										<TableHead className="px-4 py-3 text-xs text-muted uppercase">
-											Developer
-										</TableHead>
-										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
-											Cost
-										</TableHead>
-										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
-											Sessions
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody className="bg-input">
-									{developerCosts?.map((dev) => (
-										<TableRow key={dev.user_id} className="hover:bg-hover">
-											<TableCell className="px-4 py-3 text-sm font-medium text-foreground">
-												{formatUsername(dev.user_id, userMapRecord)}
-											</TableCell>
-											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
-												{formatCurrency(dev.cost)}
-											</TableCell>
-											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
-												{dev.sessions}
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+							<h3 className="text-lg font-semibold text-heading mb-4">
+								Developer Cost Breakdown
+							</h3>
+							<DataTable
+								columns={devCostColumns}
+								data={developerCosts ?? []}
+								defaultSorting={[{ id: "cost", desc: true }]}
+								defaultPageSize={50}
+							/>
 						</AnalyticsCard>
 
 						<AnalyticsCard>
-							<div className="mb-4">
-								<h3 className="text-lg font-semibold text-heading">
-									Project Cost Breakdown
-								</h3>
-							</div>
-							<Table>
-								<TableHeader className="bg-surface">
-									<TableRow>
-										<TableHead className="px-4 py-3 text-xs text-muted uppercase">
-											Project
-										</TableHead>
-										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
-											Cost
-										</TableHead>
-										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
-											Sessions
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody className="bg-input">
-									{projectCosts?.slice(0, 10).map((proj) => (
-										<TableRow
-											key={proj.project_path}
-											className="hover:bg-hover"
-										>
-											<TableCell className="px-4 py-3 text-sm font-medium text-foreground truncate max-w-xs">
-												{proj.project_path.split("/").pop() ||
-													proj.project_path}
-											</TableCell>
-											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
-												{formatCurrency(proj.cost)}
-											</TableCell>
-											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
-												{proj.sessions}
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+							<h3 className="text-lg font-semibold text-heading mb-4">
+								Project Cost Breakdown
+							</h3>
+							<DataTable
+								columns={projectCostColumns}
+								data={projectCosts ?? []}
+								defaultSorting={[{ id: "cost", desc: true }]}
+								defaultPageSize={50}
+							/>
 						</AnalyticsCard>
 					</div>
 				</>

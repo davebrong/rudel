@@ -1,4 +1,6 @@
+import type { DeveloperSummary } from "@rudel/api-routes";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
 	Activity,
 	ArrowDown,
@@ -16,15 +18,7 @@ import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { DeveloperTrendChart } from "@/components/charts/DeveloperTrendChart";
-import { Button } from "@/components/ui/button";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { authClient } from "@/lib/auth-client";
@@ -54,10 +48,6 @@ export function DevelopersListPage() {
 			});
 	}, [activeOrg?.id]);
 
-	const [sortBy, setSortBy] = useState<
-		"sessions" | "tokens" | "last_active" | "success_rate"
-	>("sessions");
-
 	const { data: developers, isLoading } = useQuery(
 		orpc.analytics.developers.list.queryOptions({ input: { days } }),
 	);
@@ -82,18 +72,130 @@ export function DevelopersListPage() {
 
 	const userMapRecord = useMemo(() => Object.fromEntries(userMap), [userMap]);
 
-	const sortedDevelopers = useMemo(() => {
-		if (!developers) return [];
-		return [...developers].sort((a, b) => {
-			if (sortBy === "sessions") return b.total_sessions - a.total_sessions;
-			if (sortBy === "tokens") return b.total_tokens - a.total_tokens;
-			if (sortBy === "success_rate") return b.success_rate - a.success_rate;
-			return (
-				new Date(b.last_active_date).getTime() -
-				new Date(a.last_active_date).getTime()
-			);
-		});
-	}, [developers, sortBy]);
+	const columns = useMemo<ColumnDef<DeveloperSummary>[]>(
+		() => [
+			{
+				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				id: "developer",
+				header: "Developer",
+				cell: ({ row }) => (
+					<div className="flex items-center">
+						<div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+							<span className="text-blue-600 font-semibold text-sm">
+								{formatUsername(row.original.user_id, userMapRecord)
+									.substring(0, 2)
+									.toUpperCase()}
+							</span>
+						</div>
+						<div className="ml-4">
+							<div className="text-sm font-medium text-foreground">
+								{formatUsername(row.original.user_id, userMapRecord)}
+							</div>
+						</div>
+					</div>
+				),
+			},
+			{
+				accessorKey: "total_sessions",
+				header: "Sessions",
+				cell: ({ row }) => (
+					<span className="text-muted">{row.original.total_sessions}</span>
+				),
+			},
+			{
+				accessorKey: "active_days",
+				header: "Active Days",
+				cell: ({ row }) => (
+					<span className="text-muted">{row.original.active_days}</span>
+				),
+			},
+			{
+				accessorKey: "total_tokens",
+				header: "Total Tokens",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{(row.original.total_tokens / 1000).toFixed(0)}K
+					</span>
+				),
+			},
+			{
+				accessorKey: "success_rate",
+				header: "Success Rate",
+				cell: ({ row }) => {
+					const rate = row.original.success_rate;
+					const color =
+						rate >= 70
+							? "text-status-success-icon"
+							: rate >= 50
+								? "text-status-warning-icon"
+								: "text-status-error-icon";
+					return (
+						<span className={`font-medium ${color}`}>{rate.toFixed(0)}%</span>
+					);
+				},
+			},
+			{
+				accessorKey: "cost",
+				header: "Cost",
+				cell: ({ row }) => (
+					<span className="text-muted">${row.original.cost.toFixed(2)}</span>
+				),
+			},
+			{
+				accessorKey: "success_rate_trend",
+				header: "Trend",
+				cell: ({ row }) => {
+					const trend = row.original.success_rate_trend;
+					return (
+						<div className="flex items-center">
+							{trend > 0 && (
+								<>
+									<ArrowUp className="w-4 h-4 text-status-success-icon mr-1" />
+									<span className="text-status-success-icon font-medium">
+										+{trend.toFixed(0)}%
+									</span>
+								</>
+							)}
+							{trend < 0 && (
+								<>
+									<ArrowDown className="w-4 h-4 text-status-error-icon mr-1" />
+									<span className="text-status-error-icon font-medium">
+										{trend.toFixed(0)}%
+									</span>
+								</>
+							)}
+							{trend === 0 && (
+								<>
+									<Minus className="w-4 h-4 text-muted mr-1" />
+									<span className="text-muted">0%</span>
+								</>
+							)}
+						</div>
+					);
+				},
+			},
+			{
+				accessorKey: "avg_session_duration_min",
+				header: "Avg Session",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{row.original.avg_session_duration_min.toFixed(0)}m
+					</span>
+				),
+			},
+			{
+				accessorFn: (row) => new Date(row.last_active_date).getTime(),
+				id: "last_active",
+				header: "Last Active",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{new Date(row.original.last_active_date).toLocaleDateString()}
+					</span>
+				),
+			},
+		],
+		[userMapRecord],
+	);
 
 	const totalSessions =
 		developers?.reduce((sum, d) => sum + d.total_sessions, 0) ?? 0;
@@ -175,146 +277,13 @@ export function DevelopersListPage() {
 
 			{/* Developers Table */}
 			<AnalyticsCard>
-				<div className="flex justify-between items-center mb-6">
-					<h2 className="text-xl font-bold text-heading">Developer List</h2>
-					<div className="flex gap-2">
-						{(
-							["sessions", "tokens", "success_rate", "last_active"] as const
-						).map((key) => (
-							<Button
-								key={key}
-								variant={sortBy === key ? "default" : "secondary"}
-								size="sm"
-								onClick={() => setSortBy(key)}
-							>
-								{key === "sessions"
-									? "Sessions"
-									: key === "tokens"
-										? "Tokens"
-										: key === "success_rate"
-											? "Success Rate"
-											: "Last Active"}
-							</Button>
-						))}
-					</div>
-				</div>
-
-				<Table>
-					<TableHeader className="bg-surface">
-						<TableRow>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Developer
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Sessions
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Active Days
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Total Tokens
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Success Rate
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Cost
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Trend
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Avg Session
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Last Active
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody className="bg-input">
-						{sortedDevelopers.map((dev) => (
-							<TableRow
-								key={dev.user_id}
-								onClick={() => navigate(`/dashboard/developers/${dev.user_id}`)}
-								className="hover:bg-hover cursor-pointer"
-							>
-								<TableCell className="px-6 py-4 whitespace-nowrap">
-									<div className="flex items-center">
-										<div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-											<span className="text-blue-600 font-semibold text-sm">
-												{formatUsername(dev.user_id, userMapRecord)
-													.substring(0, 2)
-													.toUpperCase()}
-											</span>
-										</div>
-										<div className="ml-4">
-											<div className="text-sm font-medium text-foreground">
-												{formatUsername(dev.user_id, userMapRecord)}
-											</div>
-										</div>
-									</div>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{dev.total_sessions}
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{dev.active_days}
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{(dev.total_tokens / 1000).toFixed(0)}K
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									<span
-										className={`font-medium ${
-											dev.success_rate >= 70
-												? "text-status-success-icon"
-												: dev.success_rate >= 50
-													? "text-status-warning-icon"
-													: "text-status-error-icon"
-										}`}
-									>
-										{dev.success_rate.toFixed(0)}%
-									</span>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									${dev.cost.toFixed(2)}
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
-									<div className="flex items-center">
-										{dev.success_rate_trend > 0 && (
-											<>
-												<ArrowUp className="w-4 h-4 text-status-success-icon mr-1" />
-												<span className="text-status-success-icon font-medium">
-													+{dev.success_rate_trend.toFixed(0)}%
-												</span>
-											</>
-										)}
-										{dev.success_rate_trend < 0 && (
-											<>
-												<ArrowDown className="w-4 h-4 text-status-error-icon mr-1" />
-												<span className="text-status-error-icon font-medium">
-													{dev.success_rate_trend.toFixed(0)}%
-												</span>
-											</>
-										)}
-										{dev.success_rate_trend === 0 && (
-											<>
-												<Minus className="w-4 h-4 text-muted mr-1" />
-												<span className="text-muted">0%</span>
-											</>
-										)}
-									</div>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{dev.avg_session_duration_min.toFixed(0)}m
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{new Date(dev.last_active_date).toLocaleDateString()}
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+				<h2 className="text-xl font-bold text-heading mb-4">Developer List</h2>
+				<DataTable
+					columns={columns}
+					data={developers ?? []}
+					defaultSorting={[{ id: "total_sessions", desc: true }]}
+					onRowClick={(row) => navigate(`/dashboard/developers/${row.user_id}`)}
+				/>
 			</AnalyticsCard>
 
 			{/* Developer Trend Chart */}

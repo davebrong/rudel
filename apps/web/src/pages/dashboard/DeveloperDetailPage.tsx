@@ -1,4 +1,6 @@
+import type { DeveloperError, DeveloperSession } from "@rudel/api-routes";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Activity, ArrowLeft, Calendar, Clock, Code, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -19,6 +21,7 @@ import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import {
 	Select,
 	SelectContent,
@@ -26,14 +29,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import {
@@ -56,8 +51,6 @@ export function DeveloperDetailPage() {
 
 	const [projectFilter, setProjectFilter] = useState<string>("");
 	const [outcomeFilter, setOutcomeFilter] = useState<"all" | "success">("all");
-	const [sortBy, setSortBy] = useState<"date" | "duration" | "tokens">("date");
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
 	const { data: details, isLoading: detailsLoading } = useQuery(
 		orpc.analytics.developers.details.queryOptions({
@@ -73,8 +66,8 @@ export function DeveloperDetailPage() {
 				limit: 100,
 				projectPath: projectFilter || undefined,
 				outcome: outcomeFilter,
-				sortBy,
-				sortOrder,
+				sortBy: "date" as const,
+				sortOrder: "desc" as const,
 			},
 		}),
 	);
@@ -170,6 +163,131 @@ export function DeveloperDetailPage() {
 		if (!sessions) return [];
 		return Array.from(new Set(sessions.map((s) => s.project_path)));
 	}, [sessions]);
+
+	const errorColumns = useMemo<ColumnDef<DeveloperError>[]>(
+		() => [
+			{
+				accessorKey: "error_pattern",
+				header: "Error Type",
+				cell: ({ row }) => (
+					<span className="font-medium text-foreground">
+						{row.original.error_pattern}
+					</span>
+				),
+			},
+			{
+				accessorKey: "occurrences",
+				header: "Occurrences",
+				cell: ({ row }) => (
+					<span className="text-muted">{row.original.occurrences}</span>
+				),
+			},
+			{
+				accessorFn: (row) => new Date(row.last_seen).getTime(),
+				id: "last_seen",
+				header: "Last Seen",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{new Date(row.original.last_seen).toLocaleDateString()}
+					</span>
+				),
+			},
+		],
+		[],
+	);
+
+	const sessionColumns = useMemo<ColumnDef<DeveloperSession>[]>(
+		() => [
+			{
+				accessorFn: (row) => new Date(row.session_date).getTime(),
+				id: "date",
+				header: "Date",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{new Date(row.original.session_date).toLocaleString()}
+					</span>
+				),
+			},
+			{
+				accessorKey: "project_path",
+				header: "Project",
+				cell: ({ row }) => (
+					<span className="font-medium text-foreground">
+						{row.original.project_path.split("/").pop()}
+					</span>
+				),
+			},
+			{
+				accessorKey: "duration_min",
+				header: "Duration",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{row.original.duration_min.toFixed(0)}m
+					</span>
+				),
+			},
+			{
+				accessorKey: "total_tokens",
+				header: "Tokens",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{(row.original.total_tokens / 1000).toFixed(0)}K
+					</span>
+				),
+			},
+			{
+				id: "features",
+				header: "Features",
+				enableSorting: false,
+				cell: ({ row }) => (
+					<div className="flex gap-1">
+						{row.original.has_subagents && (
+							<span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+								SA
+							</span>
+						)}
+						{row.original.has_skills && (
+							<span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
+								SK
+							</span>
+						)}
+						{row.original.has_slash_commands && (
+							<span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+								SC
+							</span>
+						)}
+					</div>
+				),
+			},
+			{
+				id: "status",
+				header: "Status",
+				enableSorting: false,
+				cell: ({ row }) => {
+					if (row.original.likely_success) {
+						return (
+							<span className="px-2 py-1 text-xs bg-status-success-bg text-status-success-text rounded-full">
+								Success
+							</span>
+						);
+					}
+					if (row.original.has_errors) {
+						return (
+							<span className="px-2 py-1 text-xs bg-status-error-bg text-status-error-text rounded-full">
+								Error
+							</span>
+						);
+					}
+					return (
+						<span className="px-2 py-1 text-xs bg-surface text-subheading rounded-full">
+							Unknown
+						</span>
+					);
+				},
+			},
+		],
+		[],
+	);
 
 	if (detailsLoading || !details) {
 		return (
@@ -418,49 +536,21 @@ export function DeveloperDetailPage() {
 			{/* Errors */}
 			{errors && errors.length > 0 && (
 				<AnalyticsCard className="mb-8">
-					<h2 className="text-xl font-bold text-heading mb-6">
+					<h2 className="text-xl font-bold text-heading mb-4">
 						Errors Encountered
 					</h2>
-					<Table>
-						<TableHeader className="bg-surface">
-							<TableRow>
-								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-									Error Type
-								</TableHead>
-								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-									Occurrences
-								</TableHead>
-								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-									Last Seen
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody className="bg-input">
-							{errors.map((error, idx) => (
-								<TableRow
-									// biome-ignore lint/suspicious/noArrayIndexKey: static error list
-									key={idx}
-									className="hover:bg-hover"
-								>
-									<TableCell className="px-6 py-4 text-sm font-medium text-foreground">
-										{error.error_pattern}
-									</TableCell>
-									<TableCell className="px-6 py-4 text-sm text-muted">
-										{error.occurrences}
-									</TableCell>
-									<TableCell className="px-6 py-4 text-sm text-muted">
-										{new Date(error.last_seen).toLocaleDateString()}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+					<DataTable
+						columns={errorColumns}
+						data={errors}
+						defaultSorting={[{ id: "occurrences", desc: true }]}
+						defaultPageSize={50}
+					/>
 				</AnalyticsCard>
 			)}
 
 			{/* Session History */}
 			<AnalyticsCard>
-				<div className="flex justify-between items-center mb-6">
+				<div className="flex justify-between items-center mb-4">
 					<h2 className="text-xl font-bold text-heading">Session History</h2>
 					<div className="flex gap-3">
 						<Select
@@ -491,111 +581,14 @@ export function DeveloperDetailPage() {
 								<SelectItem value="success">Likely Success</SelectItem>
 							</SelectContent>
 						</Select>
-						<Select
-							value={`${sortBy}-${sortOrder}`}
-							onValueChange={(v) => {
-								const [s, o] = v.split("-");
-								setSortBy(s as "date" | "duration" | "tokens");
-								setSortOrder(o as "asc" | "desc");
-							}}
-						>
-							<SelectTrigger className="w-auto">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="date-desc">Date (Newest)</SelectItem>
-								<SelectItem value="date-asc">Date (Oldest)</SelectItem>
-								<SelectItem value="duration-desc">
-									Duration (Longest)
-								</SelectItem>
-								<SelectItem value="duration-asc">
-									Duration (Shortest)
-								</SelectItem>
-								<SelectItem value="tokens-desc">Tokens (Most)</SelectItem>
-								<SelectItem value="tokens-asc">Tokens (Least)</SelectItem>
-							</SelectContent>
-						</Select>
 					</div>
 				</div>
 
-				<Table>
-					<TableHeader className="bg-surface">
-						<TableRow>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-								Date
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-								Project
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-								Duration
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-								Tokens
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-								Features
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-								Status
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody className="bg-input">
-						{sessions?.map((session) => (
-							<TableRow key={session.session_id} className="hover:bg-hover">
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{new Date(session.session_date).toLocaleString()}
-								</TableCell>
-								<TableCell className="px-6 py-4 text-sm">
-									<span className="font-medium text-foreground">
-										{session.project_path.split("/").pop()}
-									</span>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{session.duration_min.toFixed(0)}m
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-									{(session.total_tokens / 1000).toFixed(0)}K
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
-									<div className="flex gap-1">
-										{session.has_subagents && (
-											<span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-												SA
-											</span>
-										)}
-										{session.has_skills && (
-											<span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
-												SK
-											</span>
-										)}
-										{session.has_slash_commands && (
-											<span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-												SC
-											</span>
-										)}
-									</div>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
-									{session.likely_success ? (
-										<span className="px-2 py-1 text-xs bg-status-success-bg text-status-success-text rounded-full">
-											Success
-										</span>
-									) : session.has_errors ? (
-										<span className="px-2 py-1 text-xs bg-status-error-bg text-status-error-text rounded-full">
-											Error
-										</span>
-									) : (
-										<span className="px-2 py-1 text-xs bg-surface text-subheading rounded-full">
-											Unknown
-										</span>
-									)}
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+				<DataTable
+					columns={sessionColumns}
+					data={sessions ?? []}
+					defaultSorting={[{ id: "date", desc: true }]}
+				/>
 			</AnalyticsCard>
 		</div>
 	);

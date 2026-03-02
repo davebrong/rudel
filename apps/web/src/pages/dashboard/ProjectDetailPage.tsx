@@ -1,4 +1,6 @@
+import type { ProjectContributor, ProjectError } from "@rudel/api-routes";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Activity, ArrowLeft, Clock, Code, Users, Zap } from "lucide-react";
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -17,14 +19,7 @@ import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { Button } from "@/components/ui/button";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { decodeProjectPath, formatUsername } from "@/lib/format";
@@ -86,6 +81,96 @@ export function ProjectDetailPage() {
 			hours: parseFloat((c.total_duration_min / 60).toFixed(1)),
 		}));
 	}, [contributors, userMapRecord]);
+
+	const contributorColumns = useMemo<ColumnDef<ProjectContributor>[]>(
+		() => [
+			{
+				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				id: "developer",
+				header: "Developer",
+				cell: ({ row }) => (
+					<span className="font-medium text-foreground">
+						{formatUsername(row.original.user_id, userMapRecord)}
+					</span>
+				),
+			},
+			{
+				accessorKey: "sessions",
+				header: "Sessions",
+				cell: ({ row }) => (
+					<span className="text-muted">{row.original.sessions}</span>
+				),
+			},
+			{
+				accessorKey: "contribution_percentage",
+				header: "Contribution",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{row.original.contribution_percentage.toFixed(0)}%
+					</span>
+				),
+			},
+			{
+				accessorFn: (row) => row.total_duration_min,
+				id: "total_time",
+				header: "Total Time",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{(row.original.total_duration_min / 60).toFixed(1)}h
+					</span>
+				),
+			},
+			{
+				accessorKey: "total_tokens",
+				header: "Tokens",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{(row.original.total_tokens / 1000).toFixed(0)}K
+					</span>
+				),
+			},
+		],
+		[userMapRecord],
+	);
+
+	const projectErrorColumns = useMemo<ColumnDef<ProjectError>[]>(
+		() => [
+			{
+				accessorKey: "error_pattern",
+				header: "Error Type",
+				cell: ({ row }) => (
+					<span className="font-medium text-foreground">
+						{row.original.error_pattern}
+					</span>
+				),
+			},
+			{
+				accessorKey: "occurrences",
+				header: "Occurrences",
+				cell: ({ row }) => (
+					<span className="text-muted">{row.original.occurrences}</span>
+				),
+			},
+			{
+				accessorKey: "affected_users",
+				header: "Affected Users",
+				cell: ({ row }) => (
+					<span className="text-muted">{row.original.affected_users}</span>
+				),
+			},
+			{
+				accessorFn: (row) => new Date(row.last_seen).getTime(),
+				id: "last_seen",
+				header: "Last Seen",
+				cell: ({ row }) => (
+					<span className="text-muted">
+						{new Date(row.original.last_seen).toLocaleDateString()}
+					</span>
+				),
+			},
+		],
+		[],
+	);
 
 	if (isLoading || !details) {
 		return (
@@ -245,51 +330,12 @@ export function ProjectDetailPage() {
 					</ResponsiveContainer>
 					{contributors && (
 						<div className="mt-6">
-							<Table>
-								<TableHeader className="bg-surface">
-									<TableRow>
-										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-											Developer
-										</TableHead>
-										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-											Sessions
-										</TableHead>
-										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-											Contribution
-										</TableHead>
-										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-											Total Time
-										</TableHead>
-										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-											Tokens
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody className="bg-input">
-									{contributors.map((contributor) => (
-										<TableRow
-											key={contributor.user_id}
-											className="hover:bg-hover"
-										>
-											<TableCell className="px-6 py-4 text-sm font-medium text-foreground">
-												{formatUsername(contributor.user_id, userMapRecord)}
-											</TableCell>
-											<TableCell className="px-6 py-4 text-sm text-muted">
-												{contributor.sessions}
-											</TableCell>
-											<TableCell className="px-6 py-4 text-sm text-muted">
-												{contributor.contribution_percentage.toFixed(0)}%
-											</TableCell>
-											<TableCell className="px-6 py-4 text-sm text-muted">
-												{(contributor.total_duration_min / 60).toFixed(1)}h
-											</TableCell>
-											<TableCell className="px-6 py-4 text-sm text-muted">
-												{(contributor.total_tokens / 1000).toFixed(0)}K
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+							<DataTable
+								columns={contributorColumns}
+								data={contributors}
+								defaultSorting={[{ id: "sessions", desc: true }]}
+								defaultPageSize={50}
+							/>
 						</div>
 					)}
 				</AnalyticsCard>
@@ -297,49 +343,15 @@ export function ProjectDetailPage() {
 
 			{errors && errors.length > 0 && (
 				<AnalyticsCard className="mb-8">
-					<h2 className="text-xl font-bold text-heading mb-6">
+					<h2 className="text-xl font-bold text-heading mb-4">
 						Errors Encountered
 					</h2>
-					<Table>
-						<TableHeader className="bg-surface">
-							<TableRow>
-								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-									Error Type
-								</TableHead>
-								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-									Occurrences
-								</TableHead>
-								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-									Affected Users
-								</TableHead>
-								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
-									Last Seen
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody className="bg-input">
-							{errors.map((error, idx) => (
-								<TableRow
-									// biome-ignore lint/suspicious/noArrayIndexKey: static error list
-									key={idx}
-									className="hover:bg-hover"
-								>
-									<TableCell className="px-6 py-4 text-sm font-medium text-foreground">
-										{error.error_pattern}
-									</TableCell>
-									<TableCell className="px-6 py-4 text-sm text-muted">
-										{error.occurrences}
-									</TableCell>
-									<TableCell className="px-6 py-4 text-sm text-muted">
-										{error.affected_users}
-									</TableCell>
-									<TableCell className="px-6 py-4 text-sm text-muted">
-										{new Date(error.last_seen).toLocaleDateString()}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+					<DataTable
+						columns={projectErrorColumns}
+						data={errors}
+						defaultSorting={[{ id: "occurrences", desc: true }]}
+						defaultPageSize={50}
+					/>
 				</AnalyticsCard>
 			)}
 		</div>

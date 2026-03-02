@@ -1,14 +1,19 @@
-import type { DimensionAnalysisInput } from "@rudel/api-routes";
+import type {
+	DimensionAnalysisInput,
+	SessionAnalytics,
+} from "@rudel/api-routes";
 import { useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Activity, Clock, Timer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { MultiSelect } from "@/components/analytics/MultiSelect";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { DimensionAnalysisChart } from "@/components/charts/DimensionAnalysisChart";
+import { DataTable } from "@/components/ui/data-table";
 import {
 	Select,
 	SelectContent,
@@ -18,19 +23,12 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
 export function SessionsListPage() {
+	const navigate = useNavigate();
 	const { startDate, endDate, setStartDate, setEndDate, calculateDays } =
 		useDateRange();
 	const days = calculateDays();
@@ -109,6 +107,101 @@ export function SessionsListPage() {
 	}, [userMappings]);
 
 	const userMapRecord = useMemo(() => Object.fromEntries(userMap), [userMap]);
+
+	const columns = useMemo<ColumnDef<SessionAnalytics>[]>(
+		() => [
+			{
+				accessorKey: "session_id",
+				header: "Session ID",
+				cell: ({ row }) => (
+					<span className="text-accent font-mono text-xs">
+						{row.original.session_id.slice(0, 8)}...
+					</span>
+				),
+			},
+			{
+				accessorFn: (row) => new Date(row.session_date).getTime(),
+				id: "date",
+				header: "Date",
+				cell: ({ row }) => (
+					<div>
+						<span className="text-foreground">
+							{new Date(row.original.session_date).toLocaleDateString()}
+						</span>
+						<br />
+						<span className="text-xs text-muted">
+							{new Date(row.original.session_date).toLocaleTimeString()}
+						</span>
+					</div>
+				),
+			},
+			{
+				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				id: "user",
+				header: "User",
+				cell: ({ row }) => (
+					<span className="text-subheading">
+						{formatUsername(row.original.user_id, userMapRecord)}
+					</span>
+				),
+			},
+			{
+				accessorKey: "project_path",
+				header: "Project",
+				cell: ({ row }) => (
+					<div className="max-w-xs truncate" title={row.original.project_path}>
+						{row.original.project_path.split("/").pop() ||
+							row.original.project_path}
+					</div>
+				),
+			},
+			{
+				accessorKey: "duration_min",
+				header: "Duration",
+				cell: ({ row }) => (
+					<span className="text-foreground">
+						{row.original.duration_min.toFixed(0)} min
+					</span>
+				),
+			},
+			{
+				accessorKey: "success_score",
+				header: "Success Score",
+				cell: ({ row }) => {
+					const score = row.original.success_score;
+					const color =
+						score >= 70
+							? "text-status-success-icon"
+							: score >= 40
+								? "text-status-warning-icon"
+								: "text-status-error-icon";
+					return (
+						<>
+							<span className={`font-semibold ${color}`}>
+								{score.toFixed(0)}
+							</span>
+							<span className="text-xs text-muted"> / 100</span>
+						</>
+					);
+				},
+			},
+			{
+				accessorFn: (row) => calculateCost(row.input_tokens, row.output_tokens),
+				id: "cost",
+				header: "Cost",
+				cell: ({ row }) => (
+					<span className="text-foreground font-mono">
+						$
+						{calculateCost(
+							row.original.input_tokens,
+							row.original.output_tokens,
+						).toFixed(4)}
+					</span>
+				),
+			},
+		],
+		[userMapRecord],
+	);
 
 	const filteredSessions = useMemo(() => {
 		if (!sessions) return [];
@@ -355,93 +448,14 @@ export function SessionsListPage() {
 					</div>
 				</div>
 
-				<Table>
-					<TableHeader className="bg-surface">
-						<TableRow>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Session ID
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Date
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								User
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Project
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Duration
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Success Score
-							</TableHead>
-							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
-								Cost
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody className="bg-input">
-						{filteredSessions.map((session) => (
-							<TableRow
-								key={session.session_id}
-								className="hover:bg-hover cursor-pointer"
-							>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
-									<Link
-										to={`/dashboard/sessions/${session.session_id}`}
-										className="text-accent hover:text-accent-hover hover:underline font-mono text-xs"
-									>
-										{session.session_id.slice(0, 8)}...
-									</Link>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-									{new Date(session.session_date).toLocaleDateString()}
-									<br />
-									<span className="text-xs text-muted">
-										{new Date(session.session_date).toLocaleTimeString()}
-									</span>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-subheading">
-									{formatUsername(session.user_id, userMapRecord)}
-								</TableCell>
-								<TableCell className="px-6 py-4 text-sm text-foreground">
-									<div
-										className="max-w-xs truncate"
-										title={session.project_path}
-									>
-										{session.project_path.split("/").pop() ||
-											session.project_path}
-									</div>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-									{session.duration_min.toFixed(0)} min
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
-									<span
-										className={`font-semibold ${
-											session.success_score >= 70
-												? "text-status-success-icon"
-												: session.success_score >= 40
-													? "text-status-warning-icon"
-													: "text-status-error-icon"
-										}`}
-									>
-										{session.success_score.toFixed(0)}
-									</span>
-									<span className="text-xs text-muted"> / 100</span>
-								</TableCell>
-								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-mono">
-									$
-									{calculateCost(
-										session.input_tokens,
-										session.output_tokens,
-									).toFixed(4)}
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+				<DataTable
+					columns={columns}
+					data={filteredSessions}
+					defaultSorting={[{ id: "date", desc: true }]}
+					onRowClick={(row) =>
+						navigate(`/dashboard/sessions/${row.session_id}`)
+					}
+				/>
 			</AnalyticsCard>
 		</div>
 	);
