@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "c9d1c5727662",
+  "strategy": "manual-commit",
+  "branch": "marc/disable-release-automerge",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/release.yml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c9/d1c5727662/0/metadata.json",
+      "transcript": "/c9/d1c5727662/0/full.jsonl",
+      "context": "/c9/d1c5727662/0/context.md",
+      "content_hash": "/c9/d1c5727662/0/content_hash.txt",
+      "prompt": "/c9/d1c5727662/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 70,
+    "cache_creation_tokens": 62653,
+    "cache_read_tokens": 509111,
+    "output_tokens": 2597,
+    "api_call_count": 14
+  }
+}
