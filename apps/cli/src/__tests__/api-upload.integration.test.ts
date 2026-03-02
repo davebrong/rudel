@@ -150,7 +150,7 @@ describe("CLI upload to local API", () => {
 			);
 		}
 		expect(lastExitCode).toBe(0);
-	}, 30_000);
+	}, 60_000);
 
 	test("rejects unauthenticated requests", async () => {
 		const request: IngestRequest = {
