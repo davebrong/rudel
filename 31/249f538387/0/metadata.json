@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "31249f538387",
+  "session_id": "56073c97-014d-4118-b0d1-286bd6b7d102",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:05:48.246975Z",
+  "branch": "rudel-streamline-release",
+  "checkpoints_count": 5,
+  "files_touched": [
+    ".claude/skills/search-domain-validator/SKILL.md",
+    ".claude/skills/search-domain-validator/plugin.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "b207ded3-196d-4fff-8990-63cb97b01fea",
+  "token_usage": {
+    "input_tokens": 27,
+    "cache_creation_tokens": 40760,
+    "cache_read_tokens": 622520,
+    "output_tokens": 3249,
+    "api_call_count": 17
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:05:48.162118Z",
+    "agent_lines": 0,
+    "human_added": 11421,
+    "human_modified": 378,
+    "human_removed": 0,
+    "total_committed": 11421,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/56073c97-014d-4118-b0d1-286bd6b7d102.jsonl"
+}

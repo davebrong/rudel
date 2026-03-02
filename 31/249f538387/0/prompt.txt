@@ -1,0 +1,17 @@
+use the postgres credentials from doppler to connect to postgres and list all users email addresses
+
+---
+
+list all organizations
+
+---
+
+with their member count, and who created them
+
+---
+
+can you add marc.hoeffl@gmail.com to the numia and obsessiondb org?
+
+---
+
+make marc.hoeffl@gmail.com an owner, not only member
