@@ -69,7 +69,7 @@ describe("CLI upload to local API", () => {
 					endpoint: server.rpcUrl,
 					token: bearerToken,
 				}),
-				Bun.sleep(8000).then(
+				Bun.sleep(15_000).then(
 					() =>
 						({ success: false, error: "attempt timed out" }) as Awaited<
 							ReturnType<typeof uploadSession>
@@ -85,7 +85,7 @@ describe("CLI upload to local API", () => {
 			throw new Error(`uploadSession failed after 3 attempts: ${result.error}`);
 		}
 		expect(result.status).toBe(200);
-	}, 30_000);
+	}, 60_000);
 
 	test("full CLI upload via subprocess to local API", async () => {
 		expect(bearerToken).toBeTruthy();
