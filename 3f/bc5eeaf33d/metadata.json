@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "3fbc5eeaf33d",
+  "strategy": "manual-commit",
+  "branch": "marc/delete-domain-skill",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/skills/search-domain-validator/SKILL.md",
+    ".claude/skills/search-domain-validator/plugin.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3f/bc5eeaf33d/0/metadata.json",
+      "transcript": "/3f/bc5eeaf33d/0/full.jsonl",
+      "context": "/3f/bc5eeaf33d/0/context.md",
+      "content_hash": "/3f/bc5eeaf33d/0/content_hash.txt",
+      "prompt": "/3f/bc5eeaf33d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5,
+    "cache_creation_tokens": 26211,
+    "cache_read_tokens": 84316,
+    "output_tokens": 410,
+    "api_call_count": 3
+  }
+}
