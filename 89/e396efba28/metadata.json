@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "89e396efba28",
+  "strategy": "manual-commit",
+  "branch": "marc/cli-upload-project-picker",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/README.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/89/e396efba28/0/metadata.json",
+      "transcript": "/89/e396efba28/0/full.jsonl",
+      "context": "/89/e396efba28/0/context.md",
+      "content_hash": "/89/e396efba28/0/content_hash.txt",
+      "prompt": "/89/e396efba28/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7,
+    "cache_creation_tokens": 93180,
+    "cache_read_tokens": 424379,
+    "output_tokens": 776,
+    "api_call_count": 5
+  }
+}
