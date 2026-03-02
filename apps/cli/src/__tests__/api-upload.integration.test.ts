@@ -56,17 +56,28 @@ describe("CLI upload to local API", () => {
 			subagents: [{ agentId: "sub-1", content: "subagent content" }],
 		};
 
-		// Retry up to 3 times — ClickHouse can be slow to accept
-		// the first request after startup.
+		// Retry up to 3 times — Bun may kill the server as a "dangling process"
+		// and the restarted server's ClickHouse connection can be slow to warm up.
+		// Each attempt has a per-call timeout so a hanging request doesn't
+		// consume the entire test timeout and block retries.
 		let result = { success: false, error: "not attempted" } as Awaited<
 			ReturnType<typeof uploadSession>
 		>;
 		for (let attempt = 0; attempt < 3; attempt++) {
-			result = await uploadSession(request, {
-				endpoint: server.rpcUrl,
-				token: bearerToken,
-			});
+			result = await Promise.race([
+				uploadSession(request, {
+					endpoint: server.rpcUrl,
+					token: bearerToken,
+				}),
+				Bun.sleep(8000).then(
+					() =>
+						({ success: false, error: "attempt timed out" }) as Awaited<
+							ReturnType<typeof uploadSession>
+						>,
+				),
+			]);
 			if (result.success) break;
+			await server.ensureAlive();
 			await Bun.sleep(1000);
 		}
 
@@ -108,8 +119,9 @@ describe("CLI upload to local API", () => {
 
 		const cliPath = join(import.meta.dir, "..", "bin", "cli.ts");
 
-		// Retry up to 3 times — the server may need a moment after restart
-		// before ClickHouse accepts inserts (same pattern as the direct-call test).
+		// Retry up to 3 times — same dangling-process issue as the direct-call test.
+		// Each subprocess gets a per-attempt timeout so a hanging process
+		// doesn't consume the entire test timeout.
 		let lastStdout = "";
 		let lastStderr = "";
 		let lastExitCode = -1;
@@ -127,17 +139,20 @@ describe("CLI upload to local API", () => {
 				},
 			);
 
+			const timeout = setTimeout(() => proc.kill(), 15_000);
 			const [exitCode, stdout, stderr] = await Promise.all([
 				proc.exited,
 				new Response(proc.stdout).text(),
 				new Response(proc.stderr).text(),
 			]);
+			clearTimeout(timeout);
 
 			lastStdout = stdout;
 			lastStderr = stderr;
 			lastExitCode = exitCode;
 
 			if (stdout.includes("Upload successful!")) break;
+			await server.ensureAlive();
 			await Bun.sleep(1000);
 		}
 
