@@ -5,12 +5,13 @@ import {
 	Copy,
 	Loader2,
 	Mail,
+	Pencil,
 	Plus,
 	Trash2,
 	UserPlus,
 	X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
@@ -18,6 +19,7 @@ import { DeleteOrganizationDialog } from "../../components/DeleteOrganizationDia
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -48,6 +50,7 @@ interface FullOrg {
 
 export function OrganizationPage() {
 	const { activeOrg, organizations, switchOrg } = useOrganization();
+	const { data: session } = authClient.useSession();
 	const navigate = useNavigate();
 	const [fullOrg, setFullOrg] = useState<FullOrg | null>(null);
 	const [loading, setLoading] = useState(true);
@@ -57,6 +60,55 @@ export function OrganizationPage() {
 	const [inviteLink, setInviteLink] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [editing, setEditing] = useState(false);
+	const [editName, setEditName] = useState("");
+	const [saving, setSaving] = useState(false);
+	const [renameError, setRenameError] = useState<string | null>(null);
+	const nameInputRef = useRef<HTMLInputElement>(null);
+
+	const currentUserRole = fullOrg?.members.find(
+		(m) => m.userId === session?.user.id,
+	)?.role;
+	const canEdit = currentUserRole === "owner" || currentUserRole === "admin";
+
+	const handleStartEditing = () => {
+		if (!activeOrg) return;
+		setEditName(activeOrg.name);
+		setRenameError(null);
+		setEditing(true);
+		setTimeout(() => nameInputRef.current?.focus(), 0);
+	};
+
+	const handleCancelEditing = () => {
+		setEditing(false);
+		setRenameError(null);
+	};
+
+	const handleSaveName = async () => {
+		const trimmed = editName.trim();
+		if (!trimmed || !activeOrg) return;
+		if (trimmed === activeOrg.name) {
+			setEditing(false);
+			return;
+		}
+
+		setSaving(true);
+		setRenameError(null);
+		const res = await authClient.organization.update({
+			data: { name: trimmed },
+			organizationId: activeOrg.id,
+		});
+
+		if (res.error) {
+			setRenameError(res.error.message ?? "Failed to rename organization");
+			setSaving(false);
+			return;
+		}
+
+		setEditing(false);
+		setSaving(false);
+		await fetchOrg();
+	};
 
 	const fetchOrg = async () => {
 		if (!activeOrg) return;
@@ -139,12 +191,65 @@ export function OrganizationPage() {
 						<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-hover">
 							<Building2 className="h-6 w-6 text-muted" />
 						</div>
-						<div>
-							<h2 className="text-lg font-semibold text-heading">
-								{activeOrg.name}
-							</h2>
-							<p className="text-sm text-muted">/{activeOrg.slug}</p>
-						</div>
+						{editing ? (
+							<div className="flex-1">
+								<Label htmlFor="org-name">Organization name</Label>
+								<div className="flex items-center gap-2 mt-1">
+									<Input
+										ref={nameInputRef}
+										id="org-name"
+										value={editName}
+										onChange={(e) => setEditName(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter") handleSaveName();
+											if (e.key === "Escape") handleCancelEditing();
+										}}
+										disabled={saving}
+										className="max-w-xs"
+									/>
+									<Button
+										size="sm"
+										onClick={handleSaveName}
+										disabled={saving || !editName.trim()}
+									>
+										{saving ? (
+											<Loader2 className="h-4 w-4 animate-spin" />
+										) : (
+											<Check className="h-4 w-4" />
+										)}
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={handleCancelEditing}
+										disabled={saving}
+									>
+										<X className="h-4 w-4" />
+									</Button>
+								</div>
+								{renameError && (
+									<p className="mt-1 text-sm text-red-500">{renameError}</p>
+								)}
+							</div>
+						) : (
+							<div className="flex items-center gap-2">
+								<div>
+									<h2 className="text-lg font-semibold text-heading">
+										{activeOrg.name}
+									</h2>
+									<p className="text-sm text-muted">/{activeOrg.slug}</p>
+								</div>
+								{canEdit && (
+									<Button
+										variant="outline"
+										size="xs"
+										onClick={handleStartEditing}
+									>
+										<Pencil className="h-3.5 w-3.5" />
+									</Button>
+								)}
+							</div>
+						)}
 					</div>
 				</AnalyticsCard>
 
