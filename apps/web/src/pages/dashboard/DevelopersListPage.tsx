@@ -6,9 +6,10 @@ import {
 	Clock,
 	Code,
 	Minus,
+	UserCheck,
 	Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
@@ -16,6 +17,8 @@ import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { DeveloperTrendChart } from "@/components/charts/DeveloperTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { authClient } from "@/lib/auth-client";
 import { formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -24,6 +27,23 @@ export function DevelopersListPage() {
 	const { startDate, endDate, setStartDate, setEndDate, calculateDays } =
 		useDateRange();
 	const days = calculateDays();
+
+	const { activeOrg } = useOrganization();
+	const [memberCount, setMemberCount] = useState<number | null>(null);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: refetch when org changes
+	useEffect(() => {
+		if (!activeOrg) return;
+		authClient.organization
+			.getFullOrganization({ query: { organizationId: activeOrg.id } })
+			.then((res) => {
+				if (res.data) {
+					setMemberCount(
+						(res.data as { members: readonly unknown[] }).members.length,
+					);
+				}
+			});
+	}, [activeOrg?.id]);
 
 	const [sortBy, setSortBy] = useState<
 		"sessions" | "tokens" | "last_active" | "success_rate"
@@ -111,12 +131,18 @@ export function DevelopersListPage() {
 			/>
 
 			{/* Summary Stats */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
 				<StatCard
-					title="Total Developers"
-					value={developers?.length ?? 0}
+					title="Team Members"
+					value={memberCount ?? "..."}
 					icon={Users}
 					iconColor="text-blue-600"
+				/>
+				<StatCard
+					title="Active Developers"
+					value={developers?.length ?? 0}
+					icon={UserCheck}
+					iconColor="text-cyan-600"
 				/>
 				<StatCard
 					title="Total Sessions"
