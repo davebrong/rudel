@@ -87,7 +87,7 @@ export async function findActiveRolloutFile(
 
 class CodexAdapter implements AgentAdapter {
 	name = "OpenAI Codex";
-	source = "codex";
+	source = "codex" as const;
 	rawTableName = "rudel.codex_sessions";
 
 	getSessionsBaseDir(): string {

@@ -1,3 +1,4 @@
+import type { Source } from "@rudel/api-routes";
 import pMap from "p-map";
 import { recordFailedUpload, removeFailedUpload } from "./failed-uploads.js";
 import type { UploadResult } from "./types.js";
@@ -7,7 +8,7 @@ export interface BatchUploadItem {
 	label: string;
 	transcriptPath: string;
 	projectPath: string;
-	source?: string;
+	source?: Source;
 	organizationId?: string;
 }
 

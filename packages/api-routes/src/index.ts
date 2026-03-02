@@ -81,13 +81,18 @@ export const SessionTagSchema = z.enum([
 	"other",
 ]);
 
+export type { Source } from "./schemas/source.js";
+export { SourceSchema } from "./schemas/source.js";
+
+import { SourceSchema } from "./schemas/source.js";
+
 export const SubagentFileSchema = z.object({
 	agentId: z.string(),
 	content: z.string(),
 });
 
 export const IngestSessionInputSchema = z.object({
-	source: z.string().default("claude_code"),
+	source: SourceSchema.default("claude_code"),
 	sessionId: z.string(),
 	projectPath: z.string(),
 	repository: z.string().optional(),

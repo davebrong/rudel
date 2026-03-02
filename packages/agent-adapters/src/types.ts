@@ -1,4 +1,4 @@
-import type { IngestSessionInput } from "@rudel/api-routes";
+import type { IngestSessionInput, Source } from "@rudel/api-routes";
 import type { Ingestor } from "@rudel/ch-schema/generated";
 
 export interface SessionFile {
@@ -10,7 +10,7 @@ export interface SessionFile {
 }
 
 export interface ScannedProject {
-	source: string;
+	source: Source;
 	projectPath: string;
 	displayPath: string;
 	sessions: SessionFile[];
@@ -44,7 +44,7 @@ export interface IngestContext {
 
 export interface AgentAdapter {
 	name: string;
-	source: string;
+	source: Source;
 	rawTableName: string;
 
 	// Session Discovery (CLI)

@@ -7,6 +7,7 @@ import {
 	type ScannedProject,
 	type SessionFile,
 } from "@rudel/agent-adapters";
+import type { Source } from "@rudel/api-routes";
 import { buildCommand } from "@stricli/core";
 import type { BatchUploadItem } from "../lib/batch-upload.js";
 import { renderBatchSummary, runBatchUpload } from "../lib/batch-upload-ui.js";
@@ -199,12 +200,8 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	}
 }
 
-function getAdapterName(source: string): string {
-	try {
-		return getAdapter(source).name;
-	} catch {
-		return source;
-	}
+function getAdapterName(source: Source): string {
+	return getAdapter(source).name;
 }
 
 function sessionCountHint(count: number): string {

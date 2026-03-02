@@ -138,7 +138,7 @@ export async function readSubagentFiles(
 
 class ClaudeCodeAdapter implements AgentAdapter {
 	name = "Claude Code";
-	source = "claude_code";
+	source = "claude_code" as const;
 	rawTableName = "rudel.claude_sessions";
 
 	getSessionsBaseDir(): string {

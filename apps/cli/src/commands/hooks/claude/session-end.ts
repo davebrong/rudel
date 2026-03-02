@@ -85,7 +85,7 @@ async function runSessionEnd(): Promise<void> {
 				sessionId: input.session_id,
 				transcriptPath: input.transcript_path,
 				projectPath: input.cwd,
-				source: "claude-code",
+				source: claudeCodeAdapter.source,
 				organizationId,
 				error: result.error ?? "Unknown error",
 			});

@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { type Source, SourceSchema } from "@rudel/api-routes";
 
 const FAILED_UPLOADS_PATH = join(homedir(), ".rudel", "failed-uploads.json");
 
@@ -7,8 +8,7 @@ export interface FailedUpload {
 	sessionId: string;
 	transcriptPath: string;
 	projectPath: string;
-	/** Agent adapter source (e.g. "claude-code", "codex") */
-	source?: string;
+	source?: Source;
 	organizationId?: string;
 	error: string;
 	failedAt: string;
@@ -18,12 +18,22 @@ interface FailedUploadsData {
 	failures: FailedUpload[];
 }
 
+function normalizeSource(raw: unknown): Source | undefined {
+	if (typeof raw !== "string") return undefined;
+	const normalized = raw.replace(/-/g, "_");
+	const parsed = SourceSchema.safeParse(normalized);
+	return parsed.success ? parsed.data : undefined;
+}
+
 export async function loadFailedUploads(): Promise<FailedUpload[]> {
 	try {
 		const file = Bun.file(FAILED_UPLOADS_PATH);
 		if (!(await file.exists())) return [];
 		const data = (await file.json()) as FailedUploadsData;
-		return data.failures;
+		return data.failures.map((f) => ({
+			...f,
+			source: normalizeSource(f.source),
+		}));
 	} catch {
 		return [];
 	}

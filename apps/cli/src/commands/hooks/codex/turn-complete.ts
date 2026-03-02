@@ -72,7 +72,7 @@ async function runTurnComplete(): Promise<void> {
 				sessionId: input.thread_id,
 				transcriptPath,
 				projectPath: input.cwd,
-				source: "codex",
+				source: codexAdapter.source,
 				organizationId,
 				error: result.error ?? "Unknown error",
 			});
