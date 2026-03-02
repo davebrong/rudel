@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "dcaf0b610df1",
+  "strategy": "manual-commit",
+  "branch": "marc/upload-tracking-concurrency",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/__tests__/api-upload.integration.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/dc/af0b610df1/0/metadata.json",
+      "transcript": "/dc/af0b610df1/0/full.jsonl",
+      "context": "/dc/af0b610df1/0/context.md",
+      "content_hash": "/dc/af0b610df1/0/content_hash.txt",
+      "prompt": "/dc/af0b610df1/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 103362,
+    "cache_read_tokens": 1371584,
+    "output_tokens": 4237,
+    "api_call_count": 12
+  }
+}
