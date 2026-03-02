@@ -1,5 +1,6 @@
 import type { LearningEntry } from "@rudel/api-routes";
 import { BookOpen } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TimelineItem } from "./TimelineItem";
 
 interface LearningsTimelineProps {
@@ -23,10 +24,10 @@ export function LearningsTimeline({
 						key={i}
 						className="relative pl-8 pb-8 border-l-2 border-border"
 					>
-						<div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-muted animate-pulse" />
+						<Skeleton className="absolute -left-2 top-0 w-4 h-4 rounded-full" />
 						<div className="space-y-3">
-							<div className="h-4 bg-muted rounded w-32 animate-pulse" />
-							<div className="h-32 bg-muted/50 rounded animate-pulse" />
+							<Skeleton className="h-4 w-32" />
+							<Skeleton className="h-32" />
 						</div>
 					</div>
 				))}

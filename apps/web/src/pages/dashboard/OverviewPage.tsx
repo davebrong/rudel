@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { ModelTokensChart } from "@/components/charts/ModelTokensChart";
 import { UsageTrendChart } from "@/components/charts/UsageTrendChart";
+import { Spinner } from "@/components/ui/spinner";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { orpc } from "@/lib/orpc";
 
@@ -58,7 +59,7 @@ export function OverviewPage() {
 			{kpisLoading && (
 				<div className="flex items-center justify-center py-12">
 					<div className="text-center">
-						<div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-accent border-r-transparent mb-4" />
+						<Spinner size="lg" className="mb-4" />
 						<p className="text-muted">Loading dashboard data...</p>
 					</div>
 				</div>

@@ -9,6 +9,14 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useChartTheme } from "@/hooks/useChartTheme";
 
 interface LearningsTrendChartProps {
@@ -102,16 +110,20 @@ export function LearningsTrendChart({
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-center justify-end gap-4">
 				<div className="flex items-center gap-2">
-					<select
+					<Select
 						value={splitBy}
-						onChange={(e) =>
-							onSplitByChange(e.target.value as "user_id" | "repository")
+						onValueChange={(v) =>
+							onSplitByChange(v as "user_id" | "repository")
 						}
-						className="px-3 py-2 border border-border rounded-md text-sm bg-input focus:outline-none focus:ring-2 focus:ring-accent w-40"
 					>
-						<option value="user_id">by Developer</option>
-						<option value="repository">by Repository</option>
-					</select>
+						<SelectTrigger className="w-40">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="user_id">by Developer</SelectItem>
+							<SelectItem value="repository">by Repository</SelectItem>
+						</SelectContent>
+					</Select>
 				</div>
 
 				<div className="flex items-center gap-2">
@@ -121,24 +133,11 @@ export function LearningsTrendChart({
 					>
 						Cumulative
 					</label>
-					<button
-						type="button"
+					<Switch
 						id="cumulative-toggle"
-						role="switch"
-						aria-checked={isCumulative}
-						onClick={() => setIsCumulative(!isCumulative)}
-						className={`
-							relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-							${isCumulative ? "bg-accent" : "bg-border"}
-						`}
-					>
-						<span
-							className={`
-								inline-block h-4 w-4 transform rounded-full bg-input transition-transform
-								${isCumulative ? "translate-x-6" : "translate-x-1"}
-							`}
-						/>
-					</button>
+						checked={isCumulative}
+						onCheckedChange={setIsCumulative}
+					/>
 				</div>
 			</div>
 

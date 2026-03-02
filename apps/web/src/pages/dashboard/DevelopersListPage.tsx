@@ -15,6 +15,15 @@ import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { DeveloperTrendChart } from "@/components/charts/DeveloperTrendChart";
+import { Button } from "@/components/ui/button";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
@@ -146,15 +155,11 @@ export function DevelopersListPage() {
 						{(
 							["sessions", "tokens", "success_rate", "last_active"] as const
 						).map((key) => (
-							<button
-								type="button"
+							<Button
 								key={key}
+								variant={sortBy === key ? "default" : "secondary"}
+								size="sm"
 								onClick={() => setSortBy(key)}
-								className={`px-3 py-1 text-sm rounded ${
-									sortBy === key
-										? "bg-accent text-accent-foreground"
-										: "bg-surface text-subheading"
-								}`}
 							>
 								{key === "sessions"
 									? "Sessions"
@@ -163,131 +168,127 @@ export function DevelopersListPage() {
 										: key === "success_rate"
 											? "Success Rate"
 											: "Last Active"}
-							</button>
+							</Button>
 						))}
 					</div>
 				</div>
 
-				<div className="overflow-x-auto">
-					<table className="min-w-full divide-y divide-border">
-						<thead className="bg-surface">
-							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Developer
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Sessions
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Active Days
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Total Tokens
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Success Rate
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Cost
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Trend
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Avg Session
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
-									Last Active
-								</th>
-							</tr>
-						</thead>
-						<tbody className="bg-input divide-y divide-border">
-							{sortedDevelopers.map((dev) => (
-								<tr
-									key={dev.user_id}
-									onClick={() =>
-										navigate(`/dashboard/developers/${dev.user_id}`)
-									}
-									className="hover:bg-hover cursor-pointer"
-								>
-									<td className="px-6 py-4 whitespace-nowrap">
-										<div className="flex items-center">
-											<div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-												<span className="text-blue-600 font-semibold text-sm">
-													{formatUsername(dev.user_id, userMapRecord)
-														.substring(0, 2)
-														.toUpperCase()}
+				<Table>
+					<TableHeader className="bg-surface">
+						<TableRow>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Developer
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Sessions
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Active Days
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Total Tokens
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Success Rate
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Cost
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Trend
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Avg Session
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase tracking-wider">
+								Last Active
+							</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody className="bg-input">
+						{sortedDevelopers.map((dev) => (
+							<TableRow
+								key={dev.user_id}
+								onClick={() => navigate(`/dashboard/developers/${dev.user_id}`)}
+								className="hover:bg-hover cursor-pointer"
+							>
+								<TableCell className="px-6 py-4 whitespace-nowrap">
+									<div className="flex items-center">
+										<div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+											<span className="text-blue-600 font-semibold text-sm">
+												{formatUsername(dev.user_id, userMapRecord)
+													.substring(0, 2)
+													.toUpperCase()}
+											</span>
+										</div>
+										<div className="ml-4">
+											<div className="text-sm font-medium text-foreground">
+												{formatUsername(dev.user_id, userMapRecord)}
+											</div>
+										</div>
+									</div>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{dev.total_sessions}
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{dev.active_days}
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{(dev.total_tokens / 1000).toFixed(0)}K
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									<span
+										className={`font-medium ${
+											dev.success_rate >= 70
+												? "text-status-success-icon"
+												: dev.success_rate >= 50
+													? "text-status-warning-icon"
+													: "text-status-error-icon"
+										}`}
+									>
+										{dev.success_rate.toFixed(0)}%
+									</span>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									${dev.cost.toFixed(2)}
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+									<div className="flex items-center">
+										{dev.success_rate_trend > 0 && (
+											<>
+												<ArrowUp className="w-4 h-4 text-status-success-icon mr-1" />
+												<span className="text-status-success-icon font-medium">
+													+{dev.success_rate_trend.toFixed(0)}%
 												</span>
-											</div>
-											<div className="ml-4">
-												<div className="text-sm font-medium text-foreground">
-													{formatUsername(dev.user_id, userMapRecord)}
-												</div>
-											</div>
-										</div>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{dev.total_sessions}
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{dev.active_days}
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{(dev.total_tokens / 1000).toFixed(0)}K
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										<span
-											className={`font-medium ${
-												dev.success_rate >= 70
-													? "text-status-success-icon"
-													: dev.success_rate >= 50
-														? "text-status-warning-icon"
-														: "text-status-error-icon"
-											}`}
-										>
-											{dev.success_rate.toFixed(0)}%
-										</span>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										${dev.cost.toFixed(2)}
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm">
-										<div className="flex items-center">
-											{dev.success_rate_trend > 0 && (
-												<>
-													<ArrowUp className="w-4 h-4 text-status-success-icon mr-1" />
-													<span className="text-status-success-icon font-medium">
-														+{dev.success_rate_trend.toFixed(0)}%
-													</span>
-												</>
-											)}
-											{dev.success_rate_trend < 0 && (
-												<>
-													<ArrowDown className="w-4 h-4 text-status-error-icon mr-1" />
-													<span className="text-status-error-icon font-medium">
-														{dev.success_rate_trend.toFixed(0)}%
-													</span>
-												</>
-											)}
-											{dev.success_rate_trend === 0 && (
-												<>
-													<Minus className="w-4 h-4 text-muted mr-1" />
-													<span className="text-muted">0%</span>
-												</>
-											)}
-										</div>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{dev.avg_session_duration_min.toFixed(0)}m
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{new Date(dev.last_active_date).toLocaleDateString()}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+											</>
+										)}
+										{dev.success_rate_trend < 0 && (
+											<>
+												<ArrowDown className="w-4 h-4 text-status-error-icon mr-1" />
+												<span className="text-status-error-icon font-medium">
+													{dev.success_rate_trend.toFixed(0)}%
+												</span>
+											</>
+										)}
+										{dev.success_rate_trend === 0 && (
+											<>
+												<Minus className="w-4 h-4 text-muted mr-1" />
+												<span className="text-muted">0%</span>
+											</>
+										)}
+									</div>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{dev.avg_session_duration_min.toFixed(0)}m
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{new Date(dev.last_active_date).toLocaleDateString()}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
 			</AnalyticsCard>
 
 			{/* Developer Trend Chart */}

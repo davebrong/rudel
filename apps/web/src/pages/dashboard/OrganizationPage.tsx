@@ -16,6 +16,13 @@ import { PageHeader } from "../../components/analytics/PageHeader";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select";
 import { useOrganization } from "../../contexts/OrganizationContext";
 import { authClient } from "../../lib/auth-client";
 
@@ -155,14 +162,15 @@ export function OrganizationPage() {
 							}}
 							className="flex-1"
 						/>
-						<select
-							value={inviteRole}
-							onChange={(e) => setInviteRole(e.target.value)}
-							className="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-foreground"
-						>
-							<option value="member">Member</option>
-							<option value="admin">Admin</option>
-						</select>
+						<Select value={inviteRole} onValueChange={setInviteRole}>
+							<SelectTrigger className="w-auto">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="member">Member</SelectItem>
+								<SelectItem value="admin">Admin</SelectItem>
+							</SelectContent>
+						</Select>
 						<Button
 							type="submit"
 							size="sm"

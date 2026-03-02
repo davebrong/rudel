@@ -16,6 +16,15 @@ import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
+import { Button } from "@/components/ui/button";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { decodeProjectPath, formatUsername } from "@/lib/format";
@@ -85,13 +94,12 @@ export function ProjectDetailPage() {
 					title="Project Details"
 					description="Loading project information..."
 					actions={
-						<Link
-							to="/dashboard/projects"
-							className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-subheading bg-input border border-border rounded-lg hover:bg-hover"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Back to Projects
-						</Link>
+						<Button variant="outline" size="sm" asChild>
+							<Link to="/dashboard/projects">
+								<ArrowLeft className="h-4 w-4" />
+								Back to Projects
+							</Link>
+						</Button>
 					}
 				/>
 				<AnalyticsCard>
@@ -116,13 +124,12 @@ export function ProjectDetailPage() {
 							onStartDateChange={setStartDate}
 							onEndDateChange={setEndDate}
 						/>
-						<Link
-							to="/dashboard/projects"
-							className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-subheading bg-input border border-border rounded-lg hover:bg-hover"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Back
-						</Link>
+						<Button variant="outline" size="sm" asChild>
+							<Link to="/dashboard/projects">
+								<ArrowLeft className="h-4 w-4" />
+								Back
+							</Link>
+						</Button>
 					</div>
 				}
 			/>
@@ -237,49 +244,52 @@ export function ProjectDetailPage() {
 						</BarChart>
 					</ResponsiveContainer>
 					{contributors && (
-						<div className="mt-6 overflow-x-auto">
-							<table className="min-w-full divide-y divide-border">
-								<thead className="bg-surface">
-									<tr>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+						<div className="mt-6">
+							<Table>
+								<TableHeader className="bg-surface">
+									<TableRow>
+										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
 											Developer
-										</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										</TableHead>
+										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
 											Sessions
-										</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										</TableHead>
+										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
 											Contribution
-										</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										</TableHead>
+										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
 											Total Time
-										</th>
-										<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+										</TableHead>
+										<TableHead className="px-6 py-3 text-xs text-muted uppercase">
 											Tokens
-										</th>
-									</tr>
-								</thead>
-								<tbody className="bg-input divide-y divide-border">
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody className="bg-input">
 									{contributors.map((contributor) => (
-										<tr key={contributor.user_id} className="hover:bg-hover">
-											<td className="px-6 py-4 text-sm font-medium text-foreground">
+										<TableRow
+											key={contributor.user_id}
+											className="hover:bg-hover"
+										>
+											<TableCell className="px-6 py-4 text-sm font-medium text-foreground">
 												{formatUsername(contributor.user_id, userMapRecord)}
-											</td>
-											<td className="px-6 py-4 text-sm text-muted">
+											</TableCell>
+											<TableCell className="px-6 py-4 text-sm text-muted">
 												{contributor.sessions}
-											</td>
-											<td className="px-6 py-4 text-sm text-muted">
+											</TableCell>
+											<TableCell className="px-6 py-4 text-sm text-muted">
 												{contributor.contribution_percentage.toFixed(0)}%
-											</td>
-											<td className="px-6 py-4 text-sm text-muted">
+											</TableCell>
+											<TableCell className="px-6 py-4 text-sm text-muted">
 												{(contributor.total_duration_min / 60).toFixed(1)}h
-											</td>
-											<td className="px-6 py-4 text-sm text-muted">
+											</TableCell>
+											<TableCell className="px-6 py-4 text-sm text-muted">
 												{(contributor.total_tokens / 1000).toFixed(0)}K
-											</td>
-										</tr>
+											</TableCell>
+										</TableRow>
 									))}
-								</tbody>
-							</table>
+								</TableBody>
+							</Table>
 						</div>
 					)}
 				</AnalyticsCard>
@@ -290,48 +300,46 @@ export function ProjectDetailPage() {
 					<h2 className="text-xl font-bold text-heading mb-6">
 						Errors Encountered
 					</h2>
-					<div className="overflow-x-auto">
-						<table className="min-w-full divide-y divide-border">
-							<thead className="bg-surface">
-								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-										Error Type
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-										Occurrences
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-										Affected Users
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-										Last Seen
-									</th>
-								</tr>
-							</thead>
-							<tbody className="bg-input divide-y divide-border">
-								{errors.map((error, idx) => (
-									<tr
-										// biome-ignore lint/suspicious/noArrayIndexKey: static error list
-										key={idx}
-										className="hover:bg-hover"
-									>
-										<td className="px-6 py-4 text-sm font-medium text-foreground">
-											{error.error_pattern}
-										</td>
-										<td className="px-6 py-4 text-sm text-muted">
-											{error.occurrences}
-										</td>
-										<td className="px-6 py-4 text-sm text-muted">
-											{error.affected_users}
-										</td>
-										<td className="px-6 py-4 text-sm text-muted">
-											{new Date(error.last_seen).toLocaleDateString()}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+					<Table>
+						<TableHeader className="bg-surface">
+							<TableRow>
+								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+									Error Type
+								</TableHead>
+								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+									Occurrences
+								</TableHead>
+								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+									Affected Users
+								</TableHead>
+								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+									Last Seen
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody className="bg-input">
+							{errors.map((error, idx) => (
+								<TableRow
+									// biome-ignore lint/suspicious/noArrayIndexKey: static error list
+									key={idx}
+									className="hover:bg-hover"
+								>
+									<TableCell className="px-6 py-4 text-sm font-medium text-foreground">
+										{error.error_pattern}
+									</TableCell>
+									<TableCell className="px-6 py-4 text-sm text-muted">
+										{error.occurrences}
+									</TableCell>
+									<TableCell className="px-6 py-4 text-sm text-muted">
+										{error.affected_users}
+									</TableCell>
+									<TableCell className="px-6 py-4 text-sm text-muted">
+										{new Date(error.last_seen).toLocaleDateString()}
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
 				</AnalyticsCard>
 			)}
 		</div>

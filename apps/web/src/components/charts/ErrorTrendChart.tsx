@@ -12,6 +12,13 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { useChartTheme } from "@/hooks/useChartTheme";
 
 interface ErrorTrendChartProps {
@@ -135,18 +142,21 @@ export function ErrorTrendChart({
 					>
 						Metric:
 					</label>
-					<select
-						id="error-metric-select"
+					<Select
 						value={metric}
-						onChange={(e) => onMetricChange(e.target.value as typeof metric)}
-						className="px-3 py-2 border border-border rounded-md text-sm bg-input focus:outline-none focus:ring-2 focus:ring-accent w-56"
+						onValueChange={(v) => onMetricChange(v as typeof metric)}
 					>
-						{Object.entries(METRIC_LABELS).map(([key, label]) => (
-							<option key={key} value={key}>
-								{label}
-							</option>
-						))}
-					</select>
+						<SelectTrigger className="w-56">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{Object.entries(METRIC_LABELS).map(([key, label]) => (
+								<SelectItem key={key} value={key}>
+									{label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 
 				<div className="flex items-center gap-2">
@@ -156,18 +166,21 @@ export function ErrorTrendChart({
 					>
 						Split:
 					</label>
-					<select
-						id="error-split-select"
+					<Select
 						value={splitBy}
-						onChange={(e) => onSplitByChange(e.target.value as typeof splitBy)}
-						className="px-3 py-2 border border-border rounded-md text-sm bg-input focus:outline-none focus:ring-2 focus:ring-accent w-40"
+						onValueChange={(v) => onSplitByChange(v as typeof splitBy)}
 					>
-						{Object.entries(SPLIT_LABELS).map(([key, label]) => (
-							<option key={key} value={key}>
-								{label}
-							</option>
-						))}
-					</select>
+						<SelectTrigger className="w-40">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{Object.entries(SPLIT_LABELS).map(([key, label]) => (
+								<SelectItem key={key} value={key}>
+									{label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 			</div>
 

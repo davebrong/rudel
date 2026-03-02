@@ -18,6 +18,22 @@ import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
+import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import {
@@ -162,13 +178,12 @@ export function DeveloperDetailPage() {
 					title="Developer Details"
 					description="Loading developer information..."
 					actions={
-						<Link
-							to="/dashboard/developers"
-							className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-subheading bg-input border border-border rounded-lg hover:bg-hover"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Back to Developers
-						</Link>
+						<Button variant="outline" size="sm" asChild>
+							<Link to="/dashboard/developers">
+								<ArrowLeft className="h-4 w-4" />
+								Back to Developers
+							</Link>
+						</Button>
 					}
 				/>
 				<AnalyticsCard>
@@ -191,13 +206,12 @@ export function DeveloperDetailPage() {
 							onStartDateChange={setStartDate}
 							onEndDateChange={setEndDate}
 						/>
-						<Link
-							to="/dashboard/developers"
-							className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-subheading bg-input border border-border rounded-lg hover:bg-hover"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Back
-						</Link>
+						<Button variant="outline" size="sm" asChild>
+							<Link to="/dashboard/developers">
+								<ArrowLeft className="h-4 w-4" />
+								Back
+							</Link>
+						</Button>
 					</div>
 				}
 			/>
@@ -407,42 +421,40 @@ export function DeveloperDetailPage() {
 					<h2 className="text-xl font-bold text-heading mb-6">
 						Errors Encountered
 					</h2>
-					<div className="overflow-x-auto">
-						<table className="min-w-full divide-y divide-border">
-							<thead className="bg-surface">
-								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-										Error Type
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-										Occurrences
-									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-										Last Seen
-									</th>
-								</tr>
-							</thead>
-							<tbody className="bg-input divide-y divide-border">
-								{errors.map((error, idx) => (
-									<tr
-										// biome-ignore lint/suspicious/noArrayIndexKey: static error list
-										key={idx}
-										className="hover:bg-hover"
-									>
-										<td className="px-6 py-4 text-sm font-medium text-foreground">
-											{error.error_pattern}
-										</td>
-										<td className="px-6 py-4 text-sm text-muted">
-											{error.occurrences}
-										</td>
-										<td className="px-6 py-4 text-sm text-muted">
-											{new Date(error.last_seen).toLocaleDateString()}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+					<Table>
+						<TableHeader className="bg-surface">
+							<TableRow>
+								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+									Error Type
+								</TableHead>
+								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+									Occurrences
+								</TableHead>
+								<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+									Last Seen
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody className="bg-input">
+							{errors.map((error, idx) => (
+								<TableRow
+									// biome-ignore lint/suspicious/noArrayIndexKey: static error list
+									key={idx}
+									className="hover:bg-hover"
+								>
+									<TableCell className="px-6 py-4 text-sm font-medium text-foreground">
+										{error.error_pattern}
+									</TableCell>
+									<TableCell className="px-6 py-4 text-sm text-muted">
+										{error.occurrences}
+									</TableCell>
+									<TableCell className="px-6 py-4 text-sm text-muted">
+										{new Date(error.last_seen).toLocaleDateString()}
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
 				</AnalyticsCard>
 			)}
 
@@ -451,127 +463,139 @@ export function DeveloperDetailPage() {
 				<div className="flex justify-between items-center mb-6">
 					<h2 className="text-xl font-bold text-heading">Session History</h2>
 					<div className="flex gap-3">
-						<select
-							value={projectFilter}
-							onChange={(e) => setProjectFilter(e.target.value)}
-							className="px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:ring-2 focus:ring-accent"
+						<Select
+							value={projectFilter || "all"}
+							onValueChange={(v) => setProjectFilter(v === "all" ? "" : v)}
 						>
-							<option value="">All Projects</option>
-							{uniqueProjects.map((path) => (
-								<option key={path} value={path}>
-									{path.split("/").pop()}
-								</option>
-							))}
-						</select>
-						<select
+							<SelectTrigger className="w-auto">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All Projects</SelectItem>
+								{uniqueProjects.map((path) => (
+									<SelectItem key={path} value={path}>
+										{path.split("/").pop()}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<Select
 							value={outcomeFilter}
-							onChange={(e) =>
-								setOutcomeFilter(e.target.value as "all" | "success")
-							}
-							className="px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:ring-2 focus:ring-accent"
+							onValueChange={(v) => setOutcomeFilter(v as "all" | "success")}
 						>
-							<option value="all">All Outcomes</option>
-							<option value="success">Likely Success</option>
-						</select>
-						<select
+							<SelectTrigger className="w-auto">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All Outcomes</SelectItem>
+								<SelectItem value="success">Likely Success</SelectItem>
+							</SelectContent>
+						</Select>
+						<Select
 							value={`${sortBy}-${sortOrder}`}
-							onChange={(e) => {
-								const [s, o] = e.target.value.split("-");
+							onValueChange={(v) => {
+								const [s, o] = v.split("-");
 								setSortBy(s as "date" | "duration" | "tokens");
 								setSortOrder(o as "asc" | "desc");
 							}}
-							className="px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:ring-2 focus:ring-accent"
 						>
-							<option value="date-desc">Date (Newest)</option>
-							<option value="date-asc">Date (Oldest)</option>
-							<option value="duration-desc">Duration (Longest)</option>
-							<option value="duration-asc">Duration (Shortest)</option>
-							<option value="tokens-desc">Tokens (Most)</option>
-							<option value="tokens-asc">Tokens (Least)</option>
-						</select>
+							<SelectTrigger className="w-auto">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="date-desc">Date (Newest)</SelectItem>
+								<SelectItem value="date-asc">Date (Oldest)</SelectItem>
+								<SelectItem value="duration-desc">
+									Duration (Longest)
+								</SelectItem>
+								<SelectItem value="duration-asc">
+									Duration (Shortest)
+								</SelectItem>
+								<SelectItem value="tokens-desc">Tokens (Most)</SelectItem>
+								<SelectItem value="tokens-asc">Tokens (Least)</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 				</div>
 
-				<div className="overflow-x-auto">
-					<table className="min-w-full divide-y divide-border">
-						<thead className="bg-surface">
-							<tr>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-									Date
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-									Project
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-									Duration
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-									Tokens
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-									Features
-								</th>
-								<th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
-									Status
-								</th>
-							</tr>
-						</thead>
-						<tbody className="bg-input divide-y divide-border">
-							{sessions?.map((session) => (
-								<tr key={session.session_id} className="hover:bg-hover">
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{new Date(session.session_date).toLocaleString()}
-									</td>
-									<td className="px-6 py-4 text-sm">
-										<span className="font-medium text-foreground">
-											{session.project_path.split("/").pop()}
-										</span>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{session.duration_min.toFixed(0)}m
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-										{(session.total_tokens / 1000).toFixed(0)}K
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm">
-										<div className="flex gap-1">
-											{session.has_subagents && (
-												<span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-													SA
-												</span>
-											)}
-											{session.has_skills && (
-												<span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
-													SK
-												</span>
-											)}
-											{session.has_slash_commands && (
-												<span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-													SC
-												</span>
-											)}
-										</div>
-									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm">
-										{session.likely_success ? (
-											<span className="px-2 py-1 text-xs bg-status-success-bg text-status-success-text rounded-full">
-												Success
-											</span>
-										) : session.has_errors ? (
-											<span className="px-2 py-1 text-xs bg-status-error-bg text-status-error-text rounded-full">
-												Error
-											</span>
-										) : (
-											<span className="px-2 py-1 text-xs bg-surface text-subheading rounded-full">
-												Unknown
+				<Table>
+					<TableHeader className="bg-surface">
+						<TableRow>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+								Date
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+								Project
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+								Duration
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+								Tokens
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+								Features
+							</TableHead>
+							<TableHead className="px-6 py-3 text-xs text-muted uppercase">
+								Status
+							</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody className="bg-input">
+						{sessions?.map((session) => (
+							<TableRow key={session.session_id} className="hover:bg-hover">
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{new Date(session.session_date).toLocaleString()}
+								</TableCell>
+								<TableCell className="px-6 py-4 text-sm">
+									<span className="font-medium text-foreground">
+										{session.project_path.split("/").pop()}
+									</span>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{session.duration_min.toFixed(0)}m
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+									{(session.total_tokens / 1000).toFixed(0)}K
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+									<div className="flex gap-1">
+										{session.has_subagents && (
+											<span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+												SA
 											</span>
 										)}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+										{session.has_skills && (
+											<span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
+												SK
+											</span>
+										)}
+										{session.has_slash_commands && (
+											<span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+												SC
+											</span>
+										)}
+									</div>
+								</TableCell>
+								<TableCell className="px-6 py-4 whitespace-nowrap text-sm">
+									{session.likely_success ? (
+										<span className="px-2 py-1 text-xs bg-status-success-bg text-status-success-text rounded-full">
+											Success
+										</span>
+									) : session.has_errors ? (
+										<span className="px-2 py-1 text-xs bg-status-error-bg text-status-error-text rounded-full">
+											Error
+										</span>
+									) : (
+										<span className="px-2 py-1 text-xs bg-surface text-subheading rounded-full">
+											Unknown
+										</span>
+									)}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
 			</AnalyticsCard>
 		</div>
 	);

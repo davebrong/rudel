@@ -1,5 +1,13 @@
 import { Calendar } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface DatePickerProps {
 	startDate: string;
@@ -98,39 +106,27 @@ export function DatePicker({
 	onStartDateChange,
 	onEndDateChange,
 }: DatePickerProps) {
-	const [isOpen, setIsOpen] = useState(false);
+	const [open, setOpen] = useState(false);
 	const [tempStartDate, setTempStartDate] = useState(startDate);
 	const [tempEndDate, setTempEndDate] = useState(endDate);
-	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		setTempStartDate(startDate);
 		setTempEndDate(endDate);
 	}, [startDate, endDate]);
 
-	useEffect(() => {
-		function handleClickOutside(event: MouseEvent) {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false);
-				setTempStartDate(startDate);
-				setTempEndDate(endDate);
-			}
+	const handleOpenChange = (nextOpen: boolean) => {
+		setOpen(nextOpen);
+		if (!nextOpen) {
+			setTempStartDate(startDate);
+			setTempEndDate(endDate);
 		}
-
-		if (isOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
-			return () =>
-				document.removeEventListener("mousedown", handleClickOutside);
-		}
-	}, [isOpen, startDate, endDate]);
+	};
 
 	const handleApply = () => {
 		onStartDateChange(tempStartDate);
 		onEndDateChange(tempEndDate);
-		setIsOpen(false);
+		setOpen(false);
 	};
 
 	const handlePresetClick = (preset: DatePreset) => {
@@ -139,7 +135,7 @@ export function DatePicker({
 		setTempEndDate(end);
 		onStartDateChange(start);
 		onEndDateChange(end);
-		setIsOpen(false);
+		setOpen(false);
 	};
 
 	const formatDateRange = () => {
@@ -158,20 +154,15 @@ export function DatePicker({
 	};
 
 	return (
-		<div className="relative" ref={dropdownRef}>
-			<button
-				type="button"
-				onClick={() => setIsOpen(!isOpen)}
-				className="flex items-center gap-2 bg-input border border-border rounded-lg px-4 py-2 hover:bg-hover transition-colors"
-			>
-				<Calendar className="h-4 w-4 text-muted" />
-				<span className="text-sm font-medium text-foreground">
-					{formatDateRange()}
-				</span>
-			</button>
-
-			{isOpen && (
-				<div className="absolute right-0 mt-2 bg-input border border-border rounded-lg z-50 flex overflow-hidden">
+		<Popover open={open} onOpenChange={handleOpenChange}>
+			<PopoverTrigger asChild>
+				<Button variant="outline" className="gap-2">
+					<Calendar className="h-4 w-4 text-muted" />
+					<span className="text-sm font-medium">{formatDateRange()}</span>
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className="w-auto p-0" align="end">
+				<div className="flex overflow-hidden">
 					<div className="w-40 border-r border-border bg-surface">
 						{DATE_PRESETS.map((preset) => (
 							<button
@@ -188,53 +179,47 @@ export function DatePicker({
 					<div className="p-4 w-64">
 						<div className="space-y-3">
 							<div>
-								<label
+								<Label
 									htmlFor="date-picker-start"
-									className="block text-xs font-medium text-muted mb-1"
+									className="text-xs text-muted mb-1"
 								>
 									Start date
-								</label>
-								<input
+								</Label>
+								<Input
 									id="date-picker-start"
 									type="date"
 									value={tempStartDate}
 									onChange={(e) => setTempStartDate(e.target.value)}
 									max={tempEndDate}
-									className="w-full px-3 py-2 text-sm border border-border rounded-md bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 								/>
 							</div>
 
 							<div>
-								<label
+								<Label
 									htmlFor="date-picker-end"
-									className="block text-xs font-medium text-muted mb-1"
+									className="text-xs text-muted mb-1"
 								>
 									End date
-								</label>
-								<input
+								</Label>
+								<Input
 									id="date-picker-end"
 									type="date"
 									value={tempEndDate}
 									onChange={(e) => setTempEndDate(e.target.value)}
 									min={tempStartDate}
 									max={new Date().toISOString().split("T")[0]}
-									className="w-full px-3 py-2 text-sm border border-border rounded-md bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
 								/>
 							</div>
 
 							<div className="pt-2">
-								<button
-									type="button"
-									onClick={handleApply}
-									className="w-full px-4 py-2 bg-accent text-accent-foreground text-sm font-medium rounded-md hover:bg-accent-hover transition-colors"
-								>
+								<Button className="w-full" onClick={handleApply}>
 									Apply
-								</button>
+								</Button>
 							</div>
 						</div>
 					</div>
 				</div>
-			)}
-		</div>
+			</PopoverContent>
+		</Popover>
 	);
 }

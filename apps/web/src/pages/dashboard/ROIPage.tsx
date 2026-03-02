@@ -20,6 +20,17 @@ import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { formatUsername } from "@/lib/format";
@@ -127,7 +138,7 @@ export function ROIPage() {
 			{isLoading && (
 				<div className="flex items-center justify-center py-12">
 					<div className="text-center">
-						<div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-accent border-r-transparent mb-4" />
+						<Spinner size="lg" className="mb-4" />
 						<p className="text-muted">Loading ROI data...</p>
 					</div>
 				</div>
@@ -153,7 +164,7 @@ export function ROIPage() {
 								>
 									Code Percentage (%)
 								</label>
-								<input
+								<Input
 									id="codePercentage"
 									type="number"
 									value={roiInputs.codePercentage}
@@ -165,7 +176,6 @@ export function ROIPage() {
 									}
 									min={0}
 									max={100}
-									className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground focus:ring-accent focus:border-accent"
 								/>
 								<p className="text-xs text-muted mt-1">
 									% of output that is actual code
@@ -178,7 +188,7 @@ export function ROIPage() {
 								>
 									Tokens per LOC
 								</label>
-								<input
+								<Input
 									id="tokensPerLOC"
 									type="number"
 									value={roiInputs.tokensPerLOC}
@@ -189,7 +199,6 @@ export function ROIPage() {
 										})
 									}
 									min={1}
-									className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground focus:ring-accent focus:border-accent"
 								/>
 								<p className="text-xs text-muted mt-1">
 									Average tokens per line of code
@@ -202,7 +211,7 @@ export function ROIPage() {
 								>
 									LOC per Hour (baseline)
 								</label>
-								<input
+								<Input
 									id="locPerHour"
 									type="number"
 									value={roiInputs.locPerHour}
@@ -213,7 +222,6 @@ export function ROIPage() {
 										})
 									}
 									min={1}
-									className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground focus:ring-accent focus:border-accent"
 								/>
 								<p className="text-xs text-muted mt-1">
 									Manual coding speed without Claude
@@ -226,7 +234,7 @@ export function ROIPage() {
 								>
 									Developer Rate ($/hr)
 								</label>
-								<input
+								<Input
 									id="devHourlyRate"
 									type="number"
 									value={roiInputs.devHourlyRate}
@@ -237,19 +245,14 @@ export function ROIPage() {
 										})
 									}
 									min={1}
-									className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground focus:ring-accent focus:border-accent"
 								/>
 								<p className="text-xs text-muted mt-1">Hourly developer cost</p>
 							</div>
 						</div>
 						<div className="mt-4">
-							<button
-								type="button"
-								onClick={resetToDefaults}
-								className="px-4 py-2 text-sm font-medium text-accent bg-accent-light border border-accent-light rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-							>
+							<Button variant="outline" size="sm" onClick={resetToDefaults}>
 								Reset to Defaults
-							</button>
+							</Button>
 						</div>
 					</AnalyticsCard>
 
@@ -479,38 +482,36 @@ export function ROIPage() {
 									Developer Cost Breakdown
 								</h3>
 							</div>
-							<div className="overflow-x-auto">
-								<table className="min-w-full divide-y divide-border">
-									<thead>
-										<tr className="bg-surface">
-											<th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">
-												Developer
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">
-												Cost
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">
-												Sessions
-											</th>
-										</tr>
-									</thead>
-									<tbody className="bg-input divide-y divide-border">
-										{developerCosts?.map((dev) => (
-											<tr key={dev.user_id} className="hover:bg-hover">
-												<td className="px-4 py-3 text-sm font-medium text-foreground">
-													{formatUsername(dev.user_id, userMapRecord)}
-												</td>
-												<td className="px-4 py-3 text-sm text-right text-subheading">
-													{formatCurrency(dev.cost)}
-												</td>
-												<td className="px-4 py-3 text-sm text-right text-subheading">
-													{dev.sessions}
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
+							<Table>
+								<TableHeader className="bg-surface">
+									<TableRow>
+										<TableHead className="px-4 py-3 text-xs text-muted uppercase">
+											Developer
+										</TableHead>
+										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
+											Cost
+										</TableHead>
+										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
+											Sessions
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody className="bg-input">
+									{developerCosts?.map((dev) => (
+										<TableRow key={dev.user_id} className="hover:bg-hover">
+											<TableCell className="px-4 py-3 text-sm font-medium text-foreground">
+												{formatUsername(dev.user_id, userMapRecord)}
+											</TableCell>
+											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
+												{formatCurrency(dev.cost)}
+											</TableCell>
+											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
+												{dev.sessions}
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
 						</AnalyticsCard>
 
 						<AnalyticsCard>
@@ -519,39 +520,40 @@ export function ROIPage() {
 									Project Cost Breakdown
 								</h3>
 							</div>
-							<div className="overflow-x-auto">
-								<table className="min-w-full divide-y divide-border">
-									<thead>
-										<tr className="bg-surface">
-											<th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">
-												Project
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">
-												Cost
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">
-												Sessions
-											</th>
-										</tr>
-									</thead>
-									<tbody className="bg-input divide-y divide-border">
-										{projectCosts?.slice(0, 10).map((proj) => (
-											<tr key={proj.project_path} className="hover:bg-hover">
-												<td className="px-4 py-3 text-sm font-medium text-foreground truncate max-w-xs">
-													{proj.project_path.split("/").pop() ||
-														proj.project_path}
-												</td>
-												<td className="px-4 py-3 text-sm text-right text-subheading">
-													{formatCurrency(proj.cost)}
-												</td>
-												<td className="px-4 py-3 text-sm text-right text-subheading">
-													{proj.sessions}
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
+							<Table>
+								<TableHeader className="bg-surface">
+									<TableRow>
+										<TableHead className="px-4 py-3 text-xs text-muted uppercase">
+											Project
+										</TableHead>
+										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
+											Cost
+										</TableHead>
+										<TableHead className="px-4 py-3 text-xs text-muted uppercase text-right">
+											Sessions
+										</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody className="bg-input">
+									{projectCosts?.slice(0, 10).map((proj) => (
+										<TableRow
+											key={proj.project_path}
+											className="hover:bg-hover"
+										>
+											<TableCell className="px-4 py-3 text-sm font-medium text-foreground truncate max-w-xs">
+												{proj.project_path.split("/").pop() ||
+													proj.project_path}
+											</TableCell>
+											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
+												{formatCurrency(proj.cost)}
+											</TableCell>
+											<TableCell className="px-4 py-3 text-sm text-right text-subheading">
+												{proj.sessions}
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
 						</AnalyticsCard>
 					</div>
 				</>
