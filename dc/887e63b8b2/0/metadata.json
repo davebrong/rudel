@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "dc887e63b8b2",
+  "session_id": "dbff22bc-97b4-4dd9-b7ad-e9e4a224b17b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T08:44:16.593255Z",
+  "branch": "marc/upload-tracking-concurrency",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/concurrency.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "278f90f0-36a7-413b-87f7-00eeb3012382",
+  "token_usage": {
+    "input_tokens": 47,
+    "cache_creation_tokens": 96916,
+    "cache_read_tokens": 2948597,
+    "output_tokens": 17722,
+    "api_call_count": 42
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T08:44:16.194327Z",
+    "agent_lines": 137,
+    "human_added": 154,
+    "human_modified": 30,
+    "human_removed": 0,
+    "total_committed": 321,
+    "agent_percentage": 42.679127725856695
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-lisbon/dbff22bc-97b4-4dd9-b7ad-e9e4a224b17b.jsonl"
+}
