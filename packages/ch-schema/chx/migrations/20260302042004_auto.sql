@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS rudel.session_analytics_mv SYNC;
 ALTER TABLE rudel.session_analytics ADD COLUMN IF NOT EXISTS `source` LowCardinality(String) DEFAULT '''claude_code''';
 
 -- operation: alter_table_add_index key=table:rudel.session_analytics:index:idx_source risk=caution
-ALTER TABLE rudel.session_analytics ADD INDEX IF NOT EXISTS `idx_source` (source) TYPE set GRANULARITY 4;
+ALTER TABLE rudel.session_analytics ADD INDEX IF NOT EXISTS `idx_source` (source) TYPE set(0) GRANULARITY 4;
 
 -- operation: create_database key=database:rudel risk=safe
 CREATE DATABASE IF NOT EXISTS rudel;
