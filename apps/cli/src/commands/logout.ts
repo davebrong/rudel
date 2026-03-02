@@ -1,17 +1,16 @@
+import * as p from "@clack/prompts";
 import { buildCommand } from "@stricli/core";
 import { clearCredentials, loadCredentials } from "../lib/credentials.js";
 
 async function runLogout(): Promise<void> {
-	const write = (msg: string) => process.stdout.write(`${msg}\n`);
-
 	const credentials = loadCredentials();
 	if (!credentials) {
-		write("Not logged in.");
+		p.log.info("Not logged in.");
 		return;
 	}
 
 	clearCredentials();
-	write("Logged out successfully.");
+	p.log.success("Logged out successfully.");
 }
 
 export const logoutCommand = buildCommand({

@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import * as p from "@clack/prompts";
 import { buildCommand } from "@stricli/core";
 import { loadCredentials, saveCredentials } from "../lib/credentials.js";
 
@@ -10,12 +11,12 @@ async function runLogin(flags: {
 	apiBase: string;
 	webUrl: string;
 }): Promise<void> {
-	const write = (msg: string) => process.stdout.write(`${msg}\n`);
-	const writeError = (msg: string) => process.stderr.write(`${msg}\n`);
+	p.intro("rudel login");
 
 	const existing = loadCredentials();
 	if (existing) {
-		write("Already logged in. Run `rudel logout` first to switch accounts.");
+		p.log.warn("Already logged in.");
+		p.outro("Run `rudel logout` first to switch accounts.");
 		return;
 	}
 
@@ -67,8 +68,7 @@ async function runLogin(flags: {
 	const callbackUrl = `http://127.0.0.1:${server.port}/callback`;
 	const loginUrl = `${flags.webUrl}?cli_callback=${encodeURIComponent(callbackUrl)}&state=${state}`;
 
-	write("Opening browser for authentication...");
-	write(`If the browser doesn't open, visit: ${loginUrl}`);
+	p.log.info(`If the browser doesn't open, visit:\n${loginUrl}`);
 
 	// Open browser
 	if (process.platform === "win32") {
@@ -86,23 +86,26 @@ async function runLogin(flags: {
 		rejectCallback(new Error("Login timed out after 120 seconds"));
 	}, CALLBACK_TIMEOUT_MS);
 
+	const spin = p.spinner();
+	spin.start("Waiting for browser authentication...");
+
 	let token: string;
 	try {
 		token = await tokenPromise;
 	} catch (error) {
 		clearTimeout(timeout);
 		server.stop();
-		writeError(
-			`Login failed: ${error instanceof Error ? error.message : String(error)}`,
-		);
+		spin.stop("Authentication failed");
+		p.log.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 		return;
 	}
 	clearTimeout(timeout);
 	server.stop();
 
+	spin.message("Validating token...");
+
 	// Validate token via /rpc/me
-	write("Validating token...");
 	const meResponse = await fetch(`${flags.apiBase}/rpc/me`, {
 		method: "POST",
 		headers: {
@@ -113,7 +116,8 @@ async function runLogin(flags: {
 	});
 
 	if (!meResponse.ok) {
-		writeError("Login failed: token validation failed");
+		spin.stop("Token validation failed");
+		p.log.error("Login failed: token validation failed");
 		process.exitCode = 1;
 		return;
 	}
@@ -123,7 +127,9 @@ async function runLogin(flags: {
 	};
 
 	saveCredentials(token, flags.apiBase);
-	write(`Logged in as ${body.json.name} (${body.json.email})`);
+	spin.stop("Authenticated");
+	p.log.success(`Logged in as ${body.json.name} (${body.json.email})`);
+	p.outro("Done!");
 }
 
 export const loginCommand = buildCommand({
