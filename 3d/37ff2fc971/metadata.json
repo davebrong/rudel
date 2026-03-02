@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "3d37ff2fc971",
+  "strategy": "manual-commit",
+  "branch": "marc/explore-logging",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/auth.ts",
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/logging.ts",
+    "apps/api/src/slack.ts",
+    "apps/cli/src/commands/hook-upload.ts",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/lib/logger.ts",
+    "apps/cli/src/logging.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3d/37ff2fc971/0/metadata.json",
+      "transcript": "/3d/37ff2fc971/0/full.jsonl",
+      "context": "/3d/37ff2fc971/0/context.md",
+      "content_hash": "/3d/37ff2fc971/0/content_hash.txt",
+      "prompt": "/3d/37ff2fc971/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 101,
+    "cache_creation_tokens": 187641,
+    "cache_read_tokens": 5061416,
+    "output_tokens": 19475,
+    "api_call_count": 72
+  }
+}
