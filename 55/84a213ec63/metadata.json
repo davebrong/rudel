@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "5584a213ec63",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-claude-code-adapter",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/commands/hooks/codex/turn-complete.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/batch-upload.ts",
+    "apps/cli/src/lib/failed-uploads.ts",
+    "packages/agent-adapters/src/adapters/claude-code/index.ts",
+    "packages/agent-adapters/src/adapters/codex/index.ts",
+    "packages/agent-adapters/src/registry.ts",
+    "packages/agent-adapters/src/types.ts",
+    "packages/api-routes/src/index.ts",
+    "packages/api-routes/src/schemas/analytics.ts",
+    "packages/api-routes/src/schemas/source.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/55/84a213ec63/0/metadata.json",
+      "transcript": "/55/84a213ec63/0/full.jsonl",
+      "context": "/55/84a213ec63/0/context.md",
+      "content_hash": "/55/84a213ec63/0/content_hash.txt",
+      "prompt": "/55/84a213ec63/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 126,
+    "cache_creation_tokens": 195659,
+    "cache_read_tokens": 5228007,
+    "output_tokens": 16873,
+    "api_call_count": 68
+  }
+}
