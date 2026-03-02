@@ -53,7 +53,7 @@ function hasRealClaudeSessions(): boolean {
 				)
 					return true;
 			} catch {
-				continue;
+				/* continue to next session */
 			}
 		}
 	} catch {

@@ -1,6 +1,6 @@
 import { buildCommand } from "@stricli/core";
 import {
-	groupProjectsForCwd,
+	groupProjectsByRemote,
 	scanProjects,
 } from "../../lib/project-scanner.js";
 
@@ -13,30 +13,22 @@ async function runListSessions(): Promise<void> {
 	}
 
 	const cwd = process.cwd();
-	const grouped = groupProjectsForCwd(projects, cwd);
-
-	const lines: string[] = [];
-
-	if (grouped.current) {
-		lines.push(
-			`${grouped.current.displayPath} (${grouped.current.sessionCount} sessions) [current]`,
-		);
-		for (const sub of grouped.subfolders) {
-			const relative = sub.decodedPath.slice(
-				grouped.current.decodedPath.length + 1,
-			);
-			lines.push(`  ${relative} (${sub.sessionCount} sessions)`);
-		}
-	}
-
-	for (const other of grouped.others) {
-		lines.push(`${other.displayPath} (${other.sessionCount} sessions)`);
-	}
+	const groups = await groupProjectsByRemote(projects, cwd);
 
 	const totalSessions = projects.reduce((s, p) => s + p.sessionCount, 0);
-	console.log(`${projects.length} projects, ${totalSessions} sessions\n`);
-	for (const line of lines) {
-		console.log(line);
+	console.log(`${groups.length} groups, ${totalSessions} sessions\n`);
+
+	for (const group of groups) {
+		const current = group.containsCwd ? " [current]" : "";
+		if (group.projects.length === 1 && group.projects[0]) {
+			console.log(
+				`${group.projects[0].displayPath} (${group.totalSessions} sessions)${current}`,
+			);
+		} else {
+			console.log(
+				`${group.displayName} (${group.totalSessions} sessions, ${group.projects.length} locations)${current}`,
+			);
+		}
 	}
 }
 

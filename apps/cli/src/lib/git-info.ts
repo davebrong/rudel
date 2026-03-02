@@ -61,6 +61,16 @@ async function getRepositoryName(cwd: string): Promise<string | null> {
 	}
 }
 
+export async function getGitRemoteUrl(cwd: string): Promise<string | null> {
+	try {
+		const result = await $`git -C ${cwd} remote get-url origin`.quiet();
+		if (result.exitCode !== 0) return null;
+		return result.text().trim() || null;
+	} catch {
+		return null;
+	}
+}
+
 async function getGitBranch(cwd: string): Promise<string | null> {
 	try {
 		const result = await $`git -C ${cwd} rev-parse --abbrev-ref HEAD`.quiet();

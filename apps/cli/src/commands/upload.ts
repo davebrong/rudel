@@ -6,8 +6,8 @@ import { loadCredentials } from "../lib/credentials.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId } from "../lib/project-config.js";
 import {
-	groupProjectsForCwd,
-	type ScannedProject,
+	groupProjectsByRemote,
+	type ProjectGroup,
 	scanProjects,
 } from "../lib/project-scanner.js";
 import { resolveSession } from "../lib/session-resolver.js";
@@ -52,42 +52,30 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	}
 
 	const cwd = process.cwd();
-	const grouped = groupProjectsForCwd(projects, cwd);
+	spin.start("Grouping by git remote...");
+	const groups = await groupProjectsByRemote(projects, cwd);
+	spin.stop(`Found ${groups.length} group(s)`);
 
 	const options: Array<{
-		value: ScannedProject;
+		value: ProjectGroup;
 		label: string;
 		hint: string;
 	}> = [];
-	const preSelected: ScannedProject[] = [];
+	const preSelected: ProjectGroup[] = [];
 
-	if (grouped.current) {
-		options.push({
-			value: grouped.current,
-			label: grouped.current.displayPath,
-			hint: sessionCountHint(grouped.current.sessionCount),
-		});
-		preSelected.push(grouped.current);
-
-		for (const sub of grouped.subfolders) {
-			const relative = sub.decodedPath.slice(
-				grouped.current.decodedPath.length + 1,
-			);
-			options.push({
-				value: sub,
-				label: `  ${relative}`,
-				hint: sessionCountHint(sub.sessionCount),
-			});
-			preSelected.push(sub);
+	for (const group of groups) {
+		const label =
+			group.projects.length > 1
+				? group.displayName
+				: (group.projects[0]?.displayPath ?? group.displayName);
+		const hint =
+			group.projects.length > 1
+				? `${sessionCountHint(group.totalSessions)}, ${group.projects.length} locations`
+				: sessionCountHint(group.totalSessions);
+		options.push({ value: group, label, hint });
+		if (group.containsCwd) {
+			preSelected.push(group);
 		}
-	}
-
-	for (const other of grouped.others) {
-		options.push({
-			value: other,
-			label: other.displayPath,
-			hint: sessionCountHint(other.sessionCount),
-		});
 	}
 
 	const selected = await p.multiselect({
@@ -102,12 +90,10 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 		return;
 	}
 
-	const totalSessions = selected.reduce(
-		(sum, proj) => sum + proj.sessionCount,
-		0,
-	);
+	const selectedProjects = selected.flatMap((g) => g.projects);
+	const totalSessions = selected.reduce((sum, g) => sum + g.totalSessions, 0);
 	p.log.info(
-		`Uploading ${totalSessions} session(s) from ${selected.length} project(s)`,
+		`Uploading ${totalSessions} session(s) from ${selectedProjects.length} project(s)`,
 	);
 
 	const batchOpts: BatchOptions = {
@@ -124,9 +110,13 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	const uploadSpin = p.spinner();
 	uploadSpin.start("Uploading sessions...");
 
-	const result = await batchUpload(selected, batchOpts, (current, total) => {
-		uploadSpin.message(`[${current}/${total}] Uploading...`);
-	});
+	const result = await batchUpload(
+		selectedProjects,
+		batchOpts,
+		(current, total) => {
+			uploadSpin.message(`[${current}/${total}] Uploading...`);
+		},
+	);
 
 	uploadSpin.stop("Upload complete");
 
