@@ -1,3 +1,7 @@
+import { getLogger } from "@logtape/logtape";
+
+const logger = getLogger(["rudel", "api", "slack"]);
+
 export async function fetchGitHubHandle(
 	accountId: string,
 ): Promise<string | null> {
@@ -9,7 +13,10 @@ export async function fetchGitHubHandle(
 		const data = (await res.json()) as { login?: string };
 		return data.login ?? null;
 	} catch (err) {
-		console.error("Failed to fetch GitHub handle for account", accountId, err);
+		logger.error(
+			"Failed to fetch GitHub handle for account {accountId}: {error}",
+			{ accountId, error: err },
+		);
 		return null;
 	}
 }
@@ -35,6 +42,8 @@ export async function notifySignup(
 			body: JSON.stringify({ text: lines.join("\n") }),
 		});
 	} catch (err) {
-		console.error("Failed to send Slack signup notification", err);
+		logger.error("Failed to send Slack signup notification: {error}", {
+			error: err,
+		});
 	}
 }

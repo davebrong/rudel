@@ -1,8 +1,11 @@
+import { getLogger } from "@logtape/logtape";
 import * as schema from "@rudel/sql-schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, organization } from "better-auth/plugins";
 import { fetchGitHubHandle, notifySignup } from "./slack.js";
+
+const logger = getLogger(["rudel", "api", "auth"]);
 
 export interface AuthConfig {
 	appURL: string;
@@ -94,10 +97,9 @@ export function createAuth(db: object, config: AuthConfig) {
 								);
 							}
 						} catch (err) {
-							console.error(
-								"Failed to create default organization for user",
-								user.id,
-								err,
+							logger.error(
+								"Failed to create default organization for user {userId}: {error}",
+								{ userId: user.id, error: err },
 							);
 						}
 					},

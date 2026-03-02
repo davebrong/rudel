@@ -1,8 +1,14 @@
 import { join } from "node:path";
+import { getLogger, withContext } from "@logtape/logtape";
 import { RPCHandler } from "@orpc/server/fetch";
 import { createAuth } from "./auth.js";
 import { db } from "./db.js";
+import { setupLogging } from "./logging.js";
 import { router } from "./router.js";
+
+await setupLogging();
+
+const logger = getLogger(["rudel", "api", "http"]);
 
 const socialProviders: Record<
 	string,
@@ -72,72 +78,99 @@ const server = Bun.serve({
 			return Response.json({ status: "ok", timestamp: Date.now() });
 		}
 
-		if (url.pathname === "/api/cli-token") {
-			const session = await auth.api.getSession({
-				headers: request.headers,
-			});
-			if (!session) {
-				return new Response(JSON.stringify({ error: "Not authenticated" }), {
-					status: 401,
-					headers: { ...cors, "Content-Type": "application/json" },
+		const requestId = crypto.randomUUID();
+		const start = performance.now();
+
+		return withContext(
+			{ requestId, method: request.method, path: url.pathname },
+			async () => {
+				const response = await handleRequest(request, url, cors);
+				const duration = Math.round(performance.now() - start);
+				logger.info("{method} {path} {status} {duration}ms", {
+					method: request.method,
+					path: url.pathname,
+					status: response.status,
+					duration,
 				});
-			}
-			return new Response(JSON.stringify({ token: session.session.token }), {
-				status: 200,
+				return response;
+			},
+		);
+	},
+});
+
+async function handleRequest(
+	request: Request,
+	url: URL,
+	cors: Record<string, string>,
+): Promise<Response> {
+	if (url.pathname === "/api/cli-token") {
+		const session = await auth.api.getSession({
+			headers: request.headers,
+		});
+		if (!session) {
+			return new Response(JSON.stringify({ error: "Not authenticated" }), {
+				status: 401,
 				headers: { ...cors, "Content-Type": "application/json" },
 			});
 		}
-
-		if (url.pathname.startsWith("/api/auth")) {
-			const response = await auth.handler(request);
-			for (const [key, value] of Object.entries(cors)) {
-				response.headers.set(key, value);
-			}
-			return response;
-		}
-
-		const { matched, response } = await rpcHandler.handle(request, {
-			prefix: "/rpc",
-			context: await getContext(request),
+		return new Response(JSON.stringify({ token: session.session.token }), {
+			status: 200,
+			headers: { ...cors, "Content-Type": "application/json" },
 		});
+	}
 
-		if (matched) {
-			// Log 500 errors for debugging
-			if (response.status >= 500) {
-				const body = await response.clone().text();
-				console.error(`[RPC ${url.pathname}] ${response.status}:`, body);
-			}
-			for (const [key, value] of Object.entries(cors)) {
-				response.headers.set(key, value);
-			}
-			return response;
+	if (url.pathname.startsWith("/api/auth")) {
+		const response = await auth.handler(request);
+		for (const [key, value] of Object.entries(cors)) {
+			response.headers.set(key, value);
 		}
+		return response;
+	}
 
-		// Static file serving (production: frontend assets)
-		const filePath = join(STATIC_DIR, url.pathname);
-		const file = Bun.file(filePath);
-		if (await file.exists()) {
-			return new Response(file);
+	const { matched, response } = await rpcHandler.handle(request, {
+		prefix: "/rpc",
+		context: await getContext(request),
+	});
+
+	if (matched) {
+		if (response.status >= 500) {
+			const body = await response.clone().text();
+			logger.error("RPC error on {path}: {status} {body}", {
+				path: url.pathname,
+				status: response.status,
+				body,
+			});
 		}
-
-		// SPA fallback: serve index.html for non-API routes
-		const indexFile = Bun.file(join(STATIC_DIR, "index.html"));
-		if (await indexFile.exists()) {
-			return new Response(indexFile);
+		for (const [key, value] of Object.entries(cors)) {
+			response.headers.set(key, value);
 		}
+		return response;
+	}
 
-		// Dev mode: redirect to frontend dev server for non-API routes
-		// (e.g., after OAuth callback redirects to APP_URL which has no SPA)
-		if (ALLOWED_ORIGIN !== appURL) {
-			return Response.redirect(
-				`${ALLOWED_ORIGIN}${url.pathname}${url.search}`,
-				302,
-			);
-		}
+	// Static file serving (production: frontend assets)
+	const filePath = join(STATIC_DIR, url.pathname);
+	const file = Bun.file(filePath);
+	if (await file.exists()) {
+		return new Response(file);
+	}
 
-		return new Response("Not found", { status: 404, headers: cors });
-	},
-});
+	// SPA fallback: serve index.html for non-API routes
+	const indexFile = Bun.file(join(STATIC_DIR, "index.html"));
+	if (await indexFile.exists()) {
+		return new Response(indexFile);
+	}
+
+	// Dev mode: redirect to frontend dev server for non-API routes
+	// (e.g., after OAuth callback redirects to APP_URL which has no SPA)
+	if (ALLOWED_ORIGIN !== appURL) {
+		return Response.redirect(
+			`${ALLOWED_ORIGIN}${url.pathname}${url.search}`,
+			302,
+		);
+	}
+
+	return new Response("Not found", { status: 404, headers: cors });
+}
 
 async function getContext(request: Request) {
 	const session = await auth.api.getSession({
@@ -149,4 +182,6 @@ async function getContext(request: Request) {
 	};
 }
 
-console.log(`API server listening on http://localhost:${server.port}`);
+logger.info("API server listening on http://localhost:{port}", {
+	port: server.port,
+});

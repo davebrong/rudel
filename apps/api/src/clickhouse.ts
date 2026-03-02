@@ -1,4 +1,7 @@
 import { createClient } from "@clickhouse/client-web";
+import { getLogger } from "@logtape/logtape";
+
+const logger = getLogger(["rudel", "api", "clickhouse"]);
 
 export interface ClickHouseExecutor {
 	execute(sql: string): Promise<void>;
@@ -64,8 +67,22 @@ export function getClickhouse(): ClickHouseExecutor {
 					try {
 						return await executor.insert(params);
 					} catch (error) {
-						// Retry on INSERT race conditions (ClickHouse code 236)
-						if (attempt === maxRetries - 1) throw error;
+						if (attempt === maxRetries - 1) {
+							logger.error(
+								"Insert into {table} failed after {maxRetries} attempts: {error}",
+								{ table: params.table, maxRetries, error },
+							);
+							throw error;
+						}
+						logger.warn(
+							"Insert into {table} failed (attempt {attempt}/{maxRetries}), retrying: {error}",
+							{
+								table: params.table,
+								attempt: attempt + 1,
+								maxRetries,
+								error,
+							},
+						);
 						await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
 					}
 				}

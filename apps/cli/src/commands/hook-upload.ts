@@ -1,14 +1,15 @@
 import { dirname } from "node:path";
+import { getLogger } from "@logtape/logtape";
 import { buildCommand } from "@stricli/core";
 import { classifySession } from "../lib/classifier.js";
 import { readConfig } from "../lib/config.js";
 import { getGitInfo } from "../lib/git-info.js";
-import { log } from "../lib/logger.js";
 import { parseStdinInput, readStdin } from "../lib/stdin.js";
 import { readSubagentFiles } from "../lib/subagent-reader.js";
 import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
 import { DEFAULT_ENDPOINT, type IngestRequest } from "../lib/types.js";
 import { uploadSession } from "../lib/uploader.js";
+import { disposeLogging, setupHookLogging } from "../logging.js";
 
 /**
  * Hook-based session upload that reads session metadata from stdin.
@@ -16,13 +17,16 @@ import { uploadSession } from "../lib/uploader.js";
  * Runs silently — all output goes to the log file, not stdout.
  */
 async function runHookUpload(): Promise<void> {
-	await log("debug", "Hook upload started");
+	await setupHookLogging();
+	const logger = getLogger(["rudel", "cli", "hook"]);
 
 	try {
+		logger.debug("Hook upload started");
+
 		const config = await readConfig();
 
 		if (!config.apiKey) {
-			await log("debug", "Not logged in, skipping session upload.");
+			logger.debug("Not logged in, skipping session upload.");
 			return;
 		}
 
@@ -30,13 +34,13 @@ async function runHookUpload(): Promise<void> {
 		const input = parseStdinInput(stdinContent);
 
 		if (!input) {
-			await log("debug", "No stdin input, exiting.");
+			logger.debug("No stdin input, exiting.");
 			return;
 		}
 
 		const { session_id, transcript_path, cwd } = input;
 		if (!session_id || !transcript_path) {
-			await log("error", "Missing session_id or transcript_path");
+			logger.error("Missing session_id or transcript_path");
 			return;
 		}
 
@@ -68,9 +72,16 @@ async function runHookUpload(): Promise<void> {
 		const endpoint =
 			process.env.GAZED_INGEST_ENDPOINT ?? config.endpoint ?? DEFAULT_ENDPOINT;
 
-		await log(
-			"info",
-			`Uploading session ${request.sessionId}, repo=${request.repository ?? "none"}, branch=${request.gitBranch ?? "none"}, tag=${request.tag ?? "none"}, bytes=${request.content.length}, subagents=${request.subagents?.length ?? 0}`,
+		logger.info(
+			"Uploading session {sessionId}, repo={repository}, branch={branch}, tag={tag}, bytes={bytes}, subagents={subagents}",
+			{
+				sessionId: request.sessionId,
+				repository: request.repository ?? "none",
+				branch: request.gitBranch ?? "none",
+				tag: request.tag ?? "none",
+				bytes: request.content.length,
+				subagents: request.subagents?.length ?? 0,
+			},
 		);
 
 		const result = await uploadSession(request, {
@@ -79,12 +90,16 @@ async function runHookUpload(): Promise<void> {
 		});
 
 		if (result.success) {
-			await log("info", `Upload successful for session ${request.sessionId}`);
+			logger.info("Upload successful for session {sessionId}", {
+				sessionId: request.sessionId,
+			});
 		} else {
-			await log("error", `Upload failed: ${result.error}`);
+			logger.error("Upload failed: {error}", { error: result.error });
 		}
 	} catch (error) {
-		await log("error", `Unexpected error: ${error}`);
+		logger.error("Unexpected error: {error}", { error });
+	} finally {
+		await disposeLogging();
 	}
 }
 

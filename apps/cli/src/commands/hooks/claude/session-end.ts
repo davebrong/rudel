@@ -1,3 +1,4 @@
+import { getLogger } from "@logtape/logtape";
 import { buildCommand } from "@stricli/core";
 import { loadCredentials } from "../../../lib/credentials.js";
 import { getGitInfo } from "../../../lib/git-info.js";
@@ -9,6 +10,7 @@ import {
 } from "../../../lib/transcript-reader.js";
 import type { IngestRequest } from "../../../lib/types.js";
 import { uploadSession } from "../../../lib/uploader.js";
+import { disposeLogging, setupHookLogging } from "../../../logging.js";
 
 interface HookInput {
 	session_id: string;
@@ -25,6 +27,9 @@ async function readStdin(): Promise<string> {
 }
 
 async function runSessionEnd(): Promise<void> {
+	await setupHookLogging();
+	const logger = getLogger(["rudel", "cli", "hook"]);
+
 	try {
 		const raw = await readStdin();
 		if (!raw.trim()) return;
@@ -34,6 +39,10 @@ async function runSessionEnd(): Promise<void> {
 
 		const credentials = loadCredentials();
 		if (!credentials) return;
+
+		logger.info("Uploading session {sessionId}", {
+			sessionId: input.session_id,
+		});
 
 		const content = await readTranscript(input.transcript_path);
 
@@ -62,8 +71,14 @@ async function runSessionEnd(): Promise<void> {
 		const apiBase = process.env.RUDEL_API_BASE ?? credentials.apiBaseUrl;
 		const endpoint = `${apiBase}/rpc`;
 		await uploadSession(request, { endpoint, token: credentials.token });
-	} catch {
-		// Swallow all errors — this runs async in the background
+
+		logger.info("Upload successful for session {sessionId}", {
+			sessionId: input.session_id,
+		});
+	} catch (error) {
+		logger.error("Session end hook failed: {error}", { error });
+	} finally {
+		await disposeLogging();
 	}
 }
 

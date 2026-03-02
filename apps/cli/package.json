@@ -37,6 +37,8 @@
 	},
 	"dependencies": {
 		"@clack/prompts": "^1.0.1",
+		"@logtape/file": "^2.0.4",
+		"@logtape/logtape": "^2.0.4",
 		"@orpc/client": "^1.13.5",
 		"@orpc/contract": "^1.13.5",
 		"@stricli/core": "^1.2.5"
