@@ -149,7 +149,10 @@ export function OrganizationPage() {
 							type="email"
 							placeholder="Email address"
 							value={inviteEmail}
-							onChange={(e) => setInviteEmail(e.target.value)}
+							onChange={(e) => {
+								setInviteEmail(e.target.value);
+								if (inviteLink) setInviteLink(null);
+							}}
 							className="flex-1"
 						/>
 						<select
