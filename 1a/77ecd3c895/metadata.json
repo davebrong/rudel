@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1a77ecd3c895",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-session-migration",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/__tests__/migrate-sessions.integration.ts",
+    "apps/api/src/services/org-session.service.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1a/77ecd3c895/0/metadata.json",
+      "transcript": "/1a/77ecd3c895/0/full.jsonl",
+      "context": "/1a/77ecd3c895/0/context.md",
+      "content_hash": "/1a/77ecd3c895/0/content_hash.txt",
+      "prompt": "/1a/77ecd3c895/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2452,
+    "cache_creation_tokens": 186763,
+    "cache_read_tokens": 3299986,
+    "output_tokens": 28999,
+    "api_call_count": 45
+  }
+}
