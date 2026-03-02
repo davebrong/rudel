@@ -6,6 +6,7 @@ import { createApiClient } from "../lib/api-client.js";
 import { verifyAuth } from "../lib/auth.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId, setProjectOrgId } from "../lib/project-config.js";
+import { findSessionsForCwd } from "../lib/project-scanner.js";
 import { readSubagentFiles } from "../lib/subagent-reader.js";
 import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
 import type { IngestRequest } from "../lib/types.js";
@@ -93,8 +94,8 @@ async function runEnable(): Promise<void> {
 		p.log.success(`Auto-upload hook enabled in ${agent.getHookSettingsPath()}`);
 	}
 
-	// Check for existing sessions to upload
-	const sessions = await agent.findProjectSessions(cwd);
+	// Check for existing sessions to upload (uses same scan logic as `upload`)
+	const sessions = await findSessionsForCwd(cwd);
 	if (sessions.length === 0) {
 		p.outro("Done!");
 		return;

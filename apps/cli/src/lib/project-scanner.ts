@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises";
 import { homedir } from "node:os";
+import type { SessionFile } from "./agents/types.js";
 import { getGitRemoteUrl, normalizeRemoteUrl } from "./git-info.js";
 import {
 	cacheRemote,
@@ -219,6 +220,31 @@ export async function groupProjectsByRemote(
 	}
 
 	return groups;
+}
+
+export function toSessionFiles(projects: ScannedProject[]): SessionFile[] {
+	return projects.flatMap((project) =>
+		project.sessionIds.map((sessionId) => ({
+			sessionId,
+			transcriptPath: `${project.sessionDir}/${sessionId}.jsonl`,
+			projectPath: project.decodedPath,
+		})),
+	);
+}
+
+/**
+ * Find all sessions belonging to the same repository as `cwd`.
+ * Uses the same scan + group-by-remote logic as the upload command.
+ */
+export async function findSessionsForCwd(cwd: string): Promise<SessionFile[]> {
+	const projects = await scanProjects();
+	if (projects.length === 0) return [];
+
+	const groups = await groupProjectsByRemote(projects, cwd);
+	const cwdGroup = groups.find((g) => g.containsCwd);
+	if (!cwdGroup) return [];
+
+	return toSessionFiles(cwdGroup.projects);
 }
 
 function commonPrefixLength(a: string, b: string): number {
