@@ -1,5 +1,6 @@
 import { buildApplication, buildRouteMap } from "@stricli/core";
 import pkg from "../package.json";
+import { devRouteMap } from "./commands/dev/index.js";
 import { disableCommand } from "./commands/disable.js";
 import { enableCommand } from "./commands/enable.js";
 import { hooksRouteMap } from "./commands/hooks/index.js";
@@ -19,10 +20,11 @@ const routes = buildRouteMap({
 		disable: disableCommand,
 		"set-org": setOrgCommand,
 		hooks: hooksRouteMap,
+		dev: devRouteMap,
 	},
 	docs: {
 		brief: "CLI tools for managing Claude Code sessions",
-		hideRoute: { hooks: true },
+		hideRoute: { hooks: true, dev: true },
 	},
 });
 
