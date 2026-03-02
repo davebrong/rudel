@@ -1,9 +1,11 @@
 {
   "cli_version": "0.4.4",
   "checkpoint_id": "5de67da1e00b",
+  "session_id": "464d1fc2-50ba-4402-bf12-5c2f5a7ec249",
   "strategy": "manual-commit",
+  "created_at": "2026-03-02T04:34:48.794571Z",
   "branch": "marc/add-codec-support",
-  "checkpoints_count": 2,
+  "checkpoints_count": 1,
   "files_touched": [
     "apps/api/src/ingest-codex.ts",
     "apps/api/src/router.ts",
@@ -20,33 +22,27 @@
     "apps/cli/src/lib/codex-uploader.ts",
     "packages/api-routes/src/index.ts",
     "packages/api-routes/src/schemas/analytics.ts",
-    "packages/ch-schema/chx/migrations/20260302042004_auto.sql",
     "packages/ch-schema/src/db/schema/codex-sessions.ts",
     "packages/ch-schema/src/db/schema/session-analytics.ts",
     "packages/ch-schema/src/generated/chkit-ingest.ts",
     "packages/ch-schema/src/index.ts"
   ],
-  "sessions": [
-    {
-      "metadata": "/5d/e67da1e00b/0/metadata.json",
-      "transcript": "/5d/e67da1e00b/0/full.jsonl",
-      "context": "/5d/e67da1e00b/0/context.md",
-      "content_hash": "/5d/e67da1e00b/0/content_hash.txt",
-      "prompt": "/5d/e67da1e00b/0/prompt.txt"
-    },
-    {
-      "metadata": "/5d/e67da1e00b/1/metadata.json",
-      "transcript": "/5d/e67da1e00b/1/full.jsonl",
-      "context": "/5d/e67da1e00b/1/context.md",
-      "content_hash": "/5d/e67da1e00b/1/content_hash.txt",
-      "prompt": "/5d/e67da1e00b/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
   "token_usage": {
-    "input_tokens": 129,
-    "cache_creation_tokens": 238543,
-    "cache_read_tokens": 12685103,
-    "output_tokens": 43664,
-    "api_call_count": 124
-  }
+    "input_tokens": 124,
+    "cache_creation_tokens": 192457,
+    "cache_read_tokens": 12582405,
+    "output_tokens": 38667,
+    "api_call_count": 121
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T04:34:48.325552Z",
+    "agent_lines": 199,
+    "human_added": 1444,
+    "human_modified": 133,
+    "human_removed": 0,
+    "total_committed": 1776,
+    "agent_percentage": 11.204954954954955
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-porto-v1/464d1fc2-50ba-4402-bf12-5c2f5a7ec249.jsonl"
 }
