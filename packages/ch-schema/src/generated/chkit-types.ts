@@ -10,6 +10,8 @@ export interface RudelClaudeSessionsRow {
   organization_id: string
   project_path: string
   repository: string | null
+  git_remote: string
+  package_name: string
   content: string
   subagents: Record<string, string>
   ingested_at: string
@@ -26,6 +28,8 @@ export const RudelClaudeSessionsRowSchema = z.object({
   organization_id: z.string(),
   project_path: z.string(),
   repository: z.string().nullable(),
+  git_remote: z.string(),
+  package_name: z.string(),
   content: z.string(),
   subagents: z.record(z.string(), z.string()),
   ingested_at: z.string(),
@@ -45,6 +49,8 @@ export interface RudelSessionAnalyticsRow {
   organization_id: string
   project_path: string
   repository: string | null
+  git_remote: string
+  package_name: string
   content: string
   subagents: Record<string, string>
   skills: string[]
@@ -84,6 +90,8 @@ export const RudelSessionAnalyticsRowSchema = z.object({
   organization_id: z.string(),
   project_path: z.string(),
   repository: z.string().nullable(),
+  git_remote: z.string(),
+  package_name: z.string(),
   content: z.string(),
   subagents: z.record(z.string(), z.string()),
   skills: z.array(z.string()),

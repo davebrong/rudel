@@ -225,6 +225,8 @@ async function runSingleUpload(
 		sessionId: sessionInfo.sessionId,
 		projectPath: sessionInfo.projectPath,
 		repository: gitInfo.repository,
+		gitRemote: gitInfo.gitRemote,
+		packageName: gitInfo.packageName,
 		gitBranch: gitInfo.branch,
 		gitSha: gitInfo.sha,
 		tag,

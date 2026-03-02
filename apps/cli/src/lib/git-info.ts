@@ -3,36 +3,74 @@ import { $ } from "bun";
 
 export interface GitInfo {
 	repository?: string;
+	gitRemote?: string;
+	packageName?: string;
 	branch?: string;
 	sha?: string;
+}
+
+/**
+ * Normalize a git remote URL to a canonical form: "github.com/owner/repo"
+ */
+export function normalizeRemoteUrl(url: string): string {
+	return url
+		.replace(/^(https?:\/\/|git@|ssh:\/\/)/, "")
+		.replace(/:/, "/")
+		.replace(/\.git$/, "");
 }
 
 /**
  * Extract git metadata for a given project directory.
  */
 export async function getGitInfo(cwd: string): Promise<GitInfo> {
-	const [repository, branch, sha] = await Promise.all([
-		getRepositoryName(cwd),
+	const [remoteUrl, branch, sha, packageName] = await Promise.all([
+		getGitRemoteUrl(cwd),
 		getGitBranch(cwd),
 		getGitSha(cwd),
+		getPackageName(cwd),
 	]);
 
+	const gitRemote = remoteUrl ? normalizeRemoteUrl(remoteUrl) : undefined;
+	const repository = getRepositoryName(gitRemote, packageName, cwd);
+
 	return {
-		repository: repository ?? undefined,
+		repository,
+		gitRemote,
+		packageName: packageName ?? undefined,
 		branch: branch ?? undefined,
 		sha: sha ?? undefined,
 	};
 }
 
-async function getRepositoryName(cwd: string): Promise<string | null> {
+/**
+ * Extract a display name for the repository.
+ * Prefers owner/repo from git remote, falls back to package name, then dir name.
+ */
+function getRepositoryName(
+	gitRemote: string | undefined,
+	packageName: string | null,
+	cwd: string,
+): string | undefined {
+	if (gitRemote) {
+		// "github.com/owner/repo" → "owner/repo"
+		const parts = gitRemote.split("/");
+		if (parts.length >= 3) {
+			return parts.slice(1).join("/");
+		}
+		return gitRemote;
+	}
+	if (packageName) return packageName;
+	const dirName = cwd.split("/").pop();
+	return dirName ?? undefined;
+}
+
+async function getPackageName(cwd: string): Promise<string | null> {
 	try {
 		const gitRootResult =
 			await $`git -C ${cwd} rev-parse --show-toplevel`.quiet();
-		if (gitRootResult.exitCode !== 0) return null;
+		const gitRoot =
+			gitRootResult.exitCode === 0 ? gitRootResult.text().trim() : cwd;
 
-		const gitRoot = gitRootResult.text().trim();
-
-		// Try package.json name first
 		const packageJsonPath = join(gitRoot, "package.json");
 		const packageFile = Bun.file(packageJsonPath);
 		if (await packageFile.exists()) {
@@ -40,22 +78,10 @@ async function getRepositoryName(cwd: string): Promise<string | null> {
 				const packageJson = await packageFile.json();
 				if (packageJson.name) return packageJson.name;
 			} catch {
-				// Invalid JSON, continue to git remote
+				// Invalid JSON
 			}
 		}
-
-		// Fall back to git remote origin URL
-		const remoteResult =
-			await $`git -C ${gitRoot} remote get-url origin`.quiet();
-		if (remoteResult.exitCode === 0) {
-			const remoteUrl = remoteResult.text().trim();
-			const match = remoteUrl.match(/[/:]([^/]+?)(?:\.git)?$/);
-			if (match?.[1]) return match[1];
-		}
-
-		// Fall back to directory name
-		const dirName = gitRoot.split("/").pop();
-		return dirName ?? null;
+		return null;
 	} catch {
 		return null;
 	}

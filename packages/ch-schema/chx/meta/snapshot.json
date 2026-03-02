@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"generatedAt": "2026-03-01T14:59:16.239Z",
+	"generatedAt": "2026-03-02T05:18:14.696Z",
 	"definitions": [
 		{
 			"database": "rudel",
@@ -33,6 +33,16 @@
 					"name": "repository",
 					"type": "String",
 					"nullable": true
+				},
+				{
+					"name": "git_remote",
+					"type": "String",
+					"default": "''"
+				},
+				{
+					"name": "package_name",
+					"type": "String",
+					"default": "''"
 				},
 				{
 					"name": "content",
@@ -109,6 +119,16 @@
 					"name": "repository",
 					"type": "String",
 					"nullable": true
+				},
+				{
+					"name": "git_remote",
+					"type": "String",
+					"default": "''"
+				},
+				{
+					"name": "package_name",
+					"type": "String",
+					"default": "''"
 				},
 				{
 					"name": "content",
@@ -266,6 +286,12 @@
 				"index_granularity": "8192"
 			},
 			"indexes": [
+				{
+					"name": "idx_git_remote",
+					"expression": "git_remote",
+					"type": "set",
+					"granularity": 4
+				},
 				{
 					"name": "idx_model_used",
 					"expression": "model_used",

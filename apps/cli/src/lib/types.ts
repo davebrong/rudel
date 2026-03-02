@@ -26,6 +26,8 @@ export interface IngestRequest {
 	sessionId: string;
 	projectPath: string;
 	repository?: string;
+	gitRemote?: string;
+	packageName?: string;
 	gitBranch?: string;
 	gitSha?: string;
 	tag?: SessionTag;

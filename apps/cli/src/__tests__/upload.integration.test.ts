@@ -249,7 +249,8 @@ describe("git info", () => {
 	test("returns empty info for non-git directory", async () => {
 		const info = await getGitInfo(tempDir);
 
-		expect(info.repository).toBeUndefined();
+		// repository falls back to directory name for non-git dirs
+		expect(info.gitRemote).toBeUndefined();
 		expect(info.branch).toBeUndefined();
 		expect(info.sha).toBeUndefined();
 	});

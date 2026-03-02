@@ -90,6 +90,8 @@ export const IngestSessionInputSchema = z.object({
 	sessionId: z.string(),
 	projectPath: z.string(),
 	repository: z.string().optional(),
+	gitRemote: z.string().optional(),
+	packageName: z.string().optional(),
 	gitBranch: z.string().optional(),
 	gitSha: z.string().optional(),
 	tag: SessionTagSchema.optional(),
