@@ -3,10 +3,8 @@ import { type AgentAdapter, getAvailableAdapters } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
 import { createApiClient } from "../lib/api-client.js";
 import { verifyAuth } from "../lib/auth.js";
-import {
-	recordFailedUpload,
-	removeFailedUpload,
-} from "../lib/failed-uploads.js";
+import type { BatchUploadItem } from "../lib/batch-upload.js";
+import { renderBatchSummary, runBatchUpload } from "../lib/batch-upload-ui.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId, setProjectOrgId } from "../lib/project-config.js";
 import { uploadSession } from "../lib/uploader.js";
@@ -138,86 +136,38 @@ async function runEnable(): Promise<void> {
 		if (p.isCancel(shouldUpload) || !shouldUpload) continue;
 
 		const gitInfo = await getGitInfo(cwd);
-		let succeeded = 0;
-		let failed = 0;
-		const errors: Array<{ sessionId: string; error: string }> = [];
 
-		await p.tasks(
-			sessions.map((session, i) => ({
-				title: `[${i + 1}/${sessions.length}] ${session.sessionId}`,
-				task: async (message: (msg: string) => void) => {
-					const prefix = `[${i + 1}/${sessions.length}]`;
-					try {
-						message("Building upload request...");
-						const request = await adapter.buildUploadRequest(session, {
-							gitInfo,
-							organizationId: selectedOrgId,
-						});
+		const items: BatchUploadItem[] = sessions.map((session) => ({
+			sessionId: session.sessionId,
+			label: session.sessionId,
+			transcriptPath: session.transcriptPath,
+			projectPath: session.projectPath,
+			source: adapter.source,
+			organizationId: selectedOrgId,
+		}));
 
-						message("Uploading...");
-						const result = await uploadSession(request, {
-							endpoint,
-							token: credentials.token,
-							onRetry: (attempt, maxAttempts, error) => {
-								message(
-									`${prefix} Retrying (${attempt}/${maxAttempts}) after ${error}...`,
-								);
-							},
-						});
+		const summary = await runBatchUpload({
+			items,
+			label: `Uploading ${adapter.name} sessions...`,
+			upload: async (item, onRetry) => {
+				const session = sessions.find((s) => s.sessionId === item.sessionId);
+				if (!session) {
+					return { success: false, error: "Session not found" };
+				}
+				const request = await adapter.buildUploadRequest(session, {
+					gitInfo,
+					organizationId: selectedOrgId,
+				});
+				return uploadSession(request, {
+					endpoint,
+					token: credentials.token,
+					onRetry,
+				});
+			},
+		});
 
-						if (result.success) {
-							succeeded++;
-							await removeFailedUpload(session.sessionId);
-							const retryNote =
-								result.attempts && result.attempts > 1
-									? ` (after ${result.attempts} attempts)`
-									: "";
-							return `Uploaded${retryNote}`;
-						}
-						failed++;
-						const uploadError = result.error ?? "Unknown error";
-						errors.push({ sessionId: session.sessionId, error: uploadError });
-						await recordFailedUpload({
-							sessionId: session.sessionId,
-							transcriptPath: session.transcriptPath,
-							projectPath: session.projectPath,
-							source: adapter.source,
-							organizationId: selectedOrgId,
-							error: uploadError,
-						});
-						return `Failed: ${result.error}`;
-					} catch (error) {
-						failed++;
-						const errorMessage =
-							error instanceof Error ? error.message : String(error);
-						errors.push({ sessionId: session.sessionId, error: errorMessage });
-						await recordFailedUpload({
-							sessionId: session.sessionId,
-							transcriptPath: session.transcriptPath,
-							projectPath: session.projectPath,
-							source: adapter.source,
-							organizationId: selectedOrgId,
-							error: errorMessage,
-						});
-						return `Error: ${errorMessage}`;
-					}
-				},
-			})),
-		);
-
-		if (succeeded > 0) {
-			p.log.success(`${succeeded} ${adapter.name} session(s) uploaded`);
-		}
-		if (failed > 0) {
-			p.log.error(`${failed} ${adapter.name} session(s) failed`);
-			for (const err of errors.slice(0, 5)) {
-				p.log.warn(`  ${err.sessionId}: ${err.error}`);
-			}
-			if (errors.length > 5) {
-				p.log.warn(`  ...and ${errors.length - 5} more`);
-			}
-		}
-		totalFailed += failed;
+		renderBatchSummary(summary, { context: adapter.name });
+		totalFailed += summary.failed;
 	}
 
 	if (totalFailed > 0) {

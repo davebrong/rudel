@@ -42,7 +42,8 @@
 		"@orpc/client": "^1.13.5",
 		"@orpc/contract": "^1.13.5",
 		"@rudel/agent-adapters": "workspace:*",
-		"@stricli/core": "^1.2.5"
+		"@stricli/core": "^1.2.5",
+		"p-map": "^7.0.4"
 	},
 	"devDependencies": {
 		"@rudel/api-routes": "workspace:*",
