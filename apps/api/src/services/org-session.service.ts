@@ -30,59 +30,45 @@ export async function migrateOrgSessions(
 ): Promise<void> {
 	const ch = getClickhouse();
 	const from = escapeString(fromOrgId);
+	const to = escapeString(toOrgId);
+	const tempTable = "rudel._migrate_sessions";
 
-	// Can't use ALTER TABLE UPDATE: organization_id is an ORDER BY key column
-	// and ingested_at is the ReplacingMergeTree version column.
-	// Can't use INSERT INTO ... SELECT FROM same table (ClickHouse Cloud writes 0 rows).
-	// So: fetch rows, update org_id in memory, re-insert, then delete originals.
-
-	console.log(
-		`[migrateOrgSessions] fetching claude_sessions for org=${fromOrgId}`,
-	);
-	const sessions = await ch.query<Record<string, unknown>>(
-		`SELECT * FROM rudel.claude_sessions FINAL WHERE organization_id = '${from}'`,
-	);
-	if (sessions.length > 0) {
+	try {
+		// Create temp table with modified org_id in one shot
 		console.log(
-			`[migrateOrgSessions] inserting ${sessions.length} claude_sessions into org=${toOrgId}`,
+			`[migrateOrgSessions] creating temp table for org=${fromOrgId} -> ${toOrgId}`,
 		);
-		await ch.insert({
-			table: "rudel.claude_sessions",
-			values: sessions.map((row) => ({
-				...row,
-				organization_id: toOrgId,
-			})),
-		});
+		await ch.execute(`
+			CREATE TABLE ${tempTable} ENGINE = MergeTree()
+			ORDER BY (organization_id, session_date, session_id)
+			AS SELECT
+				session_date, last_interaction_date, session_id,
+				'${to}' AS organization_id,
+				project_path, repository, content, subagents,
+				now64(3) AS ingested_at,
+				user_id, git_branch, git_sha, tag
+			FROM rudel.claude_sessions
+			WHERE organization_id = '${from}'
+		`);
+
+		// Re-insert from temp table (triggers MV -> session_analytics)
+		console.log(
+			`[migrateOrgSessions] re-inserting from temp table into claude_sessions`,
+		);
+		await ch.execute(`
+			INSERT INTO rudel.claude_sessions
+				(session_date, last_interaction_date, session_id, organization_id,
+				 project_path, repository, content, subagents, ingested_at,
+				 user_id, git_branch, git_sha, tag)
+			SELECT * FROM ${tempTable}
+			SETTINGS async_insert=0
+		`);
+	} finally {
+		await ch.execute(`DROP TABLE IF EXISTS ${tempTable}`);
 	}
 
-	console.log(
-		`[migrateOrgSessions] fetching session_analytics for org=${fromOrgId}`,
-	);
-	const analytics = await ch.query<Record<string, unknown>>(
-		`SELECT * FROM rudel.session_analytics FINAL WHERE organization_id = '${from}'`,
-	);
-	if (analytics.length > 0) {
-		console.log(
-			`[migrateOrgSessions] inserting ${analytics.length} session_analytics into org=${toOrgId}`,
-		);
-		await ch.insert({
-			table: "rudel.session_analytics",
-			values: analytics.map((row) => ({
-				...row,
-				organization_id: toOrgId,
-			})),
-		});
-	}
-
+	// Delete old rows from both tables
 	console.log(`[migrateOrgSessions] deleting old rows for org=${fromOrgId}`);
-	await ch.execute(
-		`DELETE FROM rudel.claude_sessions WHERE organization_id = '${from}'`,
-	);
-	await ch.execute(
-		`DELETE FROM rudel.session_analytics WHERE organization_id = '${from}'`,
-	);
-
-	console.log(
-		`[migrateOrgSessions] done: migrated ${sessions.length} sessions, ${analytics.length} analytics rows`,
-	);
+	await deleteOrgSessions(fromOrgId);
+	console.log(`[migrateOrgSessions] done`);
 }
