@@ -1,4 +1,5 @@
 import {
+	AlertTriangle,
 	Building2,
 	Check,
 	Copy,
@@ -10,9 +11,10 @@ import {
 	X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
+import { DeleteOrganizationDialog } from "../../components/DeleteOrganizationDialog";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -45,7 +47,8 @@ interface FullOrg {
 }
 
 export function OrganizationPage() {
-	const { activeOrg } = useOrganization();
+	const { activeOrg, organizations, switchOrg } = useOrganization();
+	const navigate = useNavigate();
 	const [fullOrg, setFullOrg] = useState<FullOrg | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [inviteEmail, setInviteEmail] = useState("");
@@ -53,6 +56,7 @@ export function OrganizationPage() {
 	const [inviting, setInviting] = useState(false);
 	const [inviteLink, setInviteLink] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const fetchOrg = async () => {
 		if (!activeOrg) return;
@@ -297,6 +301,48 @@ export function OrganizationPage() {
 						</div>
 					</AnalyticsCard>
 				)}
+
+				{/* Danger Zone */}
+				<AnalyticsCard className="border-red-500/30">
+					<h2 className="text-lg font-semibold text-red-500 mb-2">
+						<AlertTriangle className="h-5 w-5 inline-block mr-2 -mt-0.5" />
+						Danger Zone
+					</h2>
+					<p className="text-sm text-muted mb-4">
+						Permanently delete this organization and all associated data.
+					</p>
+					{organizations.length <= 1 ? (
+						<Button variant="destructive" size="sm" disabled>
+							Cannot delete your only organization
+						</Button>
+					) : (
+						<Button
+							variant="destructive"
+							size="sm"
+							onClick={() => setDeleteDialogOpen(true)}
+						>
+							<Trash2 className="h-4 w-4 mr-1" />
+							Delete Organization
+						</Button>
+					)}
+				</AnalyticsCard>
+
+				<DeleteOrganizationDialog
+					open={deleteDialogOpen}
+					onOpenChange={setDeleteDialogOpen}
+					organization={activeOrg}
+					otherOrganizations={organizations.filter(
+						(o) => o.id !== activeOrg.id,
+					)}
+					onDeleted={async () => {
+						setDeleteDialogOpen(false);
+						const other = organizations.find((o) => o.id !== activeOrg.id);
+						if (other) {
+							await switchOrg(other.id);
+						}
+						navigate("/dashboard");
+					}}
+				/>
 			</div>
 		</div>
 	);
