@@ -1,12 +1,15 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Building2, Check, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
+import { USER_INVITATIONS_KEY } from "../hooks/useUserInvitations";
 import { authClient } from "../lib/auth-client";
 
 export function AcceptInvitationPage() {
 	const { invitationId } = useParams<{ invitationId: string }>();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const { data: session, isPending: sessionLoading } = authClient.useSession();
 	const [status, setStatus] = useState<
 		"loading" | "accepting" | "accepted" | "error"
@@ -47,6 +50,7 @@ export function AcceptInvitationPage() {
 		}
 
 		setStatus("accepted");
+		queryClient.invalidateQueries({ queryKey: USER_INVITATIONS_KEY });
 		setTimeout(() => navigate("/dashboard"), 1500);
 	};
 

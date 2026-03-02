@@ -10,6 +10,7 @@ import { CreateOrgPage } from "./pages/dashboard/CreateOrgPage";
 import { DeveloperDetailPage } from "./pages/dashboard/DeveloperDetailPage";
 import { DevelopersListPage } from "./pages/dashboard/DevelopersListPage";
 import { ErrorsPage } from "./pages/dashboard/ErrorsPage";
+import { InvitationsPage } from "./pages/dashboard/InvitationsPage";
 import { LearningsPage } from "./pages/dashboard/LearningsPage";
 import { OrganizationPage } from "./pages/dashboard/OrganizationPage";
 import { OverviewPage } from "./pages/dashboard/OverviewPage";
@@ -116,6 +117,7 @@ function App() {
 				<Route path="errors" element={<ErrorsPage />} />
 				<Route path="learnings" element={<LearningsPage />} />
 				<Route path="profile" element={<ProfilePage />} />
+				<Route path="invitations" element={<InvitationsPage />} />
 				<Route path="organization" element={<OrganizationPage />} />
 				<Route path="organization/new" element={<CreateOrgPage />} />
 			</Route>

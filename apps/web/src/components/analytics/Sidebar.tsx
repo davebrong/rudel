@@ -11,6 +11,7 @@ import {
 	FolderKanban,
 	LayoutDashboard,
 	LogOut,
+	Mail,
 	Plus,
 	Settings,
 	UserCircle,
@@ -19,6 +20,7 @@ import { useTheme } from "next-themes";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useOrganization } from "../../contexts/OrganizationContext";
+import { useUserInvitations } from "../../hooks/useUserInvitations";
 import { authClient, signOut } from "../../lib/auth-client";
 import { cn } from "../../lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -127,6 +129,7 @@ export function Sidebar() {
 	const { data: session } = authClient.useSession();
 	const [collapsed, setCollapsed] = useState(false);
 	const { resolvedTheme } = useTheme();
+	const { count: invitationCount } = useUserInvitations();
 
 	const logoSrc =
 		resolvedTheme === "dark" ? "/logo-light.svg" : "/logo-dark.svg";
@@ -204,6 +207,49 @@ export function Sidebar() {
 							</div>
 						);
 					})}
+					{invitationCount > 0 &&
+						(() => {
+							const isActive = pathname === "/dashboard/invitations";
+							const link = (
+								<Link
+									to="/dashboard/invitations"
+									className={cn(
+										"relative flex items-center gap-2 rounded-lg px-2 py-2 text-[0.8125rem] font-medium transition-colors duration-150",
+										collapsed && "justify-center",
+										isActive
+											? "bg-hover text-heading"
+											: "text-muted hover:bg-hover hover:text-foreground",
+									)}
+								>
+									<span className="relative">
+										<Mail className="h-4 w-4 shrink-0" />
+										<span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[0.5625rem] font-bold leading-none text-white">
+											{invitationCount}
+										</span>
+									</span>
+									{!collapsed && (
+										<span className="whitespace-nowrap overflow-hidden">
+											Invitations
+										</span>
+									)}
+								</Link>
+							);
+
+							return (
+								<div>
+									{collapsed ? (
+										<Tooltip>
+											<TooltipTrigger asChild>{link}</TooltipTrigger>
+											<TooltipContent side="right">
+												Invitations ({invitationCount})
+											</TooltipContent>
+										</Tooltip>
+									) : (
+										link
+									)}
+								</div>
+							);
+						})()}
 				</nav>
 
 				{session?.user && (
