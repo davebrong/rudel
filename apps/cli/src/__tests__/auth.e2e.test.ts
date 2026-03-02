@@ -50,7 +50,7 @@ describe("auth e2e", () => {
 			[
 				"bash",
 				"-c",
-				`bun "${cliPath}" login --api-base="${server.baseUrl}" --web-url=http://localhost:9999 2>&1 | tee "${stdoutLogPath}"`,
+				`bun "${cliPath}" login --api-base="${server.baseUrl}" --web-url=http://localhost:9999 --no-browser 2>&1 | tee "${stdoutLogPath}"`,
 			],
 			{
 				env: {

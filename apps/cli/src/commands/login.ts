@@ -10,6 +10,7 @@ const CALLBACK_TIMEOUT_MS = 120_000;
 async function runLogin(flags: {
 	apiBase: string;
 	webUrl: string;
+	noBrowser: boolean;
 }): Promise<void> {
 	p.intro("rudel login");
 
@@ -71,14 +72,16 @@ async function runLogin(flags: {
 	p.log.info(`If the browser doesn't open, visit:\n${loginUrl}`);
 
 	// Open browser
-	if (process.platform === "win32") {
-		Bun.spawn(["cmd", "/c", "start", "", loginUrl], {
-			stdout: "ignore",
-			stderr: "ignore",
-		});
-	} else {
-		const opener = process.platform === "darwin" ? "open" : "xdg-open";
-		Bun.spawn([opener, loginUrl], { stdout: "ignore", stderr: "ignore" });
+	if (!flags.noBrowser) {
+		if (process.platform === "win32") {
+			Bun.spawn(["cmd", "/c", "start", "", loginUrl], {
+				stdout: "ignore",
+				stderr: "ignore",
+			});
+		} else {
+			const opener = process.platform === "darwin" ? "open" : "xdg-open";
+			Bun.spawn([opener, loginUrl], { stdout: "ignore", stderr: "ignore" });
+		}
 	}
 
 	// Wait for callback with timeout
@@ -147,6 +150,11 @@ export const loginCommand = buildCommand({
 				parse: String,
 				brief: "Web app URL for authentication",
 				default: DEFAULT_WEB_URL,
+			},
+			noBrowser: {
+				kind: "boolean",
+				brief: "Skip opening the browser automatically",
+				default: false,
 			},
 		},
 	},
