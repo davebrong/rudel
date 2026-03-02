@@ -36,6 +36,7 @@
 		"test": "bun test"
 	},
 	"dependencies": {
+		"@clack/prompts": "^1.0.1",
 		"@orpc/client": "^1.13.5",
 		"@orpc/contract": "^1.13.5",
 		"@stricli/core": "^1.2.5"
