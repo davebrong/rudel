@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "3fbc5eeaf33d",
+  "session_id": "5ee1e1f8-0947-4724-b860-b35c691d0dae",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T01:33:50.109117Z",
+  "branch": "marc/delete-domain-skill",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".claude/skills/search-domain-validator/SKILL.md",
+    ".claude/skills/search-domain-validator/plugin.json",
+    ".claude/skills/testing-bun/SKILL.md",
+    ".claude/skills/testing-vitest/SKILL.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 131,
+    "cache_creation_tokens": 77650,
+    "cache_read_tokens": 665846,
+    "output_tokens": 4464,
+    "api_call_count": 16
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T01:33:49.974873Z",
+    "agent_lines": 122,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 122,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-sun-valley/5ee1e1f8-0947-4724-b860-b35c691d0dae.jsonl"
+}
