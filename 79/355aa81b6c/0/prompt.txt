@@ -1,0 +1,25 @@
+I just tried ot delete an organization but got an internal server error, but the logs dont really indiate good logging. can you add some extra logging.
+
+---
+
+[deleteOrganization] migrating sessions from REDACTED to REDACTED
+[migrateOrgSessions] migrating claude_sessions from REDACTED to REDACTED
+[deleteOrganization] failed for REDACTED: 33 |     const inputIsError = input instanceof Error;
+34 |     const message = inputIsError ? input.message : input;
+35 |     const match = message.match(errorRe);
+36 |     const groups = match?.groups;
+37 |     if (groups) {
+38 |         return new ClickHouseError(groups);
+                    ^
+error: Cannot UPDATE key column `ingested_at`. 
+ type: "CANNOT_UPDATE_COLUMN",
+ code: "420"
+
+      at parseError (/Users/marc/Workspace/rudel/node_modules/.bun/@clickhouse+client-common@1.17.0/node_modules/@clickhouse/client-common/dist/error/error.js:38:16)
+      at request (/Users/marc/Workspace/rudel/node_modules/.bun/@clickhouse+client-web@1.17.0/node_modules/@clickhouse/client-web/dist/connection/web_connection.js:165:59)
+      at async runExec (/Users/marc/Workspace/rudel/node_modules/.bun/@clickhouse+client-web@1.17.0/node_modules/@clickhouse/client-web/dist/connection/web_connection.js:194:37)
+      at async command (/Users/marc/Workspace/rudel/node_modules/.bun/@clickhouse+client-web@1.17.0/node_modules/@clickhouse/client-web/dist/connection/web_connection.js:63:85)
+      at async command (/Users/marc/Workspace/rudel/node_modules/.bun/@clickhouse+client-common@1.17.0/node_modules/@clickhouse/client-common/dist/client.js:121:38)
+      at async execute (/Users/marc/Workspace/rudel/apps/api/src/clickhouse.ts:26:17)
+      at async migrateOrgSessions (/Users/marc/Workspace/rudel/apps/api/src/services/org-session.service.ts:37:11)
+      at async <anonymous> (/Users/marc/Workspace/rudel/apps/api/src/router.ts:199:11)

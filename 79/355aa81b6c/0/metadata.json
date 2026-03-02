@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "79355aa81b6c",
+  "session_id": "e223e80a-3c75-4356-80f0-7bedaf1b6259",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T05:18:54.03698Z",
+  "branch": "improve-some-logging",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/router.ts",
+    "apps/api/src/services/org-session.service.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "3a62e338-1396-47a0-ad6c-3d9e62313c90",
+  "token_usage": {
+    "input_tokens": 15,
+    "cache_creation_tokens": 65828,
+    "cache_read_tokens": 538702,
+    "output_tokens": 8536,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T05:18:53.888555Z",
+    "agent_lines": 129,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 129,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/e223e80a-3c75-4356-80f0-7bedaf1b6259.jsonl"
+}
