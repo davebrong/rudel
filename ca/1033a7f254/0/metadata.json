@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "ca1033a7f254",
+  "session_id": "7d6cc729-fd12-4e11-b536-574683d384bb",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T01:13:02.642376Z",
+  "branch": "marc/cli-upload-project-picker",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/router-auth.test.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "e3fa9b27-8908-4047-b02d-90433dbe8dae",
+  "token_usage": {
+    "input_tokens": 137,
+    "cache_creation_tokens": 363722,
+    "cache_read_tokens": 9239238,
+    "output_tokens": 29130,
+    "api_call_count": 99
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T01:13:02.3048Z",
+    "agent_lines": 1,
+    "human_added": 222,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 223,
+    "agent_percentage": 0.4484304932735426
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-medan/7d6cc729-fd12-4e11-b536-574683d384bb.jsonl"
+}
