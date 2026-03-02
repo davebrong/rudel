@@ -149,9 +149,14 @@ export function SessionsListPage() {
 				accessorKey: "project_path",
 				header: "Project",
 				cell: ({ row }) => (
-					<div className="max-w-xs truncate" title={row.original.project_path}>
-						{row.original.project_path.split("/").pop() ||
-							row.original.project_path}
+					<div
+						className="max-w-xs truncate"
+						title={row.original.git_remote || row.original.project_path}
+					>
+						{row.original.git_remote
+							? row.original.git_remote.split("/").pop()
+							: row.original.project_path.split("/").pop() ||
+								row.original.project_path}
 					</div>
 				),
 			},

@@ -31,11 +31,13 @@ const columns: ColumnDef<ProjectInvestment>[] = [
 	{
 		accessorKey: "project_path",
 		header: "Project",
-		cell: ({ row }) => (
-			<span className="font-medium text-foreground">
-				{row.original.project_path.split("/").pop()}
-			</span>
-		),
+		cell: ({ row }) => {
+			const remote = row.original.git_remote;
+			const name = remote
+				? remote.split("/").pop()
+				: row.original.project_path.split("/").pop();
+			return <span className="font-medium text-foreground">{name}</span>;
+		},
 	},
 	{
 		accessorKey: "sessions",

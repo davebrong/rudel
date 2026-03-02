@@ -19,6 +19,8 @@ const rudel_claude_sessions = table({
 		{ name: "organization_id", type: "String" },
 		{ name: "project_path", type: "String" },
 		{ name: "repository", type: "String", nullable: true },
+		{ name: "git_remote", type: "String", default: "''" },
+		{ name: "package_name", type: "String", default: "''" },
 		{ name: "content", type: "String" },
 		{ name: "subagents", type: "Map(String, String)", default: "fn:map()" },
 		{

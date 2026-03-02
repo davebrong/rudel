@@ -17,6 +17,7 @@ export interface SessionAnalyticsRaw {
 	project_path: string;
 	organization_id: string;
 	repository: string;
+	git_remote: string;
 
 	// Interaction timing metrics
 	total_interactions: number;
@@ -103,7 +104,8 @@ export async function getSessionAnalytics(
 		filters += ` AND project_path = '${escapeString(project_path)}'`;
 	}
 	if (repository) {
-		filters += ` AND repository = '${escapeString(repository)}'`;
+		const escapedRepo = escapeString(repository);
+		filters += ` AND (repository = '${escapedRepo}' OR git_remote = '${escapedRepo}')`;
 	}
 
 	const sortColumn =
@@ -122,6 +124,7 @@ export async function getSessionAnalytics(
       project_path,
       organization_id,
       repository,
+      git_remote,
       total_interactions,
       avg_period_sec,
       median_period_sec,
@@ -162,6 +165,7 @@ export async function getSessionAnalytics(
 			session_date: row.session_date,
 			project_path: row.project_path,
 			repository: row.repository || null,
+			git_remote: row.git_remote || undefined,
 			duration_min: row.actual_duration_min,
 			total_tokens: row.total_tokens,
 			input_tokens: row.input_tokens,
@@ -491,6 +495,7 @@ export async function getSessionDimensionAnalysis(
 
 	// Map dimension to SQL expression (for computed dimensions)
 	const dimensionExpressions: Record<string, string> = {
+		repository: "if(git_remote != '', git_remote, repository)",
 		used_skills: "if(length(skills) > 0, 1, 0)",
 		used_slash_commands: "if(length(slash_commands) > 0, 1, 0)",
 		used_subagents: "if(length(subagent_types) > 0, 1, 0)",

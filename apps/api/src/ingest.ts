@@ -70,6 +70,8 @@ export function buildSessionRow(
 		organization_id: context.organizationId,
 		project_path: input.projectPath,
 		repository: input.repository ?? null,
+		git_remote: input.gitRemote ?? "",
+		package_name: input.packageName ?? "",
 		content: input.content,
 		subagents,
 		ingested_at: now,

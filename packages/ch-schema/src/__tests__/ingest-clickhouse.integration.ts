@@ -91,6 +91,8 @@ describe("ingestRudelClaudeSessions", () => {
 		organization_id: "org_test",
 		project_path: "/test/project",
 		repository: null,
+		git_remote: "",
+		package_name: "",
 		content: "test session content",
 		subagents: {},
 		ingested_at: now,

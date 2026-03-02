@@ -184,6 +184,7 @@ export const DeveloperSessionsInputSchema = DaysInputSchema.extend({
 
 export const ProjectInvestmentSchema = z.object({
 	repository: z.string().nullable(),
+	git_remote: z.string().optional(),
 	project_path: z.string(),
 	sessions: z.number(),
 	unique_users: z.number(),
@@ -253,6 +254,7 @@ export const SessionAnalyticsSchema = z.object({
 	session_date: z.string(),
 	project_path: z.string(),
 	repository: z.string().nullable(),
+	git_remote: z.string().optional(),
 	duration_min: z.number(),
 	total_tokens: z.number(),
 	input_tokens: z.number(),

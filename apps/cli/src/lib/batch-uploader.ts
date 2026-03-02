@@ -58,6 +58,8 @@ export async function uploadOneSession(
 		sessionId,
 		projectPath,
 		repository: gitInfo.repository,
+		gitRemote: gitInfo.gitRemote,
+		packageName: gitInfo.packageName,
 		gitBranch: gitInfo.branch,
 		gitSha: gitInfo.sha,
 		tag,

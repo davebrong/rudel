@@ -1,6 +1,12 @@
 import { readdir } from "node:fs/promises";
 import { homedir } from "node:os";
-import { getGitRemoteUrl } from "./git-info.js";
+import { getGitRemoteUrl, normalizeRemoteUrl } from "./git-info.js";
+import {
+	cacheRemote,
+	cacheRemotes,
+	getCachedRemote,
+	getRemoteCache,
+} from "./remote-cache.js";
 import { decodeProjectPath, SESSIONS_BASE_DIR } from "./session-resolver.js";
 
 export interface ScannedProject {
@@ -91,13 +97,6 @@ export interface ProjectGroup {
 	containsCwd: boolean;
 }
 
-function normalizeRemoteUrl(url: string): string {
-	return url
-		.replace(/^(https?:\/\/|git@|ssh:\/\/)/, "")
-		.replace(/:/, "/")
-		.replace(/\.git$/, "");
-}
-
 function extractDisplayName(normalized: string): string {
 	// "github.com/owner/repo" → "owner/repo"
 	const parts = normalized.split("/");
@@ -111,6 +110,9 @@ export async function groupProjectsByRemote(
 	projects: ScannedProject[],
 	cwd: string,
 ): Promise<ProjectGroup[]> {
+	const cache = await getRemoteCache();
+	let cacheUpdated = false;
+
 	const remotes = await Promise.all(
 		projects.map((p) => getGitRemoteUrl(p.decodedPath)),
 	);
@@ -125,17 +127,32 @@ export async function groupProjectsByRemote(
 		const project = projects[i] as ScannedProject;
 		const remote = remotes[i];
 
-		if (!remote) {
-			ungrouped.push(project);
-			continue;
-		}
-
-		const normalized = normalizeRemoteUrl(remote);
-		const existing = grouped.get(normalized);
-		if (existing) {
-			existing.projects.push(project);
+		if (remote) {
+			const normalized = normalizeRemoteUrl(remote);
+			// Cache newly resolved remotes
+			if (getCachedRemote(cache, project.encodedDir) !== normalized) {
+				cacheRemote(cache, project.encodedDir, normalized);
+				cacheUpdated = true;
+			}
+			const existing = grouped.get(normalized);
+			if (existing) {
+				existing.projects.push(project);
+			} else {
+				grouped.set(normalized, { remote: normalized, projects: [project] });
+			}
 		} else {
-			grouped.set(normalized, { remote: normalized, projects: [project] });
+			// Try cache for ungrouped projects
+			const cached = getCachedRemote(cache, project.encodedDir);
+			if (cached) {
+				const existing = grouped.get(cached);
+				if (existing) {
+					existing.projects.push(project);
+				} else {
+					grouped.set(cached, { remote: cached, projects: [project] });
+				}
+			} else {
+				ungrouped.push(project);
+			}
 		}
 	}
 
@@ -195,6 +212,11 @@ export async function groupProjectsByRemote(
 		if (aHasRemote !== bHasRemote) return aHasRemote ? -1 : 1;
 		return a.displayName.localeCompare(b.displayName);
 	});
+
+	// Fire-and-forget cache write
+	if (cacheUpdated) {
+		cacheRemotes(cache);
+	}
 
 	return groups;
 }

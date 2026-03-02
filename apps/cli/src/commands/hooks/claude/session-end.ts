@@ -52,6 +52,8 @@ async function runSessionEnd(): Promise<void> {
 			sessionId: input.session_id,
 			projectPath: input.cwd,
 			repository: gitInfo.repository,
+			gitRemote: gitInfo.gitRemote,
+			packageName: gitInfo.packageName,
 			gitBranch: gitInfo.branch,
 			gitSha: gitInfo.sha,
 			content,
