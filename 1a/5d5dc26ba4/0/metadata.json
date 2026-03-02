@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1a5d5dc26ba4",
+  "session_id": "c18a2ca7-a22b-4a43-9f72-2e9e7eb9e6b2",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T04:31:19.913064Z",
+  "branch": "marc/session-grouping",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "apps/cli/src/__tests__/upload.integration.test.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "96157e03-6db1-4393-b40c-3fa0ebf18c67",
+  "token_usage": {
+    "input_tokens": 111,
+    "cache_creation_tokens": 122863,
+    "cache_read_tokens": 1313555,
+    "output_tokens": 6505,
+    "api_call_count": 27
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T04:31:19.607174Z",
+    "agent_lines": 0,
+    "human_added": 1138,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 1139,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-freetown-v1/c18a2ca7-a22b-4a43-9f72-2e9e7eb9e6b2.jsonl"
+}
