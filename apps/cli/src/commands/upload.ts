@@ -1,29 +1,22 @@
 import * as p from "@clack/prompts";
-import { buildCommand } from "@stricli/core";
-import { type BatchOptions, batchUpload } from "../lib/batch-uploader.js";
-import { classifySession } from "../lib/classifier.js";
 import {
-	type ScannedCodexProject,
-	scanCodexSessions,
-} from "../lib/codex-scanner.js";
-import { uploadOneCodexSession } from "../lib/codex-uploader.js";
+	claudeCodeAdapter,
+	getAdapter,
+	getAvailableAdapters,
+	groupProjectsForCwd,
+	type ScannedProject,
+	type SessionFile,
+} from "@rudel/agent-adapters";
+import { buildCommand } from "@stricli/core";
+import { classifySession } from "../lib/classifier.js";
 import { loadCredentials } from "../lib/credentials.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId } from "../lib/project-config.js";
-import {
-	groupProjectsByRemote,
-	type ProjectGroup,
-	scanProjects,
-} from "../lib/project-scanner.js";
 import { resolveSession } from "../lib/session-resolver.js";
-import { readSubagentFiles } from "../lib/subagent-reader.js";
-import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
 import {
 	DEFAULT_ENDPOINT,
-	type IngestRequest,
 	SESSION_TAGS,
 	type SessionTag,
-	type SubagentFile,
 } from "../lib/types.js";
 import { type UploadConfig, uploadSession } from "../lib/uploader.js";
 
@@ -34,10 +27,6 @@ interface UploadFlags {
 	dryRun: boolean;
 	org?: string;
 }
-
-type SelectionItem =
-	| { source: "claude"; group: ProjectGroup }
-	| { source: "codex"; codexProject: ScannedCodexProject };
 
 async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	const credentials = loadCredentials();
@@ -51,58 +40,57 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 
 	const spin = p.spinner();
 	spin.start("Scanning projects...");
-	const [claudeProjects, codexProjects] = await Promise.all([
-		scanProjects(),
-		scanCodexSessions(),
-	]);
-	const totalProjectCount = claudeProjects.length + codexProjects.length;
-	spin.stop(`Found ${totalProjectCount} project(s)`);
 
-	if (totalProjectCount === 0) {
+	const adapters = getAvailableAdapters();
+	const allProjects: ScannedProject[] = [];
+	for (const adapter of adapters) {
+		const projects = await adapter.scanAllSessions();
+		allProjects.push(...projects);
+	}
+
+	spin.stop(`Found ${allProjects.length} project(s)`);
+
+	if (allProjects.length === 0) {
 		p.log.warn("No projects with sessions found.");
 		p.outro("Nothing to upload.");
 		return;
 	}
 
 	const cwd = process.cwd();
-	spin.start("Grouping by git remote...");
-	const groups = await groupProjectsByRemote(claudeProjects, cwd);
-	spin.stop(`Found ${groups.length} group(s)`);
+	const grouped = groupProjectsForCwd(allProjects, cwd);
 
 	const options: Array<{
-		value: SelectionItem;
+		value: ScannedProject;
 		label: string;
 		hint: string;
 	}> = [];
-	const preSelected: SelectionItem[] = [];
+	const preSelected: ScannedProject[] = [];
 
-	for (const group of groups) {
-		const item: SelectionItem = { source: "claude", group };
-		const label =
-			group.projects.length > 1
-				? group.displayName
-				: (group.projects[0]?.displayPath ?? group.displayName);
-		const hint =
-			group.projects.length > 1
-				? `${sessionCountHint(group.totalSessions)}, ${group.projects.length} locations`
-				: sessionCountHint(group.totalSessions);
-		options.push({ value: item, label, hint });
-		if (group.containsCwd) {
-			preSelected.push(item);
-		}
+	for (const proj of grouped.current) {
+		options.push({
+			value: proj,
+			label: `[${getAdapterName(proj.source)}] ${proj.displayPath}`,
+			hint: sessionCountHint(proj.sessionCount),
+		});
+		preSelected.push(proj);
 	}
 
-	for (const codexProj of codexProjects) {
-		const item: SelectionItem = { source: "codex", codexProject: codexProj };
-		const isCurrent = codexProj.projectPath === cwd;
+	for (const sub of grouped.subfolders) {
+		const relative = sub.projectPath.slice(cwd.length + 1);
 		options.push({
-			value: item,
-			label: `[Codex] ${codexProj.displayPath}`,
-			hint: sessionCountHint(codexProj.sessionCount),
+			value: sub,
+			label: `  [${getAdapterName(sub.source)}] ${relative}`,
+			hint: sessionCountHint(sub.sessionCount),
 		});
-		if (isCurrent) {
-			preSelected.push(item);
-		}
+		preSelected.push(sub);
+	}
+
+	for (const other of grouped.others) {
+		options.push({
+			value: other,
+			label: `[${getAdapterName(other.source)}] ${other.displayPath}`,
+			hint: sessionCountHint(other.sessionCount),
+		});
 	}
 
 	const selected = await p.multiselect({
@@ -117,28 +105,12 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 		return;
 	}
 
-	const claudeGroups = selected.filter(
-		(s): s is Extract<SelectionItem, { source: "claude" }> =>
-			s.source === "claude",
-	);
-	const codexSelected = selected.filter(
-		(s): s is Extract<SelectionItem, { source: "codex" }> =>
-			s.source === "codex",
-	);
-
-	const claudeSelectedProjects = claudeGroups.flatMap((g) => g.group.projects);
-	const claudeSessionCount = claudeGroups.reduce(
-		(sum, g) => sum + g.group.totalSessions,
+	const totalSessions = selected.reduce(
+		(sum, proj) => sum + proj.sessionCount,
 		0,
 	);
-	const codexSessionCount = codexSelected.reduce(
-		(sum, s) => sum + s.codexProject.sessionCount,
-		0,
-	);
-	const totalSessions = claudeSessionCount + codexSessionCount;
-
 	p.log.info(
-		`Uploading ${totalSessions} session(s) from ${claudeSelectedProjects.length + codexSelected.length} project(s)`,
+		`Uploading ${totalSessions} session(s) from ${selected.length} project(s)`,
 	);
 
 	const uploadConfig: UploadConfig = {
@@ -151,61 +123,56 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 
 	let succeeded = 0;
 	let failed = 0;
+	let completed = 0;
 	const errors: Array<{ sessionId: string; project: string; error: string }> =
 		[];
-	let completed = 0;
 
-	// Upload Claude sessions
-	if (claudeSelectedProjects.length > 0) {
-		const batchOpts: BatchOptions = {
-			tag: flags.tag,
-			classify: flags.classify,
-			dryRun: flags.dryRun,
-			org: flags.org,
-			uploadConfig,
-		};
+	for (const project of selected) {
+		const adapter = getAdapter(project.source);
+		const gitInfo = await getGitInfo(project.projectPath);
+		const organizationId =
+			flags.org ?? (await getProjectOrgId(project.projectPath));
 
-		const claudeResult = await batchUpload(
-			claudeSelectedProjects,
-			batchOpts,
-			(current, _total) => {
-				uploadSpin.message(
-					`[${completed + current}/${totalSessions}] Uploading...`,
-				);
-			},
-		);
-		succeeded += claudeResult.succeeded;
-		failed += claudeResult.failed;
-		errors.push(...claudeResult.errors);
-		completed += claudeSessionCount;
-	}
-
-	// Upload Codex sessions
-	for (const codexItem of codexSelected) {
-		const codexProject = codexItem.codexProject;
-		for (const session of codexProject.sessions) {
+		for (const session of project.sessions) {
 			completed++;
 			uploadSpin.message(`[${completed}/${totalSessions}] Uploading...`);
 
-			const outcome = await uploadOneCodexSession(
-				session,
-				codexProject.projectPath,
-				{
+			try {
+				const request = await adapter.buildUploadRequest(session, {
 					tag: flags.tag,
-					dryRun: flags.dryRun,
-					org: flags.org,
-					uploadConfig,
-				},
-			);
+					gitInfo,
+					organizationId,
+				});
 
-			if (outcome.success) {
-				succeeded++;
-			} else {
+				if (!flags.tag && flags.classify) {
+					const classified = await classifySession(request.content);
+					if (classified) {
+						(request as { tag?: string }).tag = classified;
+					}
+				}
+
+				if (flags.dryRun) {
+					succeeded++;
+					continue;
+				}
+
+				const result = await uploadSession(request, uploadConfig);
+				if (result.success) {
+					succeeded++;
+				} else {
+					failed++;
+					errors.push({
+						sessionId: session.sessionId,
+						project: project.displayPath,
+						error: result.error ?? "Unknown error",
+					});
+				}
+			} catch (error) {
 				failed++;
 				errors.push({
-					sessionId: session.meta.id,
-					project: codexProject.displayPath,
-					error: outcome.error ?? "Unknown error",
+					sessionId: session.sessionId,
+					project: project.displayPath,
+					error: error instanceof Error ? error.message : String(error),
 				});
 			}
 		}
@@ -234,6 +201,14 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 
 	if (failed > 0) {
 		process.exitCode = 1;
+	}
+}
+
+function getAdapterName(source: string): string {
+	try {
+		return getAdapter(source).name;
+	} catch {
+		return source;
 	}
 }
 
@@ -272,61 +247,40 @@ async function runSingleUpload(
 	}
 	write(`Found session at: ${sessionInfo.transcriptPath}`);
 
-	write("Reading transcript...");
-	let content: string;
-	try {
-		content = await readTranscript(sessionInfo.transcriptPath);
-	} catch (error) {
-		writeError(
-			`Error reading transcript: ${error instanceof Error ? error.message : String(error)}`,
-		);
-		process.exitCode = 1;
-		return;
-	}
-	write(`Transcript: ${content.length} bytes`);
-
-	const agentIds = extractAgentIds(content);
-	let subagents: SubagentFile[] = [];
-	if (agentIds.length > 0) {
-		write(`Found ${agentIds.length} subagent(s): ${agentIds.join(", ")}`);
-		subagents = await readSubagentFiles(
-			sessionInfo.sessionDir,
-			agentIds,
-			sessionInfo.sessionId,
-		);
-		write(
-			`Read ${subagents.length} subagent file(s): ${subagents.reduce((sum, s) => sum + s.content.length, 0)} bytes total`,
-		);
-	}
-
 	const gitInfo = await getGitInfo(sessionInfo.projectPath);
 	if (gitInfo.repository) write(`Repository: ${gitInfo.repository}`);
 	if (gitInfo.branch) write(`Branch: ${gitInfo.branch}`);
-
-	let tag = flags.tag;
-	if (!tag && flags.classify) {
-		write("Classifying session...");
-		tag = (await classifySession(content)) ?? undefined;
-		if (tag) write(`Classified as: ${tag}`);
-	}
 
 	const organizationId =
 		flags.org ?? (await getProjectOrgId(sessionInfo.projectPath));
 	if (organizationId) write(`Organization: ${organizationId}`);
 
-	const request: IngestRequest = {
+	write("Building upload request...");
+	const sessionFile: SessionFile = {
 		sessionId: sessionInfo.sessionId,
+		transcriptPath: sessionInfo.transcriptPath,
 		projectPath: sessionInfo.projectPath,
-		repository: gitInfo.repository,
-		gitRemote: gitInfo.gitRemote,
-		packageName: gitInfo.packageName,
-		gitBranch: gitInfo.branch,
-		gitSha: gitInfo.sha,
-		tag,
-		content,
-		subagents: subagents.length > 0 ? subagents : undefined,
-		organizationId,
 	};
+
+	const request = await claudeCodeAdapter.buildUploadRequest(sessionFile, {
+		tag: flags.tag,
+		gitInfo,
+		organizationId,
+	});
+
+	write(`Transcript: ${request.content.length} bytes`);
+	if (request.subagents && request.subagents.length > 0) {
+		write(`Subagents: ${request.subagents.length} file(s)`);
+	}
+
+	if (!flags.tag && flags.classify) {
+		write("Classifying session...");
+		const classified = await classifySession(request.content);
+		if (classified) {
+			(request as { tag?: string }).tag = classified;
+			write(`Classified as: ${classified}`);
+		}
+	}
 
 	if (flags.dryRun) {
 		const preview = {

@@ -14,6 +14,7 @@
 		"@clickhouse/client-web": "^1.11.0",
 		"@logtape/logtape": "^2.0.4",
 		"@orpc/server": "latest",
+		"@rudel/agent-adapters": "workspace:*",
 		"@rudel/api-routes": "workspace:*",
 		"@rudel/ch-schema": "workspace:*",
 		"@rudel/sql-schema": "workspace:*",

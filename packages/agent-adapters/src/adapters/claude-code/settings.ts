@@ -26,7 +26,6 @@ interface ClaudeSettings {
 function findClaudeDir(): string {
 	let dir = resolve(process.cwd());
 
-	// Walk up looking for an existing .claude directory
 	while (dir !== dirname(dir)) {
 		const candidate = join(dir, ".claude");
 		if (existsSync(candidate)) {
@@ -35,7 +34,6 @@ function findClaudeDir(): string {
 		dir = dirname(dir);
 	}
 
-	// Fall back to git repo root
 	try {
 		const gitRoot = execSync("git rev-parse --show-toplevel", {
 			encoding: "utf-8",
@@ -43,7 +41,6 @@ function findClaudeDir(): string {
 		}).trim();
 		return join(gitRoot, ".claude");
 	} catch {
-		// Not in a git repo — fall back to cwd
 		return join(resolve(process.cwd()), ".claude");
 	}
 }

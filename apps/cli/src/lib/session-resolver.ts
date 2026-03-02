@@ -1,6 +1,7 @@
-import { readdir, stat } from "node:fs/promises";
+import { access, readdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join } from "node:path";
+import { decodeProjectPath } from "@rudel/agent-adapters";
 
 export const SESSIONS_BASE_DIR = join(homedir(), ".claude", "projects");
 
@@ -11,10 +12,6 @@ export interface SessionInfo {
 	sessionId: string;
 }
 
-/**
- * Resolve a session from either a session ID or a full file path.
- * Validates that the file is a main session (not a subagent file).
- */
 export async function resolveSession(input: string): Promise<SessionInfo> {
 	const isPath = input.includes("/") || input.endsWith(".jsonl");
 
@@ -28,8 +25,9 @@ async function resolveFromPath(filePath: string): Promise<SessionInfo> {
 	const filename = basename(filePath);
 	validateNotSubagent(filename);
 
-	const file = Bun.file(filePath);
-	if (!(await file.exists())) {
+	try {
+		await access(filePath);
+	} catch {
 		throw new Error(`Session file not found: ${filePath}`);
 	}
 
@@ -81,58 +79,4 @@ function validateNotSubagent(filename: string): void {
 			"This is a subagent file, not a main session. Please provide the main session ID or path.",
 		);
 	}
-}
-
-/**
- * Decode an encoded project directory name back to the actual filesystem path.
- * Handles directory names that contain dashes by checking if paths exist.
- *
- * Example: "-Users-marc-Workspace-claude-marketplace" -> "/Users/marc/Workspace/claude-marketplace"
- */
-export async function decodeProjectPath(encodedDir: string): Promise<string> {
-	const parts = encodedDir.replace(/^-/, "").split("-");
-
-	async function findPath(
-		partIndex: number,
-		currentPath: string,
-	): Promise<string | null> {
-		if (partIndex >= parts.length) {
-			try {
-				await stat(currentPath);
-				return currentPath;
-			} catch {
-				return null;
-			}
-		}
-
-		for (let endIndex = parts.length; endIndex > partIndex; endIndex--) {
-			const segment = parts.slice(partIndex, endIndex).join("-");
-			const testPath = currentPath
-				? `${currentPath}/${segment}`
-				: `/${segment}`;
-
-			try {
-				await stat(testPath);
-				if (endIndex === parts.length) {
-					return testPath;
-				}
-				const result = await findPath(endIndex, testPath);
-				if (result) {
-					return result;
-				}
-			} catch {
-				// Path doesn't exist, try shorter segment
-			}
-		}
-
-		return null;
-	}
-
-	const result = await findPath(0, "");
-	if (result) {
-		return result;
-	}
-
-	// Fallback: simple dash-to-slash replacement
-	return `/${parts.join("/")}`;
 }

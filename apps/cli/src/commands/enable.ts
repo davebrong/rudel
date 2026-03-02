@@ -1,21 +1,10 @@
-import { readFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import * as p from "@clack/prompts";
+import { type AgentAdapter, getAvailableAdapters } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
-import { getAllAgents } from "../lib/agents/index.js";
-import type { CodingAgent } from "../lib/agents/types.js";
 import { createApiClient } from "../lib/api-client.js";
 import { verifyAuth } from "../lib/auth.js";
-import {
-	type IngestCodexRequest,
-	uploadCodexSession,
-} from "../lib/codex-uploader.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId, setProjectOrgId } from "../lib/project-config.js";
-import { findSessionsForCwd } from "../lib/project-scanner.js";
-import { readSubagentFiles } from "../lib/subagent-reader.js";
-import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
-import type { IngestRequest } from "../lib/types.js";
 import { uploadSession } from "../lib/uploader.js";
 
 async function runEnable(): Promise<void> {
@@ -91,44 +80,40 @@ async function runEnable(): Promise<void> {
 	await setProjectOrgId(cwd, selectedOrgId);
 
 	// Detect available agents and install hooks
-	const agents = getAllAgents();
-	let agentsToEnable: CodingAgent[];
+	const adapters = getAvailableAdapters();
+	let adaptersToEnable: AgentAdapter[];
 
-	if (agents.length > 1) {
-		const agentOptions: Array<{
-			value: CodingAgent;
-			label: string;
-			hint?: string;
-		}> = agents.map((a) => ({
-			value: a as CodingAgent,
+	if (adapters.length > 1) {
+		const agentOptions = adapters.map((a) => ({
+			value: a,
 			label: a.name,
 			hint: a.isHookInstalled() ? "already enabled" : undefined,
 		}));
-		const selectedAgents = await p.multiselect({
+		const selectedAdapters = await p.multiselect({
 			message: "Select agents to enable auto-upload for",
 			options: agentOptions,
-			initialValues: agents as CodingAgent[],
+			initialValues: adapters,
 			required: true,
 		});
 
-		if (p.isCancel(selectedAgents)) {
+		if (p.isCancel(selectedAdapters)) {
 			p.cancel("Setup cancelled.");
 			return;
 		}
-		agentsToEnable = selectedAgents;
+		adaptersToEnable = selectedAdapters;
 	} else {
-		agentsToEnable = agents;
+		adaptersToEnable = adapters;
 	}
 
-	for (const agent of agentsToEnable) {
-		if (agent.isHookInstalled()) {
+	for (const adapter of adaptersToEnable) {
+		if (adapter.isHookInstalled()) {
 			p.log.info(
-				`${agent.name}: Auto-upload hook is already enabled. Organization updated.`,
+				`${adapter.name}: Auto-upload hook is already enabled. Organization updated.`,
 			);
 		} else {
-			agent.installHook();
+			adapter.installHook();
 			p.log.success(
-				`${agent.name}: Auto-upload hook enabled in ${agent.getHookSettingsPath()}`,
+				`${adapter.name}: Auto-upload hook enabled in ${adapter.getHookConfigPath()}`,
 			);
 		}
 	}
@@ -137,77 +122,30 @@ async function runEnable(): Promise<void> {
 	const endpoint = `${credentials.apiBaseUrl}/rpc`;
 	let totalFailed = 0;
 
-	for (const agent of agentsToEnable) {
-		const sessions = await agent.findProjectSessions(cwd);
+	for (const adapter of adaptersToEnable) {
+		const sessions = await adapter.findProjectSessions(cwd);
 		if (sessions.length === 0) continue;
 
 		const shouldUpload = await p.confirm({
-			message: `Found ${sessions.length} previous ${agent.name} session(s). Upload them now?`,
+			message: `Found ${sessions.length} previous ${adapter.name} session(s). Upload them now?`,
 			initialValue: false,
 		});
 
 		if (p.isCancel(shouldUpload) || !shouldUpload) continue;
 
-		const isCodex = agent.name === "OpenAI Codex";
+		const gitInfo = await getGitInfo(cwd);
 		let failed = 0;
 
 		await p.tasks(
 			sessions.map((session, i) => ({
 				title: `[${i + 1}/${sessions.length}] ${session.sessionId}`,
-				task: async (message) => {
-					message("Reading transcript...");
+				task: async (message: (msg: string) => void) => {
 					try {
-						if (isCodex) {
-							const content = await readFile(session.transcriptPath, "utf-8");
-							message("Resolving git info...");
-							const gitInfo = await getGitInfo(session.projectPath);
-
-							const request: IngestCodexRequest = {
-								sessionId: session.sessionId,
-								projectPath: session.projectPath,
-								repository: gitInfo.repository,
-								gitBranch: gitInfo.branch,
-								gitSha: gitInfo.sha,
-								content,
-								organizationId: selectedOrgId,
-							};
-
-							message("Uploading...");
-							const result = await uploadCodexSession(request, {
-								endpoint,
-								token: credentials.token,
-							});
-
-							if (result.success) return "Uploaded";
-							failed++;
-							return `Failed: ${result.error}`;
-						}
-
-						const content = await readTranscript(session.transcriptPath);
-						const agentIds = extractAgentIds(content);
-						const sessionDir = dirname(session.transcriptPath);
-						const subagents =
-							agentIds.length > 0
-								? await readSubagentFiles(
-										sessionDir,
-										agentIds,
-										session.sessionId,
-									)
-								: [];
-
-						message("Resolving git info...");
-						const gitInfo = await getGitInfo(session.projectPath);
-
-						const request: IngestRequest = {
-							sessionId: session.sessionId,
-							projectPath: session.projectPath,
-							repository: gitInfo.repository,
-							gitBranch: gitInfo.branch,
-							gitSha: gitInfo.sha,
-							content,
-							subagents: subagents.length > 0 ? subagents : undefined,
+						message("Building upload request...");
+						const request = await adapter.buildUploadRequest(session, {
+							gitInfo,
 							organizationId: selectedOrgId,
-						};
+						});
 
 						message("Uploading...");
 						const result = await uploadSession(request, {
@@ -227,7 +165,7 @@ async function runEnable(): Promise<void> {
 		);
 
 		if (failed > 0) {
-			p.log.error(`${failed} ${agent.name} session(s) failed`);
+			p.log.error(`${failed} ${adapter.name} session(s) failed`);
 			totalFailed += failed;
 		}
 	}

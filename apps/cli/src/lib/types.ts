@@ -17,25 +17,6 @@ export const SESSION_TAGS: readonly SessionTag[] = [
 	"other",
 ] as const;
 
-export interface SubagentFile {
-	agentId: string;
-	content: string;
-}
-
-export interface IngestRequest {
-	sessionId: string;
-	projectPath: string;
-	repository?: string;
-	gitRemote?: string;
-	packageName?: string;
-	gitBranch?: string;
-	gitSha?: string;
-	tag?: SessionTag;
-	content: string;
-	subagents?: SubagentFile[];
-	organizationId?: string;
-}
-
 export interface UploadResult {
 	success: boolean;
 	status?: number;

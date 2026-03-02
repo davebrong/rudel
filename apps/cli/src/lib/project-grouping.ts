@@ -1,6 +1,5 @@
-import { readdir } from "node:fs/promises";
 import { homedir } from "node:os";
-import type { SessionFile } from "./agents/types.js";
+import type { ScannedProject } from "@rudel/agent-adapters";
 import { getGitRemoteUrl, normalizeRemoteUrl } from "./git-info.js";
 import {
 	cacheRemote,
@@ -8,87 +7,6 @@ import {
 	getCachedRemote,
 	getRemoteCache,
 } from "./remote-cache.js";
-import { decodeProjectPath, SESSIONS_BASE_DIR } from "./session-resolver.js";
-
-export interface ScannedProject {
-	encodedDir: string;
-	decodedPath: string;
-	displayPath: string;
-	sessionDir: string;
-	sessionCount: number;
-	sessionIds: string[];
-}
-
-export interface GroupedProjects {
-	current?: ScannedProject;
-	subfolders: ScannedProject[];
-	others: ScannedProject[];
-}
-
-export async function scanProjects(): Promise<ScannedProject[]> {
-	let projectDirs: string[];
-	try {
-		projectDirs = await readdir(SESSIONS_BASE_DIR);
-	} catch {
-		return [];
-	}
-
-	const home = homedir();
-	const projects: ScannedProject[] = [];
-
-	for (const dir of projectDirs) {
-		const sessionDir = `${SESSIONS_BASE_DIR}/${dir}`;
-		let files: string[];
-		try {
-			files = await readdir(sessionDir);
-		} catch {
-			continue;
-		}
-
-		const sessionIds = files
-			.filter((f) => f.endsWith(".jsonl") && !f.startsWith("agent-"))
-			.map((f) => f.replace(/\.jsonl$/, ""));
-
-		if (sessionIds.length === 0) continue;
-
-		const decodedPath = await decodeProjectPath(dir);
-		const displayPath = decodedPath.startsWith(home)
-			? `~${decodedPath.slice(home.length)}`
-			: decodedPath;
-
-		projects.push({
-			encodedDir: dir,
-			decodedPath,
-			displayPath,
-			sessionDir,
-			sessionCount: sessionIds.length,
-			sessionIds,
-		});
-	}
-
-	return projects;
-}
-
-export function groupProjectsForCwd(
-	projects: ScannedProject[],
-	cwd: string,
-): GroupedProjects {
-	const current = projects.find((p) => p.decodedPath === cwd);
-	const subfolders = projects.filter(
-		(p) =>
-			p !== current &&
-			current !== undefined &&
-			p.decodedPath.startsWith(`${current.decodedPath}/`),
-	);
-	const others = projects.filter(
-		(p) => p !== current && !subfolders.includes(p),
-	);
-
-	subfolders.sort((a, b) => a.decodedPath.localeCompare(b.decodedPath));
-	others.sort((a, b) => a.displayPath.localeCompare(b.displayPath));
-
-	return { current, subfolders, others };
-}
 
 export interface ProjectGroup {
 	displayName: string;
@@ -107,6 +25,10 @@ function extractDisplayName(normalized: string): string {
 	return normalized;
 }
 
+function encodeProjectPath(projectPath: string): string {
+	return projectPath.replace(/\//g, "-");
+}
+
 export async function groupProjectsByRemote(
 	projects: ScannedProject[],
 	cwd: string,
@@ -115,7 +37,7 @@ export async function groupProjectsByRemote(
 	let cacheUpdated = false;
 
 	const remotes = await Promise.all(
-		projects.map((p) => getGitRemoteUrl(p.decodedPath)),
+		projects.map((p) => getGitRemoteUrl(p.projectPath)),
 	);
 
 	const grouped = new Map<
@@ -130,9 +52,10 @@ export async function groupProjectsByRemote(
 
 		if (remote) {
 			const normalized = normalizeRemoteUrl(remote);
+			const encodedDir = encodeProjectPath(project.projectPath);
 			// Cache newly resolved remotes
-			if (getCachedRemote(cache, project.encodedDir) !== normalized) {
-				cacheRemote(cache, project.encodedDir, normalized);
+			if (getCachedRemote(cache, encodedDir) !== normalized) {
+				cacheRemote(cache, encodedDir, normalized);
 				cacheUpdated = true;
 			}
 			const existing = grouped.get(normalized);
@@ -143,7 +66,8 @@ export async function groupProjectsByRemote(
 			}
 		} else {
 			// Try cache for ungrouped projects
-			const cached = getCachedRemote(cache, project.encodedDir);
+			const encodedDir = encodeProjectPath(project.projectPath);
+			const cached = getCachedRemote(cache, encodedDir);
 			if (cached) {
 				const existing = grouped.get(cached);
 				if (existing) {
@@ -161,7 +85,7 @@ export async function groupProjectsByRemote(
 
 	for (const [, entry] of grouped) {
 		const containsCwd = entry.projects.some(
-			(p) => cwd === p.decodedPath || cwd.startsWith(`${p.decodedPath}/`),
+			(p) => cwd === p.projectPath || cwd.startsWith(`${p.projectPath}/`),
 		);
 		groups.push({
 			displayName: extractDisplayName(entry.remote),
@@ -173,8 +97,6 @@ export async function groupProjectsByRemote(
 	}
 
 	// Second pass: match ungrouped projects to existing groups by path similarity.
-	// Deleted Conductor workspaces have no git remote, but share a path prefix
-	// (e.g. ~/conductor/workspaces/rudel/) with existing workspaces that do.
 	const homeSegments = homedir().split("/").length;
 	const remainingUngrouped: ScannedProject[] = [];
 
@@ -184,8 +106,8 @@ export async function groupProjectsByRemote(
 			match.projects.push(project);
 			match.totalSessions += project.sessionCount;
 			if (
-				cwd === project.decodedPath ||
-				cwd.startsWith(`${project.decodedPath}/`)
+				cwd === project.projectPath ||
+				cwd.startsWith(`${project.projectPath}/`)
 			) {
 				match.containsCwd = true;
 			}
@@ -196,7 +118,7 @@ export async function groupProjectsByRemote(
 
 	for (const project of remainingUngrouped) {
 		const containsCwd =
-			cwd === project.decodedPath || cwd.startsWith(`${project.decodedPath}/`);
+			cwd === project.projectPath || cwd.startsWith(`${project.projectPath}/`);
 		groups.push({
 			displayName: project.displayPath,
 			gitRemote: null,
@@ -220,31 +142,6 @@ export async function groupProjectsByRemote(
 	}
 
 	return groups;
-}
-
-export function toSessionFiles(projects: ScannedProject[]): SessionFile[] {
-	return projects.flatMap((project) =>
-		project.sessionIds.map((sessionId) => ({
-			sessionId,
-			transcriptPath: `${project.sessionDir}/${sessionId}.jsonl`,
-			projectPath: project.decodedPath,
-		})),
-	);
-}
-
-/**
- * Find all sessions belonging to the same repository as `cwd`.
- * Uses the same scan + group-by-remote logic as the upload command.
- */
-export async function findSessionsForCwd(cwd: string): Promise<SessionFile[]> {
-	const projects = await scanProjects();
-	if (projects.length === 0) return [];
-
-	const groups = await groupProjectsByRemote(projects, cwd);
-	const cwdGroup = groups.find((g) => g.containsCwd);
-	if (!cwdGroup) return [];
-
-	return toSessionFiles(cwdGroup.projects);
 }
 
 function commonPrefixLength(a: string, b: string): number {
@@ -274,7 +171,7 @@ function findBestGroupByPath(
 		for (const p of group.projects) {
 			groupBest = Math.max(
 				groupBest,
-				commonPrefixLength(project.decodedPath, p.decodedPath),
+				commonPrefixLength(project.projectPath, p.projectPath),
 			);
 		}
 

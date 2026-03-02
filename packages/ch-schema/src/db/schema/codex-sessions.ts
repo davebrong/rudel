@@ -1,46 +1,12 @@
 import { materializedView, schema, table } from "@chkit/core";
+import { baseSessionColumns, baseSessionTableConfig } from "./base-sessions.js";
 
 const rudel_codex_sessions = table({
 	database: "rudel",
 	name: "codex_sessions",
 	engine: "SharedReplacingMergeTree(ingested_at)",
-	columns: [
-		{
-			name: "session_date",
-			type: "DateTime64(3, 'UTC')",
-			default: "fn:now64(3)",
-		},
-		{
-			name: "last_interaction_date",
-			type: "DateTime64(3, 'UTC')",
-			default: "fn:now64(3)",
-		},
-		{ name: "session_id", type: "String" },
-		{ name: "organization_id", type: "String" },
-		{ name: "project_path", type: "String" },
-		{ name: "repository", type: "String", nullable: true },
-		{ name: "content", type: "String" },
-		{
-			name: "ingested_at",
-			type: "DateTime64(3, 'UTC')",
-			default: "fn:now64(3)",
-		},
-		{ name: "user_id", type: "String" },
-		{ name: "git_branch", type: "String", nullable: true },
-		{ name: "git_sha", type: "String", nullable: true },
-		{ name: "tag", type: "String", nullable: true },
-		{ name: "cli_version", type: "String", default: "''" },
-		{ name: "model_provider", type: "String", default: "''" },
-		{ name: "codex_source", type: "String", default: "'cli'" },
-	],
-	primaryKey: [],
-	orderBy: ["organization_id", "session_date", "session_id"],
-	partitionBy: "toYYYYMM(toDate(session_date))",
-	ttl: "toDate(session_date) + toIntervalDay(365)",
-	settings: {
-		index_granularity: "8192",
-		storage_policy: "'s3'",
-	},
+	columns: [...baseSessionColumns],
+	...baseSessionTableConfig,
 });
 
 const codex_session_analytics_mv = materializedView({
@@ -101,7 +67,7 @@ const codex_session_analytics_mv = materializedView({
     ) AS _model_provider
 
   SELECT
-    * EXCEPT (session_date, last_interaction_date, cli_version, model_provider, codex_source),
+    * EXCEPT (session_date, last_interaction_date),
     _session_date as session_date,
     _last_interaction_date as last_interaction_date,
     'codex' as source,

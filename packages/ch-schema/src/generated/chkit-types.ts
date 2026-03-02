@@ -13,12 +13,12 @@ export interface RudelClaudeSessionsRow {
   git_remote: string
   package_name: string
   content: string
-  subagents: Record<string, string>
   ingested_at: string
   user_id: string
   git_branch: string | null
   git_sha: string | null
   tag: string | null
+  subagents: Record<string, string>
 }
 
 export const RudelClaudeSessionsRowSchema = z.object({
@@ -31,12 +31,12 @@ export const RudelClaudeSessionsRowSchema = z.object({
   git_remote: z.string(),
   package_name: z.string(),
   content: z.string(),
-  subagents: z.record(z.string(), z.string()),
   ingested_at: z.string(),
   user_id: z.string(),
   git_branch: z.string().nullable(),
   git_sha: z.string().nullable(),
   tag: z.string().nullable(),
+  subagents: z.record(z.string(), z.string()),
 })
 
 export type RudelClaudeSessionsRowInput = z.input<typeof RudelClaudeSessionsRowSchema>
@@ -55,9 +55,6 @@ export interface RudelCodexSessionsRow {
   git_branch: string | null
   git_sha: string | null
   tag: string | null
-  cli_version: string
-  model_provider: string
-  codex_source: string
 }
 
 export const RudelCodexSessionsRowSchema = z.object({
@@ -73,9 +70,6 @@ export const RudelCodexSessionsRowSchema = z.object({
   git_branch: z.string().nullable(),
   git_sha: z.string().nullable(),
   tag: z.string().nullable(),
-  cli_version: z.string(),
-  model_provider: z.string(),
-  codex_source: z.string(),
 })
 
 export type RudelCodexSessionsRowInput = z.input<typeof RudelCodexSessionsRowSchema>

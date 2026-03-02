@@ -9,7 +9,7 @@ import {
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { IngestRequest } from "../lib/types.js";
+import type { IngestSessionInput } from "@rudel/api-routes";
 import { uploadSession } from "../lib/uploader.js";
 import {
 	signUpTestUser,
@@ -45,7 +45,8 @@ describe("CLI upload to local API", () => {
 		expect(bearerToken).toBeTruthy();
 
 		const testId = `cli_api_test_${Date.now()}`;
-		const request: IngestRequest = {
+		const request: IngestSessionInput = {
+			source: "claude_code",
 			sessionId: testId,
 			projectPath: "/test/cli-api-upload",
 			repository: "test-repo",
@@ -168,7 +169,8 @@ describe("CLI upload to local API", () => {
 	}, 60_000);
 
 	test("rejects unauthenticated requests", async () => {
-		const request: IngestRequest = {
+		const request: IngestSessionInput = {
+			source: "claude_code",
 			sessionId: "unauth-test",
 			projectPath: "/test/unauth",
 			content: "should fail",

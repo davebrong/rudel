@@ -1,14 +1,9 @@
 import { getLogger } from "@logtape/logtape";
+import { claudeCodeAdapter, type SessionFile } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
 import { loadCredentials } from "../../../lib/credentials.js";
 import { getGitInfo } from "../../../lib/git-info.js";
 import { getProjectOrgId } from "../../../lib/project-config.js";
-import { readSubagentFiles } from "../../../lib/subagent-reader.js";
-import {
-	extractAgentIds,
-	readTranscript,
-} from "../../../lib/transcript-reader.js";
-import type { IngestRequest } from "../../../lib/types.js";
 import { uploadSession } from "../../../lib/uploader.js";
 import { disposeLogging, setupHookLogging } from "../../../logging.js";
 
@@ -44,31 +39,19 @@ async function runSessionEnd(): Promise<void> {
 			sessionId: input.session_id,
 		});
 
-		const content = await readTranscript(input.transcript_path);
-
-		const agentIds = extractAgentIds(content);
-		const { dirname } = await import("node:path");
-		const sessionDir = dirname(input.transcript_path);
-		const subagents =
-			agentIds.length > 0
-				? await readSubagentFiles(sessionDir, agentIds, input.session_id)
-				: [];
+		const sessionFile: SessionFile = {
+			sessionId: input.session_id,
+			transcriptPath: input.transcript_path,
+			projectPath: input.cwd,
+		};
 
 		const gitInfo = await getGitInfo(input.cwd);
 		const organizationId = await getProjectOrgId(input.cwd);
 
-		const request: IngestRequest = {
-			sessionId: input.session_id,
-			projectPath: input.cwd,
-			repository: gitInfo.repository,
-			gitRemote: gitInfo.gitRemote,
-			packageName: gitInfo.packageName,
-			gitBranch: gitInfo.branch,
-			gitSha: gitInfo.sha,
-			content,
-			subagents: subagents.length > 0 ? subagents : undefined,
+		const request = await claudeCodeAdapter.buildUploadRequest(sessionFile, {
+			gitInfo,
 			organizationId,
-		};
+		});
 
 		const apiBase = process.env.RUDEL_API_BASE ?? credentials.apiBaseUrl;
 		const endpoint = `${apiBase}/rpc`;

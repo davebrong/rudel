@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
+import { getAdapter } from "@rudel/agent-adapters";
 import type { IngestSessionInput } from "@rudel/api-routes";
 import { createClickHouseExecutor } from "../clickhouse.js";
-import { ingestSession } from "../ingest.js";
 
 const testId = `api_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -72,6 +72,7 @@ async function waitForRow(
 describe("ingestSession", () => {
 	test("ingests a session into ClickHouse and reads it back", async () => {
 		const input: IngestSessionInput = {
+			source: "claude_code",
 			sessionId: testId,
 			projectPath: "/test/api-ingest",
 			repository: "test-repo",
@@ -87,7 +88,8 @@ describe("ingestSession", () => {
 		let results: Awaited<ReturnType<typeof waitForRow>> = [];
 		for (let attempt = 0; attempt < 5; attempt++) {
 			try {
-				await ingestSession(executor, input, {
+				const adapter = getAdapter(input.source);
+				await adapter.ingest(executor, input, {
 					userId: "test_user",
 					organizationId: "test_org",
 				});

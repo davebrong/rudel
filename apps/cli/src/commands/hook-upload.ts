@@ -1,21 +1,14 @@
-import { dirname } from "node:path";
 import { getLogger } from "@logtape/logtape";
+import { claudeCodeAdapter, type SessionFile } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
 import { classifySession } from "../lib/classifier.js";
 import { readConfig } from "../lib/config.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { parseStdinInput, readStdin } from "../lib/stdin.js";
-import { readSubagentFiles } from "../lib/subagent-reader.js";
-import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
-import { DEFAULT_ENDPOINT, type IngestRequest } from "../lib/types.js";
+import { DEFAULT_ENDPOINT } from "../lib/types.js";
 import { uploadSession } from "../lib/uploader.js";
 import { disposeLogging, setupHookLogging } from "../logging.js";
 
-/**
- * Hook-based session upload that reads session metadata from stdin.
- * Designed to be called by the Claude Code plugin's SessionEnd hook.
- * Runs silently — all output goes to the log file, not stdout.
- */
 async function runHookUpload(): Promise<void> {
 	await setupHookLogging();
 	const logger = getLogger(["rudel", "cli", "hook"]);
@@ -44,30 +37,22 @@ async function runHookUpload(): Promise<void> {
 			return;
 		}
 
-		const content = await readTranscript(transcript_path);
-
-		const agentIds = extractAgentIds(content);
-		const sessionDir = dirname(transcript_path);
-		const subagents =
-			agentIds.length > 0
-				? await readSubagentFiles(sessionDir, agentIds, session_id)
-				: undefined;
-
-		const [gitInfo, tag] = await Promise.all([
-			getGitInfo(cwd),
-			classifySession(content),
-		]);
-
-		const request: IngestRequest = {
+		const sessionFile: SessionFile = {
 			sessionId: session_id,
+			transcriptPath: transcript_path,
 			projectPath: cwd,
-			repository: gitInfo.repository,
-			gitBranch: gitInfo.branch,
-			gitSha: gitInfo.sha,
-			tag: tag ?? undefined,
-			content,
-			subagents: subagents?.length ? subagents : undefined,
 		};
+
+		const gitInfo = await getGitInfo(cwd);
+
+		const request = await claudeCodeAdapter.buildUploadRequest(sessionFile, {
+			gitInfo,
+		});
+
+		const tag = await classifySession(request.content);
+		if (tag) {
+			(request as { tag?: string }).tag = tag;
+		}
 
 		const endpoint =
 			process.env.GAZED_INGEST_ENDPOINT ?? config.endpoint ?? DEFAULT_ENDPOINT;

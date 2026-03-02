@@ -2,8 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { ClaudeCodeAgent } from "../lib/agents/claude-code.js";
-import { getDefaultAgent } from "../lib/agents/index.js";
+import { claudeCodeAdapter, getAvailableAdapters } from "@rudel/agent-adapters";
 
 const SAMPLE_SESSION = [
 	JSON.stringify({ type: "summary", sessionId: "test-1" }),
@@ -42,19 +41,22 @@ afterAll(async () => {
 	await rm(TEST_PROJECT_PATH, { recursive: true, force: true });
 });
 
-describe("ClaudeCodeAgent", () => {
-	const agent = new ClaudeCodeAgent();
-
+describe("claudeCodeAdapter", () => {
 	test("name is Claude Code", () => {
-		expect(agent.name).toBe("Claude Code");
+		expect(claudeCodeAdapter.name).toBe("Claude Code");
+	});
+
+	test("source is claude_code", () => {
+		expect(claudeCodeAdapter.source).toBe("claude_code");
 	});
 
 	test("getSessionsBaseDir returns ~/.claude/projects", () => {
-		expect(agent.getSessionsBaseDir()).toBe(SESSIONS_BASE);
+		expect(claudeCodeAdapter.getSessionsBaseDir()).toBe(SESSIONS_BASE);
 	});
 
 	test("findProjectSessions returns session files excluding subagents", async () => {
-		const sessions = await agent.findProjectSessions(TEST_PROJECT_PATH);
+		const sessions =
+			await claudeCodeAdapter.findProjectSessions(TEST_PROJECT_PATH);
 
 		expect(sessions).toHaveLength(2);
 
@@ -71,7 +73,7 @@ describe("ClaudeCodeAgent", () => {
 	});
 
 	test("findProjectSessions returns empty array for nonexistent project", async () => {
-		const sessions = await agent.findProjectSessions(
+		const sessions = await claudeCodeAdapter.findProjectSessions(
 			"/nonexistent/project/path-that-does-not-exist",
 		);
 		expect(sessions).toEqual([]);
@@ -79,21 +81,21 @@ describe("ClaudeCodeAgent", () => {
 
 	test("isHookInstalled reflects hook state", () => {
 		// Just verify it returns a boolean without throwing
-		const result = agent.isHookInstalled();
+		const result = claudeCodeAdapter.isHookInstalled();
 		expect(typeof result).toBe("boolean");
 	});
 
-	test("getHookSettingsPath returns a path ending in settings.json", () => {
-		const path = agent.getHookSettingsPath();
+	test("getHookConfigPath returns a path ending in settings.json", () => {
+		const path = claudeCodeAdapter.getHookConfigPath();
 		expect(path).toEndWith("settings.json");
 		expect(path).toContain(".claude");
 	});
 });
 
-describe("getDefaultAgent", () => {
-	test("returns a ClaudeCodeAgent instance", () => {
-		const agent = getDefaultAgent();
-		expect(agent).toBeInstanceOf(ClaudeCodeAgent);
-		expect(agent.name).toBe("Claude Code");
+describe("getAvailableAdapters", () => {
+	test("returns at least the Claude Code adapter", () => {
+		const adapters = getAvailableAdapters();
+		expect(adapters.length).toBeGreaterThanOrEqual(1);
+		expect(adapters.some((a) => a.name === "Claude Code")).toBe(true);
 	});
 });

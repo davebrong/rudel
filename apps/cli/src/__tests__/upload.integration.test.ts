@@ -3,10 +3,13 @@ import { existsSync, readdirSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import {
+	extractAgentIds,
+	readFileWithRetry,
+	readSubagentFiles,
+} from "@rudel/agent-adapters";
 import { getGitInfo } from "../lib/git-info.js";
 import { resolveSession } from "../lib/session-resolver.js";
-import { readSubagentFiles } from "../lib/subagent-reader.js";
-import { extractAgentIds, readTranscript } from "../lib/transcript-reader.js";
 
 // Sample JSONL content mimicking a real Claude session
 const SAMPLE_SESSION_CONTENT = [
@@ -52,9 +55,7 @@ function hasRealClaudeSessions(): boolean {
 					)
 				)
 					return true;
-			} catch {
-				/* continue to next session */
-			}
+			} catch {}
 		}
 	} catch {
 		/* dir not readable */
@@ -74,9 +75,6 @@ afterAll(async () => {
 	await rm(tempDir, { recursive: true, force: true });
 });
 
-/**
- * Find a real session ID from ~/.claude/projects/ for integration tests.
- */
 async function findRealSessionId(): Promise<string> {
 	const sessionsBase = join(homedir(), ".claude", "projects");
 	const projectDirs = await readdir(sessionsBase);
@@ -157,7 +155,7 @@ describe("transcript reader", () => {
 		const sessionFile = join(tempDir, "transcript-test.jsonl");
 		await writeFile(sessionFile, SAMPLE_SESSION_CONTENT);
 
-		const content = await readTranscript(sessionFile);
+		const content = await readFileWithRetry(sessionFile);
 		expect(content).toBe(SAMPLE_SESSION_CONTENT);
 
 		const agentIds = extractAgentIds(content);
@@ -277,7 +275,7 @@ describe("full upload pipeline (dry-run)", () => {
 		expect(sessionInfo.sessionId).toBe(sessionId);
 
 		// Step 2: Read transcript
-		const content = await readTranscript(sessionInfo.transcriptPath);
+		const content = await readFileWithRetry(sessionInfo.transcriptPath);
 		expect(content.length).toBeGreaterThan(0);
 
 		// Step 3: Extract agent IDs
@@ -355,8 +353,7 @@ describe("full upload pipeline (dry-run)", () => {
 
 		expect(exitCode).toBe(0);
 		expect(stdout).toContain("Found session at:");
-		expect(stdout).toContain("Found 2 subagent(s):");
-		expect(stdout).toContain("Read 1 subagent file(s):");
+		expect(stdout).toContain("Subagents: 1 file(s)");
 		expect(stdout).toContain("Dry run - would upload:");
 		expect(stdout).toContain('"sessionId": "cli-test-session"');
 		expect(stdout).toContain('"subagents"');

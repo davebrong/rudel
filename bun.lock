@@ -20,6 +20,7 @@
         "@clickhouse/client-web": "^1.11.0",
         "@logtape/logtape": "^2.0.4",
         "@orpc/server": "latest",
+        "@rudel/agent-adapters": "workspace:*",
         "@rudel/api-routes": "workspace:*",
         "@rudel/ch-schema": "workspace:*",
         "@rudel/sql-schema": "workspace:*",
@@ -45,8 +46,8 @@
         "@logtape/logtape": "^2.0.4",
         "@orpc/client": "^1.13.5",
         "@orpc/contract": "^1.13.5",
+        "@rudel/agent-adapters": "workspace:*",
         "@stricli/core": "^1.2.5",
-        "smol-toml": "^1.6.0",
       },
       "devDependencies": {
         "@rudel/api-routes": "workspace:*",
@@ -95,6 +96,19 @@
         "tw-animate-css": "^1.4.0",
         "typescript": "~5.9.3",
         "vite": "^7.3.1",
+      },
+    },
+    "packages/agent-adapters": {
+      "name": "@rudel/agent-adapters",
+      "version": "0.0.0",
+      "dependencies": {
+        "@rudel/api-routes": "workspace:*",
+        "@rudel/ch-schema": "workspace:*",
+        "smol-toml": "^1.6.0",
+      },
+      "devDependencies": {
+        "@rudel/typescript-config": "workspace:*",
+        "typescript": "5.9.2",
       },
     },
     "packages/api-routes": {
@@ -594,6 +608,8 @@
     "@rollup/rollup-win32-x64-gnu": ["@rollup/rollup-win32-x64-gnu@4.57.1", "", { "os": "win32", "cpu": "x64" }, "sha512-VMBH2eOOaKGtIJYleXsi2B8CPVADrh+TyNxJ4mWPnKfLB/DBUmzW+5m1xUrcwWoMfSLagIRpjUFeW5CO5hyciQ=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.57.1", "", { "os": "win32", "cpu": "x64" }, "sha512-mxRFDdHIWRxg3UfIIAwCm6NzvxG0jDX/wBN6KsQFTvKFqqg9vTrWUE68qEjHt19A5wwx5X5aUi2zuZT7YR0jrA=="],
+
+    "@rudel/agent-adapters": ["@rudel/agent-adapters@workspace:packages/agent-adapters"],
 
     "@rudel/api": ["@rudel/api@workspace:apps/api"],
 

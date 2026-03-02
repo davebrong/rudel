@@ -1,16 +1,16 @@
 import * as p from "@clack/prompts";
+import { getAllAdapters } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
-import { getAllAgents } from "../lib/agents/index.js";
 
 async function runDisable(): Promise<void> {
-	const agents = getAllAgents();
+	const adapters = getAllAdapters();
 	let anyDisabled = false;
 
-	for (const agent of agents) {
-		if (agent.isHookInstalled()) {
-			agent.removeHook();
+	for (const adapter of adapters) {
+		if (adapter.isHookInstalled()) {
+			adapter.removeHook();
 			p.log.success(
-				`${agent.name}: Auto-upload hook removed from ${agent.getHookSettingsPath()}`,
+				`${adapter.name}: Auto-upload hook removed from ${adapter.getHookConfigPath()}`,
 			);
 			anyDisabled = true;
 		}

@@ -1,34 +1,53 @@
-import { buildCommand } from "@stricli/core";
 import {
-	groupProjectsByRemote,
-	scanProjects,
-} from "../../lib/project-scanner.js";
+	getAdapter,
+	getAvailableAdapters,
+	groupProjectsForCwd,
+	type ScannedProject,
+} from "@rudel/agent-adapters";
+import { buildCommand } from "@stricli/core";
 
 async function runListSessions(): Promise<void> {
-	const projects = await scanProjects();
+	const adapters = getAvailableAdapters();
+	const allProjects: ScannedProject[] = [];
+	for (const adapter of adapters) {
+		const projects = await adapter.scanAllSessions();
+		allProjects.push(...projects);
+	}
 
-	if (projects.length === 0) {
-		console.log("No projects with sessions found in ~/.claude/projects/");
+	if (allProjects.length === 0) {
+		console.log("No projects with sessions found.");
 		return;
 	}
 
 	const cwd = process.cwd();
-	const groups = await groupProjectsByRemote(projects, cwd);
+	const grouped = groupProjectsForCwd(allProjects, cwd);
 
-	const totalSessions = projects.reduce((s, p) => s + p.sessionCount, 0);
-	console.log(`${groups.length} groups, ${totalSessions} sessions\n`);
+	const lines: string[] = [];
 
-	for (const group of groups) {
-		const current = group.containsCwd ? " [current]" : "";
-		if (group.projects.length === 1 && group.projects[0]) {
-			console.log(
-				`${group.projects[0].displayPath} (${group.totalSessions} sessions)${current}`,
-			);
-		} else {
-			console.log(
-				`${group.displayName} (${group.totalSessions} sessions, ${group.projects.length} locations)${current}`,
-			);
-		}
+	for (const proj of grouped.current) {
+		const name = getAdapter(proj.source).name;
+		lines.push(
+			`[${name}] ${proj.displayPath} (${proj.sessionCount} sessions) [current]`,
+		);
+	}
+
+	for (const sub of grouped.subfolders) {
+		const name = getAdapter(sub.source).name;
+		const relative = sub.projectPath.slice(cwd.length + 1);
+		lines.push(`  [${name}] ${relative} (${sub.sessionCount} sessions)`);
+	}
+
+	for (const other of grouped.others) {
+		const name = getAdapter(other.source).name;
+		lines.push(
+			`[${name}] ${other.displayPath} (${other.sessionCount} sessions)`,
+		);
+	}
+
+	const totalSessions = allProjects.reduce((s, p) => s + p.sessionCount, 0);
+	console.log(`${allProjects.length} projects, ${totalSessions} sessions\n`);
+	for (const line of lines) {
+		console.log(line);
 	}
 }
 

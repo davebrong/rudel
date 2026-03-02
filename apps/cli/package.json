@@ -41,8 +41,8 @@
 		"@logtape/logtape": "^2.0.4",
 		"@orpc/client": "^1.13.5",
 		"@orpc/contract": "^1.13.5",
-		"@stricli/core": "^1.2.5",
-		"smol-toml": "^1.6.0"
+		"@rudel/agent-adapters": "workspace:*",
+		"@stricli/core": "^1.2.5"
 	},
 	"devDependencies": {
 		"@rudel/api-routes": "workspace:*",
