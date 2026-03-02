@@ -9,6 +9,7 @@ const segmentLabels: Record<string, string> = {
 	sessions: "Sessions",
 	learnings: "Learnings",
 	errors: "Errors",
+	invitations: "Invitations",
 	profile: "Profile",
 };
 
