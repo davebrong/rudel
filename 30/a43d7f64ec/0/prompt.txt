@@ -1,0 +1,396 @@
+i want to show the `rudel upload` the same way as the other commands.
+
+---
+
+make a new inline component for the command
+
+---
+
+also allow an optional hint for every command. And then check the hint at the bottom, and put them to the according command where it makes sense
+
+---
+
+did you load the typescript-standards skill for this? if not do it and reflect on the code
+
+---
+
+Base directory for this skill: /Users/marc/Workspace/rudel/.claude/skills/typescript-standards
+
+# TypeScript Standards
+
+## Named Exports Only
+```ts
+// ❌ Bad
+export default function myFunction() {}
+
+// ✅ Good
+export function myFunction() {}
+```
+
+## Package Exports (Monorepo)
+
+Only export what other packages actually consume:
+
+```ts
+// ❌ Bad - Exports everything including internal types
+export * from "./digest";
+
+// ✅ Good - Explicit public interface
+export {
+  fetchCompoundDigest,
+  buildCompoundDigestBlocks,
+  type CompoundDigestEnv,
+} from "./digest";
+```
+
+Before adding exports, check what's actually imported by consumer packages.
+
+## Import Patterns
+
+### Prefer Static Imports
+Always use static imports at the top of the file. Only use dynamic imports (`await import()`) when:
+- Conditional loading is required (feature flags, environment checks)
+- Code splitting is intentional for performance
+- Circular dependency breaking is necessary
+
+Never use dynamic imports just to import something mid-function when a static import would work.
+
+### Type-Only Imports
+For values used only as types, use explicit type-only imports:
+```ts
+// ❌ Bad - Imports value but only uses type
+import { MyClass } from './my-class'
+type Instance = MyClass
+
+// ✅ Good - Clear intent, no runtime import
+import { type MyClass } from './my-class'
+type Instance = MyClass
+```
+
+## Naming Conventions
+- **Files**: kebab-case (`my-component.ts`)
+- **Variables/functions**: camelCase (`myVariable`, `myFunction()`)
+- **Classes/types/interfaces**: PascalCase (`MyClass`, `MyInterface`)
+- **Constants/enum values**: ALL_CAPS (`MAX_COUNT`)
+- **Generic type parameters**: Prefix with `T` (`TKey`, `TValue`)
+
+## Type Safety Rules
+
+### Derive Types from Zod Schemas
+When a Zod schema exists, always derive the TypeScript type from it using `z.infer`. Never define a separate interface that duplicates the schema's shape:
+```ts
+// ❌ Bad - Manually duplicates the Zod schema, drifts over time
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+// ✅ Good - Single source of truth
+import { type User } from "@rudel/api-routes"
+
+// ✅ Good - Extend when the service needs extra internal fields
+import { type User as UserBase } from "@rudel/api-routes"
+export interface User extends UserBase {
+  session_count: number
+}
+```
+
+If the type needs fields beyond the schema, extend the inferred type rather than redefining it.
+
+### No Type Casts
+Never use `as` or `as unknown as` type assertions. They hide type incompatibilities:
+```ts
+// ❌ Bad - Hides the real problem
+const env = context.env as unknown as ExecutorEnv
+
+// ✅ Good - Fix the underlying type mismatch
+// Option 1: Properly type the source
+const env: ExecutorEnv = context.env
+
+// Option 2: Use type guards for runtime checking
+function isExecutorEnv(env: unknown): env is ExecutorEnv {
+  return typeof env === 'object' && env !== null && 'DB' in env
+}
+```
+
+If you encounter code that seems to require a cast:
+1. Investigate why the types don't match
+2. Fix the source type definitions
+3. If copying from existing code with casts, note it needs cleanup
+
+### Prefer Discriminated Unions
+```ts
+// ✅ Good - Prevents impossible states
+type FetchingState<TData> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: TData }
+  | { status: 'error'; error: Error }
+
+// Handle with switch
+switch (state.status) {
+  case 'success':
+    console.log(state.data)
+    break
+}
+```
+
+### Optional Properties
+Use sparingly. Prefer `T | undefined` over `T?` to force explicit passing:
+```ts
+// ✅ Good
+type AuthOptions = {
+  userId: string | undefined
+}
+```
+
+### Prefer Interfaces for Extending
+```ts
+// ❌ Bad - & operator has terrible performance
+type C = A & B
+
+// ✅ Good
+interface C extends A, B {}
+```
+
+### Don't Use Enums
+Use `as const` objects instead:
+```ts
+const sizes = {
+  xs: 'EXTRA_SMALL',
+  sm: 'SMALL',
+} as const
+
+type Size = keyof typeof sizes
+```
+
+## Installing Libraries
+Never rely on training data for versions. Always install latest:
+```bash
+pnpm add -D @typescript-eslint/eslint-plugin
+```
+
+## Async Operations
+Use `Promise.all` for parallel operations:
+```ts
+const [users, posts] = await Promise.all([fetchUsers(), fetchPosts()])
+```
+
+## Immutability
+- Use readonly arrays
+- Use const assertions
+- Create new objects instead of mutating
+
+---
+
+Analyze the current conversation and create a feedback entry capturing the issue.
+
+## Step 1: Gather Context
+
+Get datetime and git SHA:
+
+```bash
+date '+%Y-%m-%d %H:%M:%S'
+git rev-parse --short HEAD 2>/dev/null || echo "no-git"
+```
+
+From the conversation, extract:
+
+- What task was being worked on
+- What the agent did (the problematic behavior)
+- The user's observation (from the argument)
+
+## Step 2: Extract Observed Workflows
+
+Carefully review the conversation and extract ALL workflows that were involved:
+
+### Subagents
+Look for Task tool invocations with `subagent_type`. Common types:
+- `Explore`, `Plan`, `Bash`, `general-purpose`
+- `code:codebase-analyzer`, `code:codebase-locator`, `code:web-search-researcher`
+- Any `plugin-name:agent-name` pattern
+
+### Skills
+Look for Skill tool invocations. Examples:
+- `code:testing-vitest`, `code:typescript-standards`
+- `prompt-engineering`, `compound:feedback`
+
+### Slash Commands
+Look for commands the user invoked (starts with `/`). Examples:
+- `/commit`, `/compound:improve`, `/review-pr`
+- Exclude `/compound:feedback` itself
+
+**Important**: Be thorough. Empty arrays mean the extraction failed. If you see ANY tool calls or workflow invocations in the conversation, capture them.
+
+## Step 3: Categorize the Issue
+
+Categorize as one of:
+
+| Category              | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `missing-context`     | Agent lacks project-specific knowledge          |
+| `wrong-pattern`       | Agent used incorrect approach for this codebase |
+| `missing-check`       | Agent skipped a step it should always do        |
+| `unclear-instruction` | Existing guidance is ambiguous                  |
+| `tool-misuse`         | Wrong tool or wrong parameters                  |
+| `other`               | Doesn't fit above categories                    |
+
+## Step 4: Create Feedback Entry
+
+Derive a short kebab-case slug from the observation (max 30 chars).
+
+Create parent directories if needed:
+
+```bash
+mkdir -p .claude/learnings/feedback
+```
+
+Write to `.claude/learnings/feedback/YYYY-MM-DD-{slug}.md` (always relative to **repository root**, not current directory):
+
+```markdown
+---
+date: "{YYYY-MM-DD HH:MM:SS}"
+sha: "{git_sha}"
+category: "{category_from_step_3}"
+status: pending
+observed-workflows:
+  subagents: ["{list of subagent types observed}"]
+  skills: ["{list of skills invoked}"]
+  commands: ["{list of slash commands used}"]
+---
+
+# {descriptive title}
+
+## Observation
+
+{user's observation - what went wrong, verbatim or paraphrased}
+
+## Context
+
+{what task was being worked on when this happened}
+
+## Analysis
+
+{why this happened - root cause explanation linking to the category}
+```
+
+**Note**: Do NOT include target identification or proposed improvements. That happens in `/compound:improve`.
+
+## Step 5: Respond
+
+Confirm:
+
+1. What was understood from the observation
+2. Category and brief root cause analysis
+3. Workflows captured (subagents, skills, commands)
+4. Path to feedback file
+5. Next step: "Use `/compound:improve` to identify the target and apply the fix"
+
+---
+
+Analyze the current conversation and create a feedback entry capturing the issue.
+
+## Step 1: Gather Context
+
+Get datetime and git SHA:
+
+```bash
+date '+%Y-%m-%d %H:%M:%S'
+git rev-parse --short HEAD 2>/dev/null || echo "no-git"
+```
+
+From the conversation, extract:
+
+- What task was being worked on
+- What the agent did (the problematic behavior)
+- The user's observation (from the argument)
+
+## Step 2: Extract Observed Workflows
+
+Carefully review the conversation and extract ALL workflows that were involved:
+
+### Subagents
+Look for Task tool invocations with `subagent_type`. Common types:
+- `Explore`, `Plan`, `Bash`, `general-purpose`
+- `code:codebase-analyzer`, `code:codebase-locator`, `code:web-search-researcher`
+- Any `plugin-name:agent-name` pattern
+
+### Skills
+Look for Skill tool invocations. Examples:
+- `code:testing-vitest`, `code:typescript-standards`
+- `prompt-engineering`, `compound:feedback`
+
+### Slash Commands
+Look for commands the user invoked (starts with `/`). Examples:
+- `/commit`, `/compound:improve`, `/review-pr`
+- Exclude `/compound:feedback` itself
+
+**Important**: Be thorough. Empty arrays mean the extraction failed. If you see ANY tool calls or workflow invocations in the conversation, capture them.
+
+## Step 3: Categorize the Issue
+
+Categorize as one of:
+
+| Category              | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `missing-context`     | Agent lacks project-specific knowledge          |
+| `wrong-pattern`       | Agent used incorrect approach for this codebase |
+| `missing-check`       | Agent skipped a step it should always do        |
+| `unclear-instruction` | Existing guidance is ambiguous                  |
+| `tool-misuse`         | Wrong tool or wrong parameters                  |
+| `other`               | Doesn't fit above categories                    |
+
+## Step 4: Create Feedback Entry
+
+Derive a short kebab-case slug from the observation (max 30 chars).
+
+Create parent directories if needed:
+
+```bash
+mkdir -p .claude/learnings/feedback
+```
+
+Write to `.claude/learnings/feedback/YYYY-MM-DD-{slug}.md` (always relative to **repository root**, not current directory):
+
+```markdown
+---
+date: "{YYYY-MM-DD HH:MM:SS}"
+sha: "{git_sha}"
+category: "{category_from_step_3}"
+status: pending
+observed-workflows:
+  subagents: ["{list of subagent types observed}"]
+  skills: ["{list of skills invoked}"]
+  commands: ["{list of slash commands used}"]
+---
+
+# {descriptive title}
+
+## Observation
+
+{user's observation - what went wrong, verbatim or paraphrased}
+
+## Context
+
+{what task was being worked on when this happened}
+
+## Analysis
+
+{why this happened - root cause explanation linking to the category}
+```
+
+**Note**: Do NOT include target identification or proposed improvements. That happens in `/compound:improve`.
+
+## Step 5: Respond
+
+Confirm:
+
+1. What was understood from the observation
+2. Category and brief root cause analysis
+3. Workflows captured (subagents, skills, commands)
+4. Path to feedback file
+5. Next step: "Use `/compound:improve` to identify the target and apply the fix"
+
+
+ARGUMENTS: also you loaded it, and the the MAIN function (aka the main component) is still on the bottom. I think the typescript standards also should give some input on function order

@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "30a43d7f64ec",
+  "session_id": "ba5f7520-bd9d-40bd-9e6d-5aa70871472b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T11:27:12.405645Z",
+  "branch": "improve-setup-hint",
+  "checkpoints_count": 6,
+  "files_touched": [
+    ".claude/learnings/feedback/2026-03-03-func-order-missing-in-skill.md",
+    ".claude/learnings/feedback/2026-03-03-skill-not-loaded-before-ts.md",
+    "apps/web/src/components/analytics/CliSetupHint.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "8116fceb-487e-4330-b02f-33179adaa209",
+  "token_usage": {
+    "input_tokens": 34,
+    "cache_creation_tokens": 53225,
+    "cache_read_tokens": 966761,
+    "output_tokens": 6134,
+    "api_call_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T11:27:12.249842Z",
+    "agent_lines": 37,
+    "human_added": 0,
+    "human_modified": 1,
+    "human_removed": 48,
+    "total_committed": 38,
+    "agent_percentage": 97.36842105263158
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/ba5f7520-bd9d-40bd-9e6d-5aa70871472b.jsonl"
+}
