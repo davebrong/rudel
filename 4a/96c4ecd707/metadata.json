@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "4a96c4ecd707",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/chx/migrations/20260303160252_auto.sql"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4a/96c4ecd707/0/metadata.json",
+      "transcript": "/4a/96c4ecd707/0/full.jsonl",
+      "context": "/4a/96c4ecd707/0/context.md",
+      "content_hash": "/4a/96c4ecd707/0/content_hash.txt",
+      "prompt": "/4a/96c4ecd707/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 29,
+    "cache_creation_tokens": 125674,
+    "cache_read_tokens": 1213923,
+    "output_tokens": 9728,
+    "api_call_count": 26
+  }
+}
