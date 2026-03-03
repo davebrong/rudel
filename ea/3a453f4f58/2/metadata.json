@@ -1,9 +1,11 @@
 {
   "cli_version": "0.4.9",
   "checkpoint_id": "ea3a453f4f58",
+  "session_id": "c416999c-7139-42e8-b79d-b27199f57694",
   "strategy": "manual-commit",
+  "created_at": "2026-03-03T18:06:31.494827Z",
   "branch": "marc/remove-repository-column",
-  "checkpoints_count": 5,
+  "checkpoints_count": 3,
   "files_touched": [
     "apps/api/src/__tests__/ingest-clickhouse.integration.ts",
     "apps/api/src/services/error.service.ts",
@@ -27,34 +29,22 @@
     "packages/ch-schema/src/db/schema/session-analytics.ts",
     "packages/ch-schema/src/generated/chkit-types.ts"
   ],
-  "sessions": [
-    {
-      "metadata": "/ea/3a453f4f58/0/metadata.json",
-      "transcript": "/ea/3a453f4f58/0/full.jsonl",
-      "context": "/ea/3a453f4f58/0/context.md",
-      "content_hash": "/ea/3a453f4f58/0/content_hash.txt",
-      "prompt": "/ea/3a453f4f58/0/prompt.txt"
-    },
-    {
-      "metadata": "/ea/3a453f4f58/1/metadata.json",
-      "transcript": "/ea/3a453f4f58/1/full.jsonl",
-      "context": "/ea/3a453f4f58/1/context.md",
-      "content_hash": "/ea/3a453f4f58/1/content_hash.txt",
-      "prompt": "/ea/3a453f4f58/1/prompt.txt"
-    },
-    {
-      "metadata": "/ea/3a453f4f58/2/metadata.json",
-      "transcript": "/ea/3a453f4f58/2/full.jsonl",
-      "context": "/ea/3a453f4f58/2/context.md",
-      "content_hash": "/ea/3a453f4f58/2/content_hash.txt",
-      "prompt": "/ea/3a453f4f58/2/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
+  "turn_id": "92538c114d90",
   "token_usage": {
-    "input_tokens": 188,
-    "cache_creation_tokens": 364371,
-    "cache_read_tokens": 14789527,
-    "output_tokens": 35798,
-    "api_call_count": 135
+    "input_tokens": 177,
+    "cache_creation_tokens": 289604,
+    "cache_read_tokens": 14583465,
+    "output_tokens": 34121,
+    "api_call_count": 128
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T18:06:30.900688Z",
+    "agent_lines": 50,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 50,
+    "agent_percentage": 100
   }
 }
