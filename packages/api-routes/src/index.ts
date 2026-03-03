@@ -46,7 +46,6 @@ import {
 	SuccessRateSchema,
 	TeamSummaryComparisonSchema,
 	UsageTrendDataSchema,
-	UserMappingSchema,
 } from "./schemas/analytics.js";
 
 export * from "./schemas/analytics.js";
@@ -124,12 +123,7 @@ export const contract = {
 		.input(z.object({ organizationId: z.string() }))
 		.output(z.object({ count: z.number() })),
 	deleteOrganization: oc
-		.input(
-			z.object({
-				organizationId: z.string(),
-				migrateSessionsTo: z.string().optional(),
-			}),
-		)
+		.input(z.object({ organizationId: z.string() }))
 		.output(z.object({ success: z.literal(true) })),
 	analytics: {
 		overview: {
@@ -231,9 +225,6 @@ export const contract = {
 			trend: oc
 				.input(LearningsTrendInputSchema)
 				.output(z.array(LearningsTrendDataPointSchema)),
-		},
-		users: {
-			mappings: oc.input(DaysInputSchema).output(z.array(UserMappingSchema)),
 		},
 	},
 };

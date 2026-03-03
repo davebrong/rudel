@@ -405,9 +405,6 @@ export function OrganizationPage() {
 					open={deleteDialogOpen}
 					onOpenChange={setDeleteDialogOpen}
 					organization={activeOrg}
-					otherOrganizations={organizations.filter(
-						(o) => o.id !== activeOrg.id,
-					)}
 					onDeleted={async () => {
 						setDeleteDialogOpen(false);
 						const other = organizations.find((o) => o.id !== activeOrg.id);
