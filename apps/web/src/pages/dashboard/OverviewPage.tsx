@@ -24,7 +24,11 @@ export function OverviewPage() {
 		useDateRange();
 	const days = calculateDays();
 
-	const { data: kpis, isLoading: kpisLoading } = useAnalyticsQuery(
+	const {
+		data: kpis,
+		isLoading: kpisLoading,
+		isError: kpisError,
+	} = useAnalyticsQuery(
 		orpc.analytics.overview.kpis.queryOptions({ input: { days } }),
 	);
 
@@ -70,7 +74,10 @@ export function OverviewPage() {
 				</div>
 			)}
 
-			{!kpisLoading && kpis && kpis.distinct_sessions === 0 && <CliSetupHint />}
+			{!kpisLoading &&
+				(kpisError || (kpis && kpis.distinct_sessions === 0)) && (
+					<CliSetupHint />
+				)}
 
 			{hasData && (
 				<>
