@@ -50,6 +50,20 @@ function encodeProjectPath(projectPath: string): string {
 	return projectPath.replace(/\//g, "-");
 }
 
+/**
+ * Extract the conductor project root from a workspace path.
+ * e.g. "/Users/marc/conductor/workspaces/chkit/karachi" → "chkit"
+ * Returns null for non-conductor paths.
+ */
+function getConductorProjectName(projectPath: string): string | null {
+	const marker = "/conductor/workspaces/";
+	const idx = projectPath.indexOf(marker);
+	if (idx === -1) return null;
+	const afterWorkspaces = projectPath.slice(idx + marker.length);
+	const firstSegment = afterWorkspaces.split("/")[0];
+	return firstSegment || null;
+}
+
 export async function groupProjectsByRemote(
 	projects: ScannedProject[],
 	cwd: string,
@@ -57,9 +71,33 @@ export async function groupProjectsByRemote(
 	const cache = await getRemoteCache();
 	let cacheUpdated = false;
 
-	const remotes = await Promise.all(
+	const remotes: (string | null | undefined)[] = await Promise.all(
 		projects.map((p) => getGitRemoteUrl(p.projectPath)),
 	);
+
+	// Share resolved remotes across conductor workspaces with the same project name.
+	// If ~/conductor/workspaces/chkit/karachi resolved a remote but
+	// ~/conductor/workspaces/chkit/houston didn't (deleted), reuse it.
+	const conductorRemotes = new Map<string, string>();
+	for (let i = 0; i < projects.length; i++) {
+		const remote = remotes[i];
+		if (!remote) continue;
+		const name = getConductorProjectName(
+			(projects[i] as ScannedProject).projectPath,
+		);
+		if (name && !conductorRemotes.has(name)) {
+			conductorRemotes.set(name, normalizeRemoteUrl(remote));
+		}
+	}
+	for (let i = 0; i < projects.length; i++) {
+		if (remotes[i]) continue;
+		const name = getConductorProjectName(
+			(projects[i] as ScannedProject).projectPath,
+		);
+		if (name) {
+			remotes[i] = conductorRemotes.get(name);
+		}
+	}
 
 	const grouped = new Map<
 		string,
@@ -122,22 +160,66 @@ export async function groupProjectsByRemote(
 	const remainingUngrouped: ScannedProject[] = [];
 
 	for (const project of ungrouped) {
-		const match = findBestGroupByPath(project, groups, homeSegments);
+		const match =
+			findGroupByConductorName(project, groups) ??
+			findBestGroupByPath(project, groups, homeSegments);
 		if (match) {
-			match.projects.push(project);
-			match.totalSessions += project.sessionCount;
-			if (
-				cwd === project.projectPath ||
-				cwd.startsWith(`${project.projectPath}/`)
-			) {
-				match.containsCwd = true;
-			}
+			addProjectToGroup(match, project, cwd);
 		} else {
 			remainingUngrouped.push(project);
 		}
 	}
 
+	// Third pass: group remaining conductor workspaces that share a project name,
+	// and merge non-conductor projects whose last path segment matches.
+	const conductorNames = new Set<string>();
 	for (const project of remainingUngrouped) {
+		const name = getConductorProjectName(project.projectPath);
+		if (name) conductorNames.add(name);
+	}
+
+	const finalUngrouped: ScannedProject[] = [];
+	for (const project of remainingUngrouped) {
+		const conductorName = getConductorProjectName(project.projectPath);
+		const lastSegment = project.projectPath.split("/").pop();
+		const matchName = conductorName ?? lastSegment;
+
+		// Find an existing ungrouped-conductor group or a matching last-segment group
+		const existing = matchName
+			? groups.find(
+					(g) =>
+						!g.gitRemote &&
+						g.projects.some((p) => {
+							const pName = getConductorProjectName(p.projectPath);
+							const pLast = p.projectPath.split("/").pop();
+							return pName === matchName || pLast === matchName;
+						}),
+				)
+			: null;
+
+		if (existing) {
+			addProjectToGroup(existing, project, cwd);
+		} else if (
+			conductorName ||
+			(lastSegment && conductorNames.has(lastSegment))
+		) {
+			// Create a new group — more conductor siblings or non-conductor matches will join it
+			const containsCwd =
+				cwd === project.projectPath ||
+				cwd.startsWith(`${project.projectPath}/`);
+			groups.push({
+				displayName: project.displayPath,
+				gitRemote: null,
+				projects: [project],
+				totalSessions: project.sessionCount,
+				containsCwd,
+			});
+		} else {
+			finalUngrouped.push(project);
+		}
+	}
+
+	for (const project of finalUngrouped) {
 		const containsCwd =
 			cwd === project.projectPath || cwd.startsWith(`${project.projectPath}/`);
 		groups.push({
@@ -210,4 +292,42 @@ function findBestGroupByPath(
 		return bestGroup;
 	}
 	return null;
+}
+
+/**
+ * Match a conductor workspace to an existing group by its project name.
+ * e.g. ~/conductor/workspaces/chx/jackson matches a group containing ~/Workspace/chx.
+ */
+function findGroupByConductorName(
+	project: ScannedProject,
+	groups: ProjectGroup[],
+): ProjectGroup | null {
+	const name = getConductorProjectName(project.projectPath);
+	if (!name) return null;
+
+	for (const group of groups) {
+		for (const p of group.projects) {
+			// Match if a grouped project's last path segment equals the conductor name
+			const lastSegment = p.projectPath.split("/").pop();
+			if (lastSegment === name) return group;
+			// Also match if it's another conductor workspace with the same name
+			if (getConductorProjectName(p.projectPath) === name) return group;
+		}
+	}
+	return null;
+}
+
+function addProjectToGroup(
+	group: ProjectGroup,
+	project: ScannedProject,
+	cwd: string,
+): void {
+	group.projects.push(project);
+	group.totalSessions += project.sessionCount;
+	if (
+		cwd === project.projectPath ||
+		cwd.startsWith(`${project.projectPath}/`)
+	) {
+		group.containsCwd = true;
+	}
 }
