@@ -9,7 +9,6 @@ export interface RudelClaudeSessionsRow {
   session_id: string
   organization_id: string
   project_path: string
-  repository: string | null
   git_remote: string
   package_name: string
   package_type: string
@@ -28,7 +27,6 @@ export const RudelClaudeSessionsRowSchema = z.object({
   session_id: z.string(),
   organization_id: z.string(),
   project_path: z.string(),
-  repository: z.string().nullable(),
   git_remote: z.string(),
   package_name: z.string(),
   package_type: z.string(),
@@ -50,7 +48,6 @@ export interface RudelCodexSessionsRow {
   session_id: string
   organization_id: string
   project_path: string
-  repository: string | null
   git_remote: string
   package_name: string
   package_type: string
@@ -68,7 +65,6 @@ export const RudelCodexSessionsRowSchema = z.object({
   session_id: z.string(),
   organization_id: z.string(),
   project_path: z.string(),
-  repository: z.string().nullable(),
   git_remote: z.string(),
   package_name: z.string(),
   package_type: z.string(),
@@ -89,7 +85,6 @@ export interface RudelSessionAnalyticsRow {
   session_id: string
   organization_id: string
   project_path: string
-  repository: string | null
   git_remote: string
   package_name: string
   package_type: string
@@ -132,7 +127,6 @@ export const RudelSessionAnalyticsRowSchema = z.object({
   session_id: z.string(),
   organization_id: z.string(),
   project_path: z.string(),
-  repository: z.string().nullable(),
   git_remote: z.string(),
   package_name: z.string(),
   package_type: z.string(),

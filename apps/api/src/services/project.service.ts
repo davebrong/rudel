@@ -104,9 +104,8 @@ export async function getProjectInvestment(
 	const query = `
     WITH current_period AS (
       SELECT
-        if(git_remote != '', git_remote, repository) as project_key,
+        if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as project_key,
         any(git_remote) as _git_remote,
-        any(repository) as _repository,
         any(project_path) as project_path,
         COUNT(*) as sessions,
         COUNT(DISTINCT user_id) as unique_users,
@@ -119,24 +118,24 @@ export async function getProjectInvestment(
       FROM rudel.session_analytics
       WHERE ${buildDateFilter(d)}
         AND organization_id = '${org}'
-        AND (git_remote != '' OR repository != '')
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
         ${projectFilter}
       GROUP BY project_key
     ),
     previous_period AS (
       SELECT
-        if(git_remote != '', git_remote, repository) as project_key,
+        if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as project_key,
         round(AVG(success_score), 2) as prev_success_rate
       FROM rudel.session_analytics
       WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
         AND session_date < now64(3) - INTERVAL ${d} DAY
         AND organization_id = '${org}'
-        AND (git_remote != '' OR repository != '')
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
         ${projectFilter}
       GROUP BY project_key
     )
     SELECT
-      c._repository as repository,
+      c.project_key as repository,
       c._git_remote as git_remote,
       c.project_path,
       c.sessions,
@@ -230,10 +229,10 @@ export async function getProjectActivity(
 
 	const query = `
     WITH project_key AS (
-      SELECT if(git_remote != '', git_remote, repository) as pk, any(project_path) as project_path
+      SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk, any(project_path) as project_path
       FROM rudel.session_analytics
       WHERE project_path = '${pp}'
-        AND (git_remote != '' OR repository != '')
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
         AND organization_id = '${org}'
       LIMIT 1
     )
@@ -243,7 +242,7 @@ export async function getProjectActivity(
       COUNT(*) as sessions,
       COUNT(DISTINCT s.user_id) as unique_users
     FROM project_key pk
-    INNER JOIN rudel.session_analytics s ON if(s.git_remote != '', s.git_remote, s.repository) = pk.pk
+    INNER JOIN rudel.session_analytics s ON if(s.git_remote != '', s.git_remote, if(s.package_name != '', s.package_name, s.project_path)) = pk.pk
     WHERE s.${buildDateFilter(d)}
       AND s.organization_id = '${org}'
     GROUP BY ${dateGrouping}, pk.project_path
@@ -310,10 +309,10 @@ export async function getProjectDetails(
 
 	const query = `
     WITH project_key AS (
-      SELECT if(git_remote != '', git_remote, repository) as pk
+      SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
       FROM rudel.session_analytics
       WHERE project_path = '${pp}'
-        AND (git_remote != '' OR repository != '')
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
         AND organization_id = '${org}'
       LIMIT 1
     )
@@ -329,7 +328,7 @@ export async function getProjectDetails(
       round(AVG(success_score), 2) as success_rate,
       round(SUM(actual_duration_min), 2) as total_duration_min
     FROM rudel.session_analytics
-    WHERE if(git_remote != '', git_remote, repository) = (SELECT pk FROM project_key)
+    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
     AND ${buildDateFilter(d)}
     AND organization_id = '${org}'
   `;
@@ -372,17 +371,17 @@ export async function getProjectContributors(
 
 	const query = `
     WITH project_key AS (
-      SELECT if(git_remote != '', git_remote, repository) as pk
+      SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
       FROM rudel.session_analytics
       WHERE project_path = '${pp}'
-        AND (git_remote != '' OR repository != '')
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
         AND organization_id = '${org}'
       LIMIT 1
     ),
     project_totals AS (
       SELECT COUNT(*) as total_sessions
       FROM rudel.session_analytics
-      WHERE if(git_remote != '', git_remote, repository) = (SELECT pk FROM project_key)
+      WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
         AND ${buildDateFilter(d)}
         AND organization_id = '${org}'
     )
@@ -395,7 +394,7 @@ export async function getProjectContributors(
       toString(max(session_date)) as last_session,
       round(COUNT(*) * 100.0 / (SELECT total_sessions FROM project_totals), 2) as contribution_percentage
     FROM rudel.session_analytics
-    WHERE if(git_remote != '', git_remote, repository) = (SELECT pk FROM project_key)
+    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
     GROUP BY user_id
@@ -418,10 +417,10 @@ export async function getProjectFeatureUsage(
 	const d = Number(days);
 
 	const pkSubquery = `(
-    SELECT if(git_remote != '', git_remote, repository) as pk
+    SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
     FROM rudel.session_analytics
     WHERE project_path = '${pp}'
-      AND (git_remote != '' OR repository != '')
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
       AND organization_id = '${org}'
     LIMIT 1
   )`;
@@ -433,7 +432,7 @@ export async function getProjectFeatureUsage(
       countIf(length(skills) > 0) as skills_sessions,
       countIf(length(slash_commands) > 0) as slash_commands_sessions
     FROM rudel.session_analytics
-    WHERE if(git_remote != '', git_remote, repository) = ${pkSubquery}
+    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
     AND ${buildDateFilter(d)}
     AND organization_id = '${org}'
   `;
@@ -442,7 +441,7 @@ export async function getProjectFeatureUsage(
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN subagent_types as val
-    WHERE if(git_remote != '', git_remote, repository) = ${pkSubquery}
+    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND val != ''
@@ -455,7 +454,7 @@ export async function getProjectFeatureUsage(
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN skills as val
-    WHERE if(git_remote != '', git_remote, repository) = ${pkSubquery}
+    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND val != ''
@@ -468,7 +467,7 @@ export async function getProjectFeatureUsage(
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
-    WHERE if(git_remote != '', git_remote, repository) = ${pkSubquery}
+    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND val != ''
@@ -544,10 +543,10 @@ export async function getProjectErrors(
 
 	const query = `
     WITH project_key AS (
-      SELECT if(git_remote != '', git_remote, repository) as pk
+      SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
       FROM rudel.session_analytics
       WHERE project_path = '${pp}'
-        AND (git_remote != '' OR repository != '')
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
         AND organization_id = '${org}'
       LIMIT 1
     ),
@@ -567,7 +566,7 @@ export async function getProjectErrors(
           ELSE NULL
         END as error_pattern
       FROM rudel.session_analytics
-      WHERE if(git_remote != '', git_remote, repository) = (SELECT pk FROM project_key)
+      WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
         AND ${buildDateFilter(d)}
         AND organization_id = '${org}'
         AND (content LIKE '%Error:%' OR content LIKE '%error:%')
@@ -607,7 +606,7 @@ export async function getProjectTrends(
 	const query = `
     SELECT
       toString(${dateFunc}) as date,
-      if(git_remote != '', git_remote, repository) as project_key,
+      if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as project_key,
       any(project_path) as project_path,
       COUNT(*) as sessions,
       round(SUM(actual_duration_min) / 60, 2) as total_hours,
@@ -616,7 +615,7 @@ export async function getProjectTrends(
     FROM rudel.session_analytics
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
-      AND (git_remote != '' OR repository != '')
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
     GROUP BY date, project_key
     ORDER BY date ASC, project_key ASC
   `;

@@ -35,7 +35,7 @@ export async function getOverviewKPIs(
     SELECT
       uniq(user_id) as distinct_users,
       count() as distinct_sessions,
-      uniq(if(git_remote != '', git_remote, if(repository != '', repository, project_path))) as distinct_projects,
+      uniq(if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))) as distinct_projects,
       (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN subagent_types as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_subagents,
       (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN skills as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_skills,
       (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands,

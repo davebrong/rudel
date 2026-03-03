@@ -16,8 +16,8 @@ export interface SessionAnalyticsRaw {
 	session_date: string;
 	project_path: string;
 	organization_id: string;
-	repository: string;
 	git_remote: string;
+	package_name: string;
 
 	// Interaction timing metrics
 	total_interactions: number;
@@ -105,7 +105,7 @@ export async function getSessionAnalytics(
 	}
 	if (repository) {
 		const escapedRepo = escapeString(repository);
-		filters += ` AND (repository = '${escapedRepo}' OR git_remote = '${escapedRepo}')`;
+		filters += ` AND (git_remote = '${escapedRepo}' OR package_name = '${escapedRepo}' OR project_path = '${escapedRepo}')`;
 	}
 
 	const sortColumn =
@@ -123,8 +123,8 @@ export async function getSessionAnalytics(
       formatDateTime(sa.session_date, '%Y-%m-%d %H:%i:%S') as session_date,
       project_path,
       organization_id,
-      repository,
       git_remote,
+      package_name,
       total_interactions,
       avg_period_sec,
       median_period_sec,
@@ -164,7 +164,8 @@ export async function getSessionAnalytics(
 			user_id: row.user_id,
 			session_date: row.session_date,
 			project_path: row.project_path,
-			repository: row.repository || null,
+			repository:
+				row.git_remote || row.package_name || row.project_path || null,
 			git_remote: row.git_remote || undefined,
 			duration_min: row.actual_duration_min,
 			total_tokens: row.total_tokens,
@@ -495,7 +496,8 @@ export async function getSessionDimensionAnalysis(
 
 	// Map dimension to SQL expression (for computed dimensions)
 	const dimensionExpressions: Record<string, string> = {
-		repository: "if(git_remote != '', git_remote, repository)",
+		repository:
+			"if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))",
 		used_skills: "if(length(skills) > 0, 1, 0)",
 		used_slash_commands: "if(length(slash_commands) > 0, 1, 0)",
 		used_subagents: "if(length(subagent_types) > 0, 1, 0)",
@@ -610,7 +612,7 @@ export async function getSessionDetail(
       formatDateTime(sa.session_date, '%Y-%m-%d %H:%i:%S') as session_date,
       formatDateTime(sa.last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
       project_path,
-      repository,
+      if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as repository,
       content,
       subagents,
       skills,

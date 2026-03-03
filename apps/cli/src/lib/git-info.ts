@@ -2,7 +2,6 @@ import { join } from "node:path";
 import { $ } from "bun";
 
 export interface GitInfo {
-	repository?: string;
 	gitRemote?: string;
 	packageName?: string;
 	packageType?: string;
@@ -32,42 +31,14 @@ export async function getGitInfo(cwd: string): Promise<GitInfo> {
 	]);
 
 	const gitRemote = remoteUrl ? normalizeRemoteUrl(remoteUrl) : undefined;
-	const repository = getRepositoryName(
-		gitRemote,
-		packageInfo?.name ?? null,
-		cwd,
-	);
 
 	return {
-		repository,
 		gitRemote,
 		packageName: packageInfo?.name,
 		packageType: packageInfo?.type,
 		branch: branch ?? undefined,
 		sha: sha ?? undefined,
 	};
-}
-
-/**
- * Extract a display name for the repository.
- * Prefers owner/repo from git remote, falls back to package name, then dir name.
- */
-function getRepositoryName(
-	gitRemote: string | undefined,
-	packageName: string | null,
-	cwd: string,
-): string | undefined {
-	if (gitRemote) {
-		// "github.com/owner/repo" → "owner/repo"
-		const parts = gitRemote.split("/");
-		if (parts.length >= 3) {
-			return parts.slice(1).join("/");
-		}
-		return gitRemote;
-	}
-	if (packageName) return packageName;
-	const dirName = cwd.split("/").pop();
-	return dirName ?? undefined;
 }
 
 interface PackageInfo {

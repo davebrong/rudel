@@ -49,7 +49,6 @@ describe("CLI upload to local API", () => {
 			source: "claude_code",
 			sessionId: testId,
 			projectPath: "/test/cli-api-upload",
-			repository: "test-repo",
 			gitBranch: "main",
 			gitSha: "abc123",
 			tag: "tests",

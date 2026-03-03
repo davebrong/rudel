@@ -19,7 +19,6 @@ const rudel_session_analytics = table({
 		{ name: "session_id", type: "String" },
 		{ name: "organization_id", type: "String" },
 		{ name: "project_path", type: "String" },
-		{ name: "repository", type: "String", nullable: true },
 		{ name: "git_remote", type: "String", default: "''" },
 		{ name: "package_name", type: "String", default: "''" },
 		{ name: "package_type", type: "String", default: "''" },
@@ -81,12 +80,6 @@ const rudel_session_analytics = table({
 		{
 			name: "idx_project_path",
 			expression: "project_path",
-			type: "set",
-			granularity: 4,
-		},
-		{
-			name: "idx_repository",
-			expression: "repository",
 			type: "set",
 			granularity: 4,
 		},

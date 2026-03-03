@@ -32,7 +32,7 @@ export async function getTopRecurringErrors(
         session_id,
         user_id,
         session_date,
-        repository,
+        if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as repository,
         content,
         CASE
           WHEN content ILIKE '%Error:%' THEN extractAll(content, '([A-Z][a-zA-Z]+Error):')[1]
@@ -175,7 +175,10 @@ export async function getErrorTrends(
 	}
 
 	// For repository and user_id splits
-	const dimension_field = split_by === "repository" ? "repository" : split_by;
+	const dimension_field =
+		split_by === "repository"
+			? "if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))"
+			: split_by;
 
 	const query = `
     WITH error_sessions AS (

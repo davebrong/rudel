@@ -58,10 +58,10 @@ async function runHookUpload(): Promise<void> {
 			process.env.GAZED_INGEST_ENDPOINT ?? config.endpoint ?? DEFAULT_ENDPOINT;
 
 		logger.info(
-			"Uploading session {sessionId}, repo={repository}, branch={branch}, tag={tag}, bytes={bytes}, subagents={subagents}",
+			"Uploading session {sessionId}, remote={gitRemote}, branch={branch}, tag={tag}, bytes={bytes}, subagents={subagents}",
 			{
 				sessionId: request.sessionId,
-				repository: request.repository ?? "none",
+				gitRemote: request.gitRemote ?? "none",
 				branch: request.gitBranch ?? "none",
 				tag: request.tag ?? "none",
 				bytes: request.content.length,

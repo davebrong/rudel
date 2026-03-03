@@ -14,7 +14,6 @@ export const baseSessionColumns: ColumnDefinition[] = [
 	{ name: "session_id", type: "String" },
 	{ name: "organization_id", type: "String" },
 	{ name: "project_path", type: "String" },
-	{ name: "repository", type: "String", nullable: true },
 	{ name: "git_remote", type: "String", default: "''" },
 	{ name: "package_name", type: "String", default: "''" },
 	{ name: "package_type", type: "String", default: "''" },

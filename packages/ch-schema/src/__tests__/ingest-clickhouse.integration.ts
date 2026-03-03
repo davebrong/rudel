@@ -90,7 +90,6 @@ describe("ingestRudelClaudeSessions", () => {
 		session_id: testId,
 		organization_id: "org_test",
 		project_path: "/test/project",
-		repository: null,
 		git_remote: "",
 		package_name: "",
 		package_type: "",

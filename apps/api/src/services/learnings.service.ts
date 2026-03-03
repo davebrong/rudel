@@ -52,7 +52,7 @@ export async function getLearningsFeed(
           last_interaction_date,
           project_path,
           organization_id,
-          repository,
+          if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as repository,
           subagents,
           skills,
           slash_commands,
@@ -220,7 +220,7 @@ export async function getLearningsTrend(
 
 	const splitColumn =
 		split_by === "repository"
-			? "if(repository != '', repository, 'Unknown')"
+			? "if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))"
 			: "user_id";
 
 	const query = `

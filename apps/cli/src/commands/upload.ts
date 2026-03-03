@@ -240,7 +240,11 @@ async function runSingleUpload(
 	write(`Found session at: ${sessionInfo.transcriptPath}`);
 
 	const gitInfo = await getGitInfo(sessionInfo.projectPath);
-	if (gitInfo.repository) write(`Repository: ${gitInfo.repository}`);
+	const displayName =
+		gitInfo.gitRemote ||
+		gitInfo.packageName ||
+		sessionInfo.projectPath.split("/").pop();
+	if (displayName) write(`Repository: ${displayName}`);
 	if (gitInfo.branch) write(`Branch: ${gitInfo.branch}`);
 
 	const organizationId =
