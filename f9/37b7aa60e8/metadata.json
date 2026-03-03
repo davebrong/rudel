@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "f937b7aa60e8",
+  "strategy": "manual-commit",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/web/src/components/charts/ModelTokensChart.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f9/37b7aa60e8/0/metadata.json",
+      "transcript": "/f9/37b7aa60e8/0/full.jsonl",
+      "context": "/f9/37b7aa60e8/0/context.md",
+      "content_hash": "/f9/37b7aa60e8/0/content_hash.txt",
+      "prompt": "/f9/37b7aa60e8/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 13,
+    "cache_creation_tokens": 77139,
+    "cache_read_tokens": 362939,
+    "output_tokens": 4447,
+    "api_call_count": 11
+  }
+}
