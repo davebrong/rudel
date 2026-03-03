@@ -2,6 +2,10 @@
 
 Analytics for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Rudel gives you a dashboard with insights on your coding sessions — token usage, session duration, activity patterns, model usage, and more.
 
+## Prerequisites
+
+- [Bun](https://bun.sh) runtime installed
+
 ## Getting Started
 
 1. Create an account at [app.rudel.ai](https://app.rudel.ai)

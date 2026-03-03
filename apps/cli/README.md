@@ -2,6 +2,10 @@
 
 CLI for uploading [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session transcripts to [Rudel](https://app.rudel.ai) for analytics.
 
+## Prerequisites
+
+- [Bun](https://bun.sh) runtime installed
+
 ## Installation
 
 ```bash
