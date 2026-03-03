@@ -2,7 +2,6 @@ import type {
 	DimensionAnalysisInput,
 	SessionAnalytics,
 } from "@rudel/api-routes";
-import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Activity, Clock, Timer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -24,6 +23,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -64,37 +64,38 @@ export function SessionsListPage() {
 		return () => clearTimeout(timer);
 	}, [selectedDimension, selectedMetric, selectedSplitBy]);
 
-	const { data: summary } = useQuery(
+	const { data: summary } = useAnalyticsQuery(
 		orpc.analytics.sessions.summary.queryOptions({ input: { days } }),
 	);
 
-	const { data: comparison } = useQuery(
+	const { data: comparison } = useAnalyticsQuery(
 		orpc.analytics.sessions.summaryComparison.queryOptions({
 			input: { days },
 		}),
 	);
 
-	const { data: sessions, isLoading } = useQuery(
+	const { data: sessions, isLoading } = useAnalyticsQuery(
 		orpc.analytics.sessions.list.queryOptions({
 			input: { days, limit: 100, sortBy: "session_date", sortOrder: "desc" },
 		}),
 	);
 
-	const { data: userMappings } = useQuery(
+	const { data: userMappings } = useAnalyticsQuery(
 		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
 	);
 
-	const { data: dimensionData, isLoading: dimensionLoading } = useQuery(
-		orpc.analytics.sessions.dimensionAnalysis.queryOptions({
-			input: {
-				days,
-				dimension: debouncedDimension,
-				metric: debouncedMetric,
-				splitBy: debouncedSplitBy || undefined,
-				limit: 10,
-			},
-		}),
-	);
+	const { data: dimensionData, isLoading: dimensionLoading } =
+		useAnalyticsQuery(
+			orpc.analytics.sessions.dimensionAnalysis.queryOptions({
+				input: {
+					days,
+					dimension: debouncedDimension,
+					metric: debouncedMetric,
+					splitBy: debouncedSplitBy || undefined,
+					limit: 10,
+				},
+			}),
+		);
 
 	const userMap = useMemo(() => {
 		const map = new Map<string, string>();

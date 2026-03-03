@@ -43,7 +43,9 @@ export function CliSetupHint() {
 				</div>
 				<p className="text-xs text-muted-foreground/60 max-w-md mt-6">
 					Sessions will appear here automatically after your next Claude Code
-					session ends.
+					session ends. <span className="font-mono">rudel enable</span> will
+					also offer to upload your previous sessions, or you can run{" "}
+					<span className="font-mono">rudel upload</span> at any time.
 				</p>
 			</div>
 		</AnalyticsCard>

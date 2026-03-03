@@ -11,7 +11,7 @@ import {
 	UserPlus,
 	X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
@@ -28,32 +28,18 @@ import {
 	SelectValue,
 } from "../../components/ui/select";
 import { useOrganization } from "../../contexts/OrganizationContext";
+import { useFullOrganization } from "../../hooks/useFullOrganization";
 import { authClient } from "../../lib/auth-client";
-
-interface FullOrg {
-	id: string;
-	name: string;
-	slug: string;
-	members: readonly {
-		id: string;
-		userId: string;
-		role: string;
-		user: { id: string; name: string; email: string; image: string | null };
-	}[];
-	invitations: readonly {
-		id: string;
-		email: string;
-		role: string | null;
-		status: string;
-	}[];
-}
 
 export function OrganizationPage() {
 	const { activeOrg, organizations, switchOrg } = useOrganization();
 	const { data: session } = authClient.useSession();
 	const navigate = useNavigate();
-	const [fullOrg, setFullOrg] = useState<FullOrg | null>(null);
-	const [loading, setLoading] = useState(true);
+	const {
+		data: fullOrg,
+		isLoading: loading,
+		invalidate,
+	} = useFullOrganization(activeOrg?.id);
 	const [inviteEmail, setInviteEmail] = useState("");
 	const [inviteRole, setInviteRole] = useState("member");
 	const [inviting, setInviting] = useState(false);
@@ -107,25 +93,8 @@ export function OrganizationPage() {
 
 		setEditing(false);
 		setSaving(false);
-		await fetchOrg();
+		invalidate();
 	};
-
-	const fetchOrg = async () => {
-		if (!activeOrg) return;
-		setLoading(true);
-		const res = await authClient.organization.getFullOrganization({
-			query: { organizationId: activeOrg.id },
-		});
-		if (res.data) {
-			setFullOrg(res.data as unknown as FullOrg);
-		}
-		setLoading(false);
-	};
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: refetch when org changes
-	useEffect(() => {
-		fetchOrg();
-	}, [activeOrg?.id]);
 
 	const handleInvite = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -139,7 +108,7 @@ export function OrganizationPage() {
 			const link = `${window.location.origin}/invitation/${res.data.id}`;
 			setInviteLink(link);
 			setInviteEmail("");
-			await fetchOrg();
+			invalidate();
 		}
 		setInviting(false);
 	};
@@ -153,12 +122,12 @@ export function OrganizationPage() {
 
 	const handleRemoveMember = async (memberIdOrEmail: string) => {
 		await authClient.organization.removeMember({ memberIdOrEmail });
-		await fetchOrg();
+		invalidate();
 	};
 
 	const handleCancelInvitation = async (invitationId: string) => {
 		await authClient.organization.cancelInvitation({ invitationId });
-		await fetchOrg();
+		invalidate();
 	};
 
 	if (!activeOrg) {

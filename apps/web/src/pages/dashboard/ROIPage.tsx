@@ -2,7 +2,6 @@ import type {
 	DeveloperCostBreakdown,
 	ProjectCostBreakdown,
 } from "@rudel/api-routes";
-import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
 	Activity,
@@ -30,6 +29,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
@@ -47,23 +47,23 @@ export function ROIPage() {
 		devHourlyRate: 100,
 	});
 
-	const { data: metrics, isLoading } = useQuery(
+	const { data: metrics, isLoading } = useAnalyticsQuery(
 		orpc.analytics.roi.metrics.queryOptions({ input: { days } }),
 	);
 
-	const { data: trends } = useQuery(
+	const { data: trends } = useAnalyticsQuery(
 		orpc.analytics.roi.trends.queryOptions({ input: { days: 56 } }),
 	);
 
-	const { data: developerCosts } = useQuery(
+	const { data: developerCosts } = useAnalyticsQuery(
 		orpc.analytics.roi.breakdownDevelopers.queryOptions({ input: { days } }),
 	);
 
-	const { data: projectCosts } = useQuery(
+	const { data: projectCosts } = useAnalyticsQuery(
 		orpc.analytics.roi.breakdownProjects.queryOptions({ input: { days } }),
 	);
 
-	const { data: userMappings } = useQuery(
+	const { data: userMappings } = useAnalyticsQuery(
 		orpc.analytics.users.mappings.queryOptions({ input: { days: 90 } }),
 	);
 

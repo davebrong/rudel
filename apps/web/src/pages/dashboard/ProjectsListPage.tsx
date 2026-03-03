@@ -1,5 +1,4 @@
 import type { ProjectInvestment } from "@rudel/api-routes";
-import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
 	Clock,
@@ -18,6 +17,7 @@ import { StatCard } from "@/components/analytics/StatCard";
 import { ProjectTrendChart } from "@/components/charts/ProjectTrendChart";
 import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { encodeProjectPath } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -115,11 +115,11 @@ export function ProjectsListPage() {
 		useDateRange();
 	const days = calculateDays();
 
-	const { data: projects, isLoading } = useQuery(
+	const { data: projects, isLoading } = useAnalyticsQuery(
 		orpc.analytics.projects.investment.queryOptions({ input: { days } }),
 	);
 
-	const { data: trendData } = useQuery(
+	const { data: trendData } = useAnalyticsQuery(
 		orpc.analytics.projects.trends.queryOptions({ input: { days } }),
 	);
 
