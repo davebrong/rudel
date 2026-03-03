@@ -14,7 +14,10 @@ import { loadCredentials } from "../lib/credentials.js";
 import { loadFailedUploads } from "../lib/failed-uploads.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId } from "../lib/project-config.js";
-import { scanAndGroupProjects } from "../lib/project-grouping.js";
+import {
+	type ProjectGroup,
+	scanAndGroupProjects,
+} from "../lib/project-grouping.js";
 import { resolveSession } from "../lib/session-resolver.js";
 import {
 	DEFAULT_ENDPOINT,
@@ -57,22 +60,23 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	}
 
 	const options: Array<{
-		value: ScannedProject;
+		value: ProjectGroup;
 		label: string;
 		hint: string;
 	}> = [];
-	const preSelected: ScannedProject[] = [];
+	const preSelected: ProjectGroup[] = [];
 
 	for (const group of groups) {
-		for (const proj of group.projects) {
-			options.push({
-				value: proj,
-				label: `[${getAdapterName(proj.source)}] ${proj.displayPath}`,
-				hint: sessionCountHint(proj.sessionCount),
-			});
-			if (group.containsCwd) {
-				preSelected.push(proj);
-			}
+		const sources = [
+			...new Set(group.projects.map((p) => getAdapterName(p.source))),
+		];
+		options.push({
+			value: group,
+			label: `[${sources.join(", ")}] ${group.displayName}`,
+			hint: sessionCountHint(group.totalSessions),
+		});
+		if (group.containsCwd) {
+			preSelected.push(group);
 		}
 	}
 
@@ -88,10 +92,8 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 		return;
 	}
 
-	const totalSessions = selected.reduce(
-		(sum, proj) => sum + proj.sessionCount,
-		0,
-	);
+	const selectedProjects = selected.flatMap((g) => g.projects);
+	const totalSessions = selected.reduce((sum, g) => sum + g.totalSessions, 0);
 	p.log.info(
 		`Uploading ${totalSessions} session(s) from ${selected.length} project(s)`,
 	);
@@ -103,14 +105,14 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 
 	// Flatten all sessions with their project context for concurrent upload
 	const work: Array<{
-		session: (typeof selected)[number]["sessions"][number];
+		session: (typeof selectedProjects)[number]["sessions"][number];
 		project: ScannedProject;
 		adapter: ReturnType<typeof getAdapter>;
 		gitInfo: Awaited<ReturnType<typeof getGitInfo>>;
 		organizationId: string | undefined;
 	}> = [];
 
-	for (const project of selected) {
+	for (const project of selectedProjects) {
 		const adapter = getAdapter(project.source);
 		const gitInfo = await getGitInfo(project.projectPath);
 		const organizationId =

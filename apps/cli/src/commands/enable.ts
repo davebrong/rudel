@@ -141,8 +141,9 @@ async function runEnable(): Promise<void> {
 	);
 
 	if (totalSessions > 0) {
+		const groupLabel = cwdGroup?.displayName ?? "this project";
 		const shouldUpload = await p.confirm({
-			message: `Found ${totalSessions} previous session(s) across ${matchingProjects.length} checkout(s). Upload them now?`,
+			message: `Found ${totalSessions} previous session(s) for ${groupLabel}. Upload them now?`,
 			initialValue: false,
 		});
 
@@ -150,7 +151,7 @@ async function runEnable(): Promise<void> {
 			const items: BatchUploadItem[] = matchingProjects.flatMap((proj) =>
 				proj.sessions.map((session) => ({
 					sessionId: session.sessionId,
-					label: `${proj.displayPath}/${session.sessionId}`,
+					label: session.sessionId,
 					transcriptPath: session.transcriptPath,
 					projectPath: session.projectPath,
 					source: proj.source,
