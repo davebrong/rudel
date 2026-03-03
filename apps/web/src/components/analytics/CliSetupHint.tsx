@@ -1,6 +1,26 @@
 import { Terminal } from "lucide-react";
 import { AnalyticsCard } from "./AnalyticsCard";
 
+interface CommandBlockProps {
+	label: string;
+	command: string;
+	hint?: string;
+}
+
+function CommandBlock({ label, command, hint }: CommandBlockProps) {
+	return (
+		<div>
+			<p className="text-xs font-medium text-muted-foreground mb-2">{label}</p>
+			<pre className="bg-background rounded-md border border-border px-4 py-3 text-sm font-mono text-foreground">
+				{command}
+			</pre>
+			{hint && (
+				<p className="text-xs text-muted-foreground/60 mt-1.5">{hint}</p>
+			)}
+		</div>
+	);
+}
+
 export function CliSetupHint() {
 	return (
 		<AnalyticsCard className="mt-4">
@@ -16,37 +36,25 @@ export function CliSetupHint() {
 					your team's Claude Code sessions.
 				</p>
 				<div className="w-full max-w-md text-left space-y-4">
-					<div>
-						<p className="text-xs font-medium text-muted-foreground mb-2">
-							1. Install the CLI globally
-						</p>
-						<pre className="bg-background rounded-md border border-border px-4 py-3 text-sm font-mono text-foreground">
-							npm install -g rudel
-						</pre>
-					</div>
-					<div>
-						<p className="text-xs font-medium text-muted-foreground mb-2">
-							2. Log in to your account
-						</p>
-						<pre className="bg-background rounded-md border border-border px-4 py-3 text-sm font-mono text-foreground">
-							rudel login
-						</pre>
-					</div>
-					<div>
-						<p className="text-xs font-medium text-muted-foreground mb-2">
-							3. Enable auto-upload in your repository
-						</p>
-						<pre className="bg-background rounded-md border border-border px-4 py-3 text-sm font-mono text-foreground">
-							rudel enable
-						</pre>
-					</div>
+					<CommandBlock
+						label="1. Install the CLI globally"
+						command="npm install -g rudel"
+					/>
+					<CommandBlock
+						label="2. Log in to your account"
+						command="rudel login"
+					/>
+					<CommandBlock
+						label="3. Enable auto-upload in your repository"
+						command="rudel enable"
+						hint="Sessions will appear here automatically after your next Claude Code session ends. The enable command will also ask you if you want to upload previous sessions"
+					/>
+					<CommandBlock
+						label="4. Or upload sessions manually"
+						command="rudel upload"
+						hint="Upload previous sessions at any time."
+					/>
 				</div>
-				<p className="text-xs text-muted-foreground/60 max-w-md mt-6">
-					Sessions will appear here automatically after your next Claude Code
-					session ends. <span className="font-mono">rudel enable</span> will
-					also offer to upload your previous sessions, or you can run{" "}
-					<span className="font-mono">rudel upload</span> at any time.
-				</p>
 			</div>
 		</AnalyticsCard>
 	);
