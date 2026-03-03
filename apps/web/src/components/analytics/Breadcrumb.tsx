@@ -1,5 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useUserMap } from "@/hooks/useUserMap";
+import { formatUsername } from "@/lib/format";
 
 const segmentLabels: Record<string, string> = {
 	dashboard: "Overview",
@@ -17,9 +19,15 @@ export function Breadcrumb() {
 	const { pathname } = useLocation();
 	const segments = pathname.split("/").filter(Boolean);
 
+	const { userMap } = useUserMap();
+
 	const crumbs = segments.map((segment, index) => {
 		const href = `/${segments.slice(0, index + 1).join("/")}`;
-		const label = segmentLabels[segment] || decodeURIComponent(segment);
+		const prevSegment = index > 0 ? segments[index - 1] : null;
+		const isDeveloperUserId = prevSegment === "developers";
+		const label = isDeveloperUserId
+			? formatUsername(segment, userMap)
+			: segmentLabels[segment] || decodeURIComponent(segment);
 		const isLast = index === segments.length - 1;
 
 		return { href, label, isLast };
