@@ -31,6 +31,7 @@ import {
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { useUserMap } from "@/hooks/useUserMap";
 import {
 	calculateRollingAverage,
 	calculateWeekOverWeek,
@@ -96,21 +97,9 @@ export function DeveloperDetailPage() {
 		}),
 	);
 
-	const { data: userMappings } = useAnalyticsQuery(
-		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
-	);
+	const { userMap } = useUserMap();
 
-	const userMapRecord = useMemo(() => {
-		const record: Record<string, string> = {};
-		if (userMappings) {
-			for (const m of userMappings) {
-				record[m.user_id] = m.username;
-			}
-		}
-		return record;
-	}, [userMappings]);
-
-	const username = formatUsername(userId || "", userMapRecord);
+	const username = formatUsername(userId || "", userMap);
 
 	const chartData = useMemo(() => {
 		if (!timeline) return [];
@@ -490,18 +479,19 @@ export function DeveloperDetailPage() {
 						Projects Worked On
 					</h2>
 					<ResponsiveContainer width="100%" height={350}>
-						<BarChart data={projectChartData} margin={{ bottom: 60 }}>
+						<BarChart data={projectChartData}>
 							<CartesianGrid
 								strokeDasharray="3 3"
 								stroke={chartTheme.gridStroke}
 							/>
 							<XAxis
 								dataKey="name"
-								angle={-45}
-								textAnchor="end"
-								height={80}
 								interval={0}
 								stroke={chartTheme.axisStroke}
+								tick={{ fontSize: 12 }}
+								tickFormatter={(v) =>
+									v.length > 12 ? `${v.slice(0, 12)}...` : v
+								}
 							/>
 							<YAxis yAxisId="left" stroke={chartTheme.axisStroke} />
 							<YAxis
