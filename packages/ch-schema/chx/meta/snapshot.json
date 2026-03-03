@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"generatedAt": "2026-03-03T16:02:52.394Z",
+	"generatedAt": "2026-03-03T18:10:35.114Z",
 	"definitions": [
 		{
 			"database": "rudel",
@@ -28,11 +28,6 @@
 				{
 					"name": "project_path",
 					"type": "String"
-				},
-				{
-					"name": "repository",
-					"type": "String",
-					"nullable": true
 				},
 				{
 					"name": "git_remote",
@@ -121,11 +116,6 @@
 					"type": "String"
 				},
 				{
-					"name": "repository",
-					"type": "String",
-					"nullable": true
-				},
-				{
 					"name": "git_remote",
 					"type": "String",
 					"default": "''"
@@ -205,11 +195,6 @@
 				{
 					"name": "project_path",
 					"type": "String"
-				},
-				{
-					"name": "repository",
-					"type": "String",
-					"nullable": true
 				},
 				{
 					"name": "git_remote",
@@ -402,12 +387,6 @@
 				{
 					"name": "idx_project_path",
 					"expression": "project_path",
-					"type": "set",
-					"granularity": 4
-				},
-				{
-					"name": "idx_repository",
-					"expression": "repository",
 					"type": "set",
 					"granularity": 4
 				},
