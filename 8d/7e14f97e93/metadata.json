@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "8d7e14f97e93",
+  "strategy": "manual-commit",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/handlers/analytics/index.ts",
+    "apps/api/src/handlers/analytics/users.ts",
+    "apps/api/src/services/developer.service.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/user.service.ts",
+    "apps/web/src/components/charts/DeveloperTrendChart.tsx",
+    "apps/web/src/components/charts/DimensionAnalysisChart.tsx",
+    "apps/web/src/components/charts/ErrorTrendChart.tsx",
+    "apps/web/src/components/charts/LearningsTrendChart.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "docs/deploy-column-migration.md",
+    "packages/api-routes/src/schemas/analytics.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8d/7e14f97e93/0/metadata.json",
+      "transcript": "/8d/7e14f97e93/0/full.jsonl",
+      "context": "/8d/7e14f97e93/0/context.md",
+      "content_hash": "/8d/7e14f97e93/0/content_hash.txt",
+      "prompt": "/8d/7e14f97e93/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 63,
+    "cache_creation_tokens": 114221,
+    "cache_read_tokens": 3917887,
+    "output_tokens": 17836,
+    "api_call_count": 59
+  }
+}
