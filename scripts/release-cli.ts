@@ -34,7 +34,6 @@ type PackageJson = {
 
 const CLI_DIR = resolve("apps/cli");
 const CLI_PKG_PATH = resolve(CLI_DIR, "package.json");
-const APP_TS_PATH = resolve(CLI_DIR, "src/app.ts");
 
 export async function main(): Promise<void> {
 	const args = parseArgs(process.argv.slice(2));
@@ -46,19 +45,32 @@ export async function main(): Promise<void> {
 	ensureCleanWorkingTree();
 	ensureNpmAuth();
 
-	// 2. Version bump
+	// 2. Determine version to publish
 	const pkg = readCliPackageJson();
 	const currentVersion = pkg.version;
-	const nextVersion = bumpVersion(currentVersion, args.bump);
+	const alreadyPublished = isVersionPublished(pkg.name, currentVersion);
 
-	logLine(`Version: ${currentVersion} -> ${nextVersion} (${args.bump})`);
+	let publishVersion: string;
+	if (alreadyPublished) {
+		// Current version is published — bump to next
+		publishVersion = bumpVersion(currentVersion, args.bump);
+		logLine(
+			`Version: ${currentVersion} -> ${publishVersion} (${args.bump})`,
+		);
+	} else {
+		// Current version not yet published (e.g. Release Please bumped it)
+		publishVersion = currentVersion;
+		logLine(`Version: ${publishVersion} (not yet published, skipping bump)`);
+	}
 
 	if (args.dryRun) {
 		logLine("Dry-run: would update version and publish. Stopping here.");
 		return;
 	}
 
-	writeCliVersion(nextVersion);
+	if (alreadyPublished) {
+		writeCliVersion(publishVersion);
+	}
 
 	// 3. Quality gates
 	runQualityGates();
@@ -67,10 +79,10 @@ export async function main(): Promise<void> {
 	const otp = await promptForOtp();
 	publishCli(otp);
 
-	// 5. Commit, tag, push
-	commitTagAndPush(nextVersion);
+	// 5. Tag and push
+	tagAndPush(publishVersion, alreadyPublished);
 
-	logLine(`Released rudel@${nextVersion}`);
+	logLine(`Released rudel@${publishVersion}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -95,23 +107,11 @@ function bumpVersion(current: string, bump: "patch" | "minor"): string {
 }
 
 function writeCliVersion(version: string): void {
-	// Update package.json
 	const pkg = JSON.parse(readFileSync(CLI_PKG_PATH, "utf8"));
 	pkg.version = version;
 	writeFileSync(CLI_PKG_PATH, `${JSON.stringify(pkg, null, "\t")}\n`);
 
-	// Update hardcoded version in app.ts
-	const appTs = readFileSync(APP_TS_PATH, "utf8");
-	const updated = appTs.replace(
-		/currentVersion:\s*"[^"]+"/,
-		`currentVersion: "${version}"`,
-	);
-	if (updated === appTs) {
-		fail("Could not find currentVersion in app.ts to update");
-	}
-	writeFileSync(APP_TS_PATH, updated);
-
-	logLine(`Updated version to ${version} in package.json and app.ts`);
+	logLine(`Updated version to ${version} in package.json`);
 }
 
 // ---------------------------------------------------------------------------
@@ -143,12 +143,15 @@ function isVersionPublished(name: string, version: string): boolean {
 // Git
 // ---------------------------------------------------------------------------
 
-function commitTagAndPush(version: string): void {
+function tagAndPush(version: string, commitVersionBump: boolean): void {
 	const tag = `rudel@${version}`;
 
-	logLine("Committing version changes...");
-	runCommand("git", ["add", CLI_PKG_PATH, APP_TS_PATH]);
-	runCommand("git", ["commit", "-m", `chore: release rudel@${version}`]);
+	if (commitVersionBump) {
+		logLine("Committing version changes...");
+		runCommand("git", ["add", CLI_PKG_PATH]);
+		runCommand("git", ["commit", "-m", `chore: release rudel@${version}`]);
+	}
+
 	runCommand("git", ["tag", tag]);
 	runCommand("git", ["push", "origin", "main"]);
 	runCommand("git", ["push", "origin", tag]);
