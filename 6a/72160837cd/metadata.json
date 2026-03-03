@@ -3,7 +3,7 @@
   "checkpoint_id": "6a72160837cd",
   "strategy": "manual-commit",
   "branch": "marc/dev-name-resolution",
-  "checkpoints_count": 13,
+  "checkpoints_count": 14,
   "files_touched": [
     "apps/web/src/components/learnings/LearningsEmptyState.tsx",
     "apps/web/src/components/learnings/TimelineItem.tsx",
@@ -30,13 +30,20 @@
       "context": "/6a/72160837cd/2/context.md",
       "content_hash": "/6a/72160837cd/2/content_hash.txt",
       "prompt": "/6a/72160837cd/2/prompt.txt"
+    },
+    {
+      "metadata": "/6a/72160837cd/3/metadata.json",
+      "transcript": "/6a/72160837cd/3/full.jsonl",
+      "context": "/6a/72160837cd/3/context.md",
+      "content_hash": "/6a/72160837cd/3/content_hash.txt",
+      "prompt": "/6a/72160837cd/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 171,
-    "cache_creation_tokens": 353586,
-    "cache_read_tokens": 11995850,
-    "output_tokens": 48595,
-    "api_call_count": 140
+    "input_tokens": 249,
+    "cache_creation_tokens": 543766,
+    "cache_read_tokens": 19787783,
+    "output_tokens": 102342,
+    "api_call_count": 212
   }
 }
