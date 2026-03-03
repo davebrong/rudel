@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "6a72160837cd",
+  "strategy": "manual-commit",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 8,
+  "files_touched": [
+    "apps/web/src/components/learnings/LearningsEmptyState.tsx",
+    "apps/web/src/components/learnings/TimelineItem.tsx",
+    "apps/web/src/pages/dashboard/LearningsPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6a/72160837cd/0/metadata.json",
+      "transcript": "/6a/72160837cd/0/full.jsonl",
+      "context": "/6a/72160837cd/0/context.md",
+      "content_hash": "/6a/72160837cd/0/content_hash.txt",
+      "prompt": "/6a/72160837cd/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 56,
+    "cache_creation_tokens": 72482,
+    "cache_read_tokens": 2309342,
+    "output_tokens": 13101,
+    "api_call_count": 38
+  }
+}
