@@ -1,0 +1,47 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4d9d2ed1860f",
+  "session_id": "ef884183-9676-4111-a20b-f605a46e7946",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T07:04:52.149302Z",
+  "branch": "marc/optimize-data-fetching",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/DeleteOrganizationDialog.tsx",
+    "apps/web/src/contexts/OrganizationContext.tsx",
+    "apps/web/src/hooks/useAccounts.ts",
+    "apps/web/src/hooks/useAnalyticsQuery.ts",
+    "apps/web/src/hooks/useFullOrganization.ts",
+    "apps/web/src/lib/query-client.ts",
+    "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/LearningsPage.tsx",
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx",
+    "apps/web/src/pages/dashboard/OverviewPage.tsx",
+    "apps/web/src/pages/dashboard/ProfilePage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectsListPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "apps/web/src/pages/dashboard/SessionDetailPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 150,
+    "cache_creation_tokens": 277346,
+    "cache_read_tokens": 6982697,
+    "output_tokens": 21089,
+    "api_call_count": 71
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T07:04:51.581006Z",
+    "agent_lines": 184,
+    "human_added": 276,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 460,
+    "agent_percentage": 40
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-rio-de-janeiro/ef884183-9676-4111-a20b-f605a46e7946.jsonl"
+}
