@@ -1,8 +1,8 @@
 import type { ModelTokensTrendData } from "@rudel/api-routes";
 import { useMemo } from "react";
 import {
-	Bar,
-	BarChart,
+	Area,
+	AreaChart,
 	CartesianGrid,
 	Legend,
 	ResponsiveContainer,
@@ -13,7 +13,6 @@ import {
 import { useChartTheme } from "@/hooks/useChartTheme";
 
 const MODEL_COLORS = [
-	"#6b7280",
 	"#3b82f6",
 	"#f59e0b",
 	"#10b981",
@@ -22,6 +21,7 @@ const MODEL_COLORS = [
 	"#06b6d4",
 	"#ec4899",
 	"#f97316",
+	"#6b7280",
 ];
 
 function formatCompactNumber(num: number): string {
@@ -32,15 +32,7 @@ function formatCompactNumber(num: number): string {
 }
 
 function shortenModelName(model: string): string {
-	if (model === "Weighted") return "Weighted";
 	return model.replace("claude-", "").replace(/-\d{8}$/, "");
-}
-
-function getModelWeight(model: string): number {
-	const lower = model.toLowerCase();
-	if (lower.includes("opus")) return 3.2;
-	if (lower.includes("haiku")) return 0.53;
-	return 1;
 }
 
 interface ModelTokensChartProps {
@@ -52,7 +44,10 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 
 	const { chartData, models } = useMemo(() => {
 		const modelSet = new Set<string>();
-		const byDate = new Map<string, Record<string, number | string>>();
+		const byDate = new Map<
+			string,
+			{ _sort: string } & Record<string, number | string>
+		>();
 
 		for (const row of data) {
 			modelSet.add(row.model);
@@ -60,17 +55,21 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 				month: "short",
 				day: "numeric",
 			});
-			const entry = byDate.get(dateLabel) || { date: dateLabel, Weighted: 0 };
+			const entry = byDate.get(row.date) || {
+				date: dateLabel,
+				_sort: row.date,
+			};
 			entry[row.model] = row.total_tokens;
-			entry.Weighted =
-				((entry.Weighted as number) || 0) +
-				row.total_tokens * getModelWeight(row.model);
-			byDate.set(dateLabel, entry);
+			byDate.set(row.date, entry);
 		}
 
+		const sorted = Array.from(byDate.values()).sort((a, b) =>
+			a._sort.localeCompare(b._sort),
+		);
+
 		return {
-			chartData: Array.from(byDate.values()),
-			models: ["Weighted", ...Array.from(modelSet)],
+			chartData: sorted,
+			models: Array.from(modelSet),
 		};
 	}, [data]);
 
@@ -78,7 +77,7 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 
 	return (
 		<ResponsiveContainer width="100%" height={400}>
-			<BarChart
+			<AreaChart
 				data={chartData}
 				margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
 			>
@@ -92,7 +91,6 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 				/>
 				<YAxis tick={{ fontSize: 12 }} tickFormatter={formatCompactNumber} />
 				<Tooltip
-					cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
 					contentStyle={{
 						backgroundColor: tooltipBg,
 						border: `1px solid ${tooltipBorder}`,
@@ -107,14 +105,18 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 				/>
 				<Legend formatter={shortenModelName} />
 				{models.map((model, i) => (
-					<Bar
+					<Area
 						key={model}
+						type="monotone"
 						dataKey={model}
+						stackId="1"
 						fill={MODEL_COLORS[i % MODEL_COLORS.length]}
+						stroke={MODEL_COLORS[i % MODEL_COLORS.length]}
+						fillOpacity={0.6}
 						name={model}
 					/>
 				))}
-			</BarChart>
+			</AreaChart>
 		</ResponsiveContainer>
 	);
 }
