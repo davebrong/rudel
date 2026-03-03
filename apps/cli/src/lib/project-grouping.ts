@@ -1,5 +1,8 @@
 import { homedir } from "node:os";
-import type { ScannedProject } from "@rudel/agent-adapters";
+import {
+	getAvailableAdapters,
+	type ScannedProject,
+} from "@rudel/agent-adapters";
 import { getGitRemoteUrl, normalizeRemoteUrl } from "./git-info.js";
 import {
 	cacheRemote,
@@ -7,6 +10,24 @@ import {
 	getCachedRemote,
 	getRemoteCache,
 } from "./remote-cache.js";
+
+export interface ScanResult {
+	projects: ScannedProject[];
+	groups: ProjectGroup[];
+}
+
+export async function scanAndGroupProjects(
+	cwd: string = process.cwd(),
+): Promise<ScanResult> {
+	const adapters = getAvailableAdapters();
+	const projects: ScannedProject[] = [];
+	for (const adapter of adapters) {
+		const scanned = await adapter.scanAllSessions();
+		projects.push(...scanned);
+	}
+	const groups = await groupProjectsByRemote(projects, cwd);
+	return { projects, groups };
+}
 
 export interface ProjectGroup {
 	displayName: string;

@@ -1,47 +1,43 @@
-import {
-	getAdapter,
-	getAvailableAdapters,
-	groupProjectsForCwd,
-	type ScannedProject,
-} from "@rudel/agent-adapters";
+import { getAdapter, type ScannedProject } from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
+import { scanAndGroupProjects } from "../../lib/project-grouping.js";
 
 async function runListSessions(): Promise<void> {
-	const adapters = getAvailableAdapters();
-	const allProjects: ScannedProject[] = [];
-	for (const adapter of adapters) {
-		const projects = await adapter.scanAllSessions();
-		allProjects.push(...projects);
-	}
+	const { projects: allProjects, groups } = await scanAndGroupProjects();
 
 	if (allProjects.length === 0) {
 		console.log("No projects with sessions found.");
 		return;
 	}
 
-	const cwd = process.cwd();
-	const grouped = groupProjectsForCwd(allProjects, cwd);
-
 	const lines: string[] = [];
 
-	for (const proj of grouped.current) {
-		const name = getAdapter(proj.source).name;
-		lines.push(
-			`[${name}] ${proj.displayPath} (${proj.sessionCount} sessions) [current]`,
-		);
-	}
+	for (const group of groups) {
+		const isCurrent = group.containsCwd ? " [current]" : "";
 
-	for (const sub of grouped.subfolders) {
-		const name = getAdapter(sub.source).name;
-		const relative = sub.projectPath.slice(cwd.length + 1);
-		lines.push(`  [${name}] ${relative} (${sub.sessionCount} sessions)`);
-	}
+		if (group.projects.length === 1) {
+			const proj = group.projects[0] as ScannedProject;
+			const name = getAdapter(proj.source).name;
+			lines.push(
+				`[${name}] ${proj.displayPath} (${proj.sessionCount} sessions)${isCurrent}`,
+			);
+			continue;
+		}
 
-	for (const other of grouped.others) {
-		const name = getAdapter(other.source).name;
-		lines.push(
-			`[${name}] ${other.displayPath} (${other.sessionCount} sessions)`,
+		const totalSessions = group.projects.reduce(
+			(s, p) => s + p.sessionCount,
+			0,
 		);
+		lines.push(
+			`${group.displayName} (${group.projects.length} projects, ${totalSessions} sessions)${isCurrent}`,
+		);
+		for (const proj of group.projects) {
+			const name = getAdapter(proj.source).name;
+			const cwdMarker = proj.projectPath === process.cwd() ? " [cwd]" : "";
+			lines.push(
+				`  [${name}] ${proj.displayPath} (${proj.sessionCount} sessions)${cwdMarker}`,
+			);
+		}
 	}
 
 	const totalSessions = allProjects.reduce((s, p) => s + p.sessionCount, 0);

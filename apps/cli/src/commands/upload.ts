@@ -2,8 +2,6 @@ import * as p from "@clack/prompts";
 import {
 	claudeCodeAdapter,
 	getAdapter,
-	getAvailableAdapters,
-	groupProjectsForCwd,
 	type ScannedProject,
 	type SessionFile,
 } from "@rudel/agent-adapters";
@@ -16,6 +14,7 @@ import { loadCredentials } from "../lib/credentials.js";
 import { loadFailedUploads } from "../lib/failed-uploads.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId } from "../lib/project-config.js";
+import { scanAndGroupProjects } from "../lib/project-grouping.js";
 import { resolveSession } from "../lib/session-resolver.js";
 import {
 	DEFAULT_ENDPOINT,
@@ -47,12 +46,7 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	const spin = p.spinner();
 	spin.start("Scanning projects...");
 
-	const adapters = getAvailableAdapters();
-	const allProjects: ScannedProject[] = [];
-	for (const adapter of adapters) {
-		const projects = await adapter.scanAllSessions();
-		allProjects.push(...projects);
-	}
+	const { projects: allProjects, groups } = await scanAndGroupProjects();
 
 	spin.stop(`Found ${allProjects.length} project(s)`);
 
@@ -62,9 +56,6 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 		return;
 	}
 
-	const cwd = process.cwd();
-	const grouped = groupProjectsForCwd(allProjects, cwd);
-
 	const options: Array<{
 		value: ScannedProject;
 		label: string;
@@ -72,31 +63,17 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	}> = [];
 	const preSelected: ScannedProject[] = [];
 
-	for (const proj of grouped.current) {
-		options.push({
-			value: proj,
-			label: `[${getAdapterName(proj.source)}] ${proj.displayPath}`,
-			hint: sessionCountHint(proj.sessionCount),
-		});
-		preSelected.push(proj);
-	}
-
-	for (const sub of grouped.subfolders) {
-		const relative = sub.projectPath.slice(cwd.length + 1);
-		options.push({
-			value: sub,
-			label: `  [${getAdapterName(sub.source)}] ${relative}`,
-			hint: sessionCountHint(sub.sessionCount),
-		});
-		preSelected.push(sub);
-	}
-
-	for (const other of grouped.others) {
-		options.push({
-			value: other,
-			label: `[${getAdapterName(other.source)}] ${other.displayPath}`,
-			hint: sessionCountHint(other.sessionCount),
-		});
+	for (const group of groups) {
+		for (const proj of group.projects) {
+			options.push({
+				value: proj,
+				label: `[${getAdapterName(proj.source)}] ${proj.displayPath}`,
+				hint: sessionCountHint(proj.sessionCount),
+			});
+			if (group.containsCwd) {
+				preSelected.push(proj);
+			}
+		}
 	}
 
 	const selected = await p.multiselect({

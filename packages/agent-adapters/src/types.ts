@@ -17,12 +17,6 @@ export interface ScannedProject {
 	sessionCount: number;
 }
 
-export interface GroupedProjects {
-	current: ScannedProject[];
-	subfolders: ScannedProject[];
-	others: ScannedProject[];
-}
-
 export interface GitInfo {
 	gitRemote?: string;
 	packageName?: string;

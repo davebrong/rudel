@@ -18,14 +18,12 @@ export {
 export type {
 	AgentAdapter,
 	GitInfo,
-	GroupedProjects,
 	IngestContext,
 	ScannedProject,
 	SessionFile,
 	UploadContext,
 } from "./types.js";
 export {
-	groupProjectsForCwd,
 	readFileWithRetry,
 	toClickHouseDateTime,
 	toDisplayPath,
