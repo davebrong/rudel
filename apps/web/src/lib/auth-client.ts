@@ -12,6 +12,7 @@ export async function signOut() {
 	queryClient.clear();
 	localStorage.removeItem("dateRange");
 	localStorage.removeItem("globalFilters");
+	localStorage.removeItem("rudel:activeOrg");
 	// Notify all better-auth signal atoms to trigger refetches,
 	// clearing stale org data that /sign-out doesn't reset
 	for (const key of Object.keys(authClient.$store.atoms)) {

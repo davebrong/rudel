@@ -26,6 +26,7 @@ export const OverviewKPIsSchema = z.object({
 	distinct_subagents: z.number(),
 	distinct_skills: z.number(),
 	distinct_slash_commands: z.number(),
+	total_sessions: z.number(),
 });
 
 export const UsageTrendDataSchema = z.object({

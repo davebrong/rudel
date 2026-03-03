@@ -10,6 +10,7 @@ import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { CliSetupHint } from "@/components/analytics/CliSetupHint";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { InsightCard } from "@/components/analytics/InsightCard";
+import { NoSessionsInRange } from "@/components/analytics/NoSessionsInRange";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { ModelTokensChart } from "@/components/charts/ModelTokensChart";
@@ -26,7 +27,7 @@ export function OverviewPage() {
 
 	const {
 		data: kpis,
-		isLoading: kpisLoading,
+		isPending: kpisLoading,
 		isError: kpisError,
 	} = useAnalyticsQuery(
 		orpc.analytics.overview.kpis.queryOptions({ input: { days } }),
@@ -47,6 +48,8 @@ export function OverviewPage() {
 	);
 
 	const hasData = !kpisLoading && kpis && kpis.distinct_sessions > 0;
+	const hasAnySessions = kpis && kpis.total_sessions > 0;
+	const showDatePicker = hasData || (!kpisLoading && hasAnySessions);
 
 	return (
 		<div className="px-8 py-6">
@@ -54,7 +57,7 @@ export function OverviewPage() {
 				title="Dashboard Overview"
 				description="Track your team's Claude Code usage and metrics"
 				actions={
-					hasData ? (
+					showDatePicker ? (
 						<DatePicker
 							startDate={startDate}
 							endDate={endDate}
@@ -74,10 +77,11 @@ export function OverviewPage() {
 				</div>
 			)}
 
-			{!kpisLoading &&
-				(kpisError || (kpis && kpis.distinct_sessions === 0)) && (
-					<CliSetupHint />
-				)}
+			{!kpisLoading && !hasData && hasAnySessions && <NoSessionsInRange />}
+
+			{!kpisLoading && (kpisError || (kpis && kpis.total_sessions === 0)) && (
+				<CliSetupHint />
+			)}
 
 			{hasData && (
 				<>

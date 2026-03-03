@@ -12,5 +12,6 @@ export function useAnalyticsQuery<TData>(
 	return useQuery({
 		...options,
 		queryKey: ["org", activeOrg?.id, ...(options.queryKey ?? [])],
+		enabled: !!activeOrg?.id && options.enabled !== false,
 	});
 }

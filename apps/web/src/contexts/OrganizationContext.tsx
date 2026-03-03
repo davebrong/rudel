@@ -21,6 +21,32 @@ interface OrganizationContextType {
 	isLoading: boolean;
 }
 
+const ACTIVE_ORG_CACHE_KEY = "rudel:activeOrg";
+
+function getCachedOrg(): Organization | null {
+	try {
+		const raw = localStorage.getItem(ACTIVE_ORG_CACHE_KEY);
+		if (!raw) return null;
+		const parsed = JSON.parse(raw);
+		if (parsed && typeof parsed.id === "string") return parsed;
+	} catch {
+		// Corrupted cache, ignore
+	}
+	return null;
+}
+
+function setCachedOrg(org: Organization | null) {
+	try {
+		if (org) {
+			localStorage.setItem(ACTIVE_ORG_CACHE_KEY, JSON.stringify(org));
+		} else {
+			localStorage.removeItem(ACTIVE_ORG_CACHE_KEY);
+		}
+	} catch {
+		// Storage full or unavailable, ignore
+	}
+}
+
 const OrganizationContext = createContext<OrganizationContextType | undefined>(
 	undefined,
 );
@@ -31,6 +57,19 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 	const { data: orgs, isPending: listLoading } =
 		authClient.useListOrganizations();
 	const [switching, setSwitching] = useState(false);
+	const [cachedOrg] = useState(getCachedOrg);
+
+	// Persist active org to localStorage whenever it changes
+	useEffect(() => {
+		if (activeOrg) {
+			setCachedOrg({
+				id: activeOrg.id,
+				name: activeOrg.name,
+				slug: activeOrg.slug,
+				logo: activeOrg.logo,
+			});
+		}
+	}, [activeOrg]);
 
 	// Auto-set active org if none is set but user has orgs
 	useEffect(() => {
@@ -58,10 +97,13 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		}
 	};
 
+	// Use cached org as optimistic value while better-auth is still loading
+	const resolvedOrg = activeOrg ?? (activeLoading ? cachedOrg : null);
+
 	return (
 		<OrganizationContext.Provider
 			value={{
-				activeOrg: activeOrg ?? null,
+				activeOrg: resolvedOrg,
 				organizations: orgs ?? [],
 				switchOrg,
 				isLoading: activeLoading || listLoading || switching,

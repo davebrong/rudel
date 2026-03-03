@@ -33,7 +33,8 @@ export async function getOverviewKPIs(
       uniq(if(git_remote != '', git_remote, if(repository != '', repository, project_path))) as distinct_projects,
       (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN subagent_types as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_subagents,
       (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN skills as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_skills,
-      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands
+      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands,
+      (SELECT count() FROM rudel.session_analytics WHERE organization_id = '${org}') as total_sessions
     FROM rudel.session_analytics
     WHERE ${dateFilter}
       AND organization_id = '${org}'
@@ -49,6 +50,7 @@ export async function getOverviewKPIs(
 			distinct_subagents: 0,
 			distinct_skills: 0,
 			distinct_slash_commands: 0,
+			total_sessions: 0,
 		};
 	}
 	// ClickHouse returns UInt64 as strings when output_format_json_quote_64bit_integers is true (the default)
@@ -59,6 +61,7 @@ export async function getOverviewKPIs(
 		distinct_subagents: Number(row.distinct_subagents),
 		distinct_skills: Number(row.distinct_skills),
 		distinct_slash_commands: Number(row.distinct_slash_commands),
+		total_sessions: Number(row.total_sessions),
 	};
 }
 
