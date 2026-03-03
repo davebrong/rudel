@@ -24,6 +24,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
+import { useUserMap } from "@/hooks/useUserMap";
 import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -80,9 +81,7 @@ export function SessionsListPage() {
 		}),
 	);
 
-	const { data: userMappings } = useAnalyticsQuery(
-		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
-	);
+	const { userMap } = useUserMap();
 
 	const { data: dimensionData, isLoading: dimensionLoading } =
 		useAnalyticsQuery(
@@ -96,18 +95,6 @@ export function SessionsListPage() {
 				},
 			}),
 		);
-
-	const userMap = useMemo(() => {
-		const map = new Map<string, string>();
-		if (userMappings) {
-			for (const m of userMappings) {
-				map.set(m.user_id, m.username);
-			}
-		}
-		return map;
-	}, [userMappings]);
-
-	const userMapRecord = useMemo(() => Object.fromEntries(userMap), [userMap]);
 
 	const columns = useMemo<ColumnDef<SessionAnalytics>[]>(
 		() => [
@@ -137,12 +124,12 @@ export function SessionsListPage() {
 				),
 			},
 			{
-				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				accessorFn: (row) => formatUsername(row.user_id, userMap),
 				id: "user",
 				header: "User",
 				cell: ({ row }) => (
 					<span className="text-subheading">
-						{formatUsername(row.original.user_id, userMapRecord)}
+						{formatUsername(row.original.user_id, userMap)}
 					</span>
 				),
 			},
@@ -206,7 +193,7 @@ export function SessionsListPage() {
 				),
 			},
 		],
-		[userMapRecord],
+		[userMap],
 	);
 
 	const filteredSessions = useMemo(() => {
@@ -229,12 +216,12 @@ export function SessionsListPage() {
 		).sort() as string[];
 	}, [sessions]);
 
-	const users = useMemo(() => {
-		if (!sessions) return [];
-		return Array.from(
-			new Set(sessions.map((s) => s.user_id).filter(Boolean)),
-		).sort();
-	}, [sessions]);
+	const userOptions = useMemo(() => {
+		return Object.entries(userMap).map(([userId, name]) => ({
+			id: userId,
+			label: name,
+		}));
+	}, [userMap]);
 
 	if (isLoading) {
 		return (
@@ -445,9 +432,15 @@ export function SessionsListPage() {
 							className="w-48"
 						/>
 						<MultiSelect
-							options={users}
-							selected={selectedUsers}
-							onChange={setSelectedUsers}
+							options={userOptions.map((u) => u.label)}
+							selected={selectedUsers.map((id) => userMap[id] || id)}
+							onChange={(selectedNames) => {
+								const ids = selectedNames.map((name) => {
+									const match = userOptions.find((u) => u.label === name);
+									return match ? match.id : name;
+								});
+								setSelectedUsers(ids);
+							}}
 							placeholder="All Developers"
 							className="w-48"
 						/>
