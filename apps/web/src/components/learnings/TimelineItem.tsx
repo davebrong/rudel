@@ -6,10 +6,13 @@ import {
 	Clock,
 	ExternalLink,
 	FolderKanban,
+	GitFork,
 	User,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatUsername } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -18,42 +21,58 @@ interface TimelineItemProps {
 	userMap?: Record<string, string>;
 }
 
+const typeBadgeVariant: Record<
+	string,
+	{
+		variant: "default" | "secondary" | "destructive" | "outline";
+		className?: string;
+	}
+> = {
+	pattern: {
+		variant: "outline",
+		className:
+			"border-green-300 text-green-700 dark:border-green-700 dark:text-green-400",
+	},
+	antipattern: {
+		variant: "outline",
+		className:
+			"border-red-300 text-red-700 dark:border-red-700 dark:text-red-400",
+	},
+	convention: {
+		variant: "outline",
+		className:
+			"border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-400",
+	},
+	fix: {
+		variant: "outline",
+		className:
+			"border-yellow-300 text-yellow-700 dark:border-yellow-700 dark:text-yellow-400",
+	},
+	preference: {
+		variant: "outline",
+		className:
+			"border-purple-300 text-purple-700 dark:border-purple-700 dark:text-purple-400",
+	},
+};
+
 export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
 
-	// Format date
 	const formattedDate = format(new Date(learning.created_at), "MMM dd, yyyy");
 	const formattedTime = format(new Date(learning.created_at), "h:mm a");
 
-	// Truncate text for preview
 	const contentPreview =
 		learning.content.length > 300
 			? `${learning.content.slice(0, 300)}...`
 			: learning.content;
 
-	// Extract project name from path
 	const projectName =
 		learning.project_path.split("/").pop() || learning.project_path;
 
-	// Link to session
 	const sessionLink = `/dashboard/sessions/${learning.session_id}`;
 
-	// Get type badge color (decorative per-type, keep hardcoded)
-	const getTypeBadgeColor = (type: string) => {
-		switch (type) {
-			case "pattern":
-				return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
-			case "antipattern":
-				return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
-			case "convention":
-				return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
-			case "fix":
-				return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
-			case "preference":
-				return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
-			default:
-				return "bg-muted text-muted-foreground";
-		}
+	const typeStyle = typeBadgeVariant[learning.type] ?? {
+		variant: "secondary" as const,
 	};
 
 	return (
@@ -61,7 +80,7 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 			{/* Timeline dot */}
 			<div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-600 border-2 border-background shadow" />
 
-			{/* Timestamp badge */}
+			{/* Timestamp */}
 			<div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
 				<Clock className="w-3 h-3" />
 				<span>
@@ -69,25 +88,21 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 				</span>
 			</div>
 
-			{/* Learning card */}
-			<div className="bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow">
-				{/* Header */}
-				<div className="p-4 border-b border-border">
+			<Card className="py-0 gap-0 hover:shadow-md transition-shadow">
+				<CardHeader className="p-4 border-b border-border">
 					<div className="flex items-start justify-between gap-4">
 						<div className="flex-1 space-y-2">
 							{/* Type and Scope badges */}
 							<div className="flex flex-wrap items-center gap-2">
-								<span
-									className={cn(
-										"px-2 py-1 text-xs font-medium rounded",
-										getTypeBadgeColor(learning.type),
-									)}
+								<Badge
+									variant={typeStyle.variant}
+									className={typeStyle.className}
 								>
 									{learning.type}
-								</span>
-								<span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded font-mono">
+								</Badge>
+								<Badge variant="secondary" className="font-mono">
 									{learning.scope}
-								</span>
+								</Badge>
 							</div>
 
 							{/* Metadata */}
@@ -103,9 +118,10 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 									<span className="font-mono">{projectName}</span>
 								</div>
 								{learning.repository && (
-									<span className="px-2 py-0.5 bg-muted rounded text-muted-foreground">
-										{learning.repository}
-									</span>
+									<div className="flex items-center gap-1">
+										<GitFork className="w-3 h-3" />
+										<span className="font-mono">{learning.repository}</span>
+									</div>
 								)}
 							</div>
 
@@ -113,13 +129,17 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 							{learning.tags && learning.tags.length > 0 && (
 								<div className="flex flex-wrap gap-1">
 									{learning.tags.map((tag, idx) => (
-										<span
+										<Badge
 											// biome-ignore lint/suspicious/noArrayIndexKey: tags may duplicate
 											key={`${tag}-${idx}`}
-											className="px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 rounded"
+											variant="outline"
+											className={cn(
+												"border-indigo-300 text-indigo-700",
+												"dark:border-indigo-700 dark:text-indigo-400",
+											)}
 										>
 											#{tag}
-										</span>
+										</Badge>
 									))}
 								</div>
 							)}
@@ -134,15 +154,13 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 							<ExternalLink className="w-3 h-3" />
 						</Link>
 					</div>
-				</div>
+				</CardHeader>
 
-				{/* Learning content */}
-				<div className="p-4">
+				<CardContent className="p-4">
 					<div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
 						{isExpanded ? learning.content : contentPreview}
 					</div>
 
-					{/* Expand/collapse button */}
 					{learning.content.length > 300 && (
 						<button
 							type="button"
@@ -162,8 +180,8 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 							)}
 						</button>
 					)}
-				</div>
-			</div>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
