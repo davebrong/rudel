@@ -1,16 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { ConversationList } from "@/components/sessions/conversation/ConversationList";
 import { SessionHeader } from "@/components/sessions/SessionHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useSession } from "@/hooks/useSession";
 import { orpc } from "@/lib/orpc";
 
 export function SessionDetailPage() {
 	const { sessionId } = useParams<{ sessionId: string }>();
 
-	const { data, isLoading, error } = useQuery(
+	const { data, isLoading, error } = useAnalyticsQuery(
 		orpc.analytics.sessions.detail.queryOptions({
 			input: { sessionId: sessionId as string },
 		}),

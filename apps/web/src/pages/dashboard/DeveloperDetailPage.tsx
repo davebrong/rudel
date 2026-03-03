@@ -1,5 +1,4 @@
 import type { DeveloperError, DeveloperSession } from "@rudel/api-routes";
-import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Activity, ArrowLeft, Calendar, Clock, Code, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -30,6 +29,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import {
 	calculateRollingAverage,
@@ -52,13 +52,13 @@ export function DeveloperDetailPage() {
 	const [projectFilter, setProjectFilter] = useState<string>("");
 	const [outcomeFilter, setOutcomeFilter] = useState<"all" | "success">("all");
 
-	const { data: details, isLoading: detailsLoading } = useQuery(
+	const { data: details, isLoading: detailsLoading } = useAnalyticsQuery(
 		orpc.analytics.developers.details.queryOptions({
 			input: { userId: userId as string, days },
 		}),
 	);
 
-	const { data: sessions } = useQuery(
+	const { data: sessions } = useAnalyticsQuery(
 		orpc.analytics.developers.sessions.queryOptions({
 			input: {
 				userId: userId as string,
@@ -72,31 +72,31 @@ export function DeveloperDetailPage() {
 		}),
 	);
 
-	const { data: projects } = useQuery(
+	const { data: projects } = useAnalyticsQuery(
 		orpc.analytics.developers.projects.queryOptions({
 			input: { userId: userId as string, days },
 		}),
 	);
 
-	const { data: timeline } = useQuery(
+	const { data: timeline } = useAnalyticsQuery(
 		orpc.analytics.developers.timeline.queryOptions({
 			input: { userId: userId as string, days },
 		}),
 	);
 
-	const { data: features } = useQuery(
+	const { data: features } = useAnalyticsQuery(
 		orpc.analytics.developers.features.queryOptions({
 			input: { userId: userId as string, days },
 		}),
 	);
 
-	const { data: errors } = useQuery(
+	const { data: errors } = useAnalyticsQuery(
 		orpc.analytics.developers.errors.queryOptions({
 			input: { userId: userId as string, days },
 		}),
 	);
 
-	const { data: userMappings } = useQuery(
+	const { data: userMappings } = useAnalyticsQuery(
 		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
 	);
 

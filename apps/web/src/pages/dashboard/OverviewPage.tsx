@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import {
 	Activity,
 	Bot,
@@ -17,6 +16,7 @@ import { ModelTokensChart } from "@/components/charts/ModelTokensChart";
 import { UsageTrendChart } from "@/components/charts/UsageTrendChart";
 import { Spinner } from "@/components/ui/spinner";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { orpc } from "@/lib/orpc";
 
 export function OverviewPage() {
@@ -24,21 +24,21 @@ export function OverviewPage() {
 		useDateRange();
 	const days = calculateDays();
 
-	const { data: kpis, isLoading: kpisLoading } = useQuery(
+	const { data: kpis, isLoading: kpisLoading } = useAnalyticsQuery(
 		orpc.analytics.overview.kpis.queryOptions({ input: { days } }),
 	);
 
-	const { data: usageTrendData } = useQuery(
+	const { data: usageTrendData } = useAnalyticsQuery(
 		orpc.analytics.overview.usageTrend.queryOptions({ input: { days } }),
 	);
 
-	const { data: modelTokensData } = useQuery(
+	const { data: modelTokensData } = useAnalyticsQuery(
 		orpc.analytics.overview.modelTokensTrend.queryOptions({
 			input: { days },
 		}),
 	);
 
-	const { data: insights } = useQuery(
+	const { data: insights } = useAnalyticsQuery(
 		orpc.analytics.overview.insights.queryOptions({ input: { days } }),
 	);
 

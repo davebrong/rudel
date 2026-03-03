@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, AlertTriangle, Clock, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
@@ -7,6 +6,7 @@ import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { ErrorTrendChart } from "@/components/charts/ErrorTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { orpc } from "@/lib/orpc";
 
 const severityColors = {
@@ -34,19 +34,19 @@ export function ErrorsPage() {
 		"repository" | "user_id" | "model"
 	>("repository");
 
-	const { data: errors, isLoading } = useQuery(
+	const { data: errors, isLoading } = useAnalyticsQuery(
 		orpc.analytics.errors.topRecurring.queryOptions({
 			input: { days, minOccurrences: 2, limit: 15 },
 		}),
 	);
 
-	const { data: trendData, isLoading: trendLoading } = useQuery(
+	const { data: trendData, isLoading: trendLoading } = useAnalyticsQuery(
 		orpc.analytics.errors.trends.queryOptions({
 			input: { startDate, endDate, splitBy: trendSplitBy },
 		}),
 	);
 
-	const { data: userMappings } = useQuery(
+	const { data: userMappings } = useAnalyticsQuery(
 		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
 	);
 

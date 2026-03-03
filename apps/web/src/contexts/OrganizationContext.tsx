@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import {
 	createContext,
 	type ReactNode,
@@ -31,7 +30,6 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		authClient.useActiveOrganization();
 	const { data: orgs, isPending: listLoading } =
 		authClient.useListOrganizations();
-	const queryClient = useQueryClient();
 	const [switching, setSwitching] = useState(false);
 
 	// Auto-set active org if none is set but user has orgs
@@ -47,16 +45,14 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			setSwitching(true);
 			authClient.organization
 				.setActive({ organizationId: orgs[0].id })
-				.then(() => queryClient.invalidateQueries())
 				.finally(() => setSwitching(false));
 		}
-	}, [activeOrg, orgs, activeLoading, listLoading, switching, queryClient]);
+	}, [activeOrg, orgs, activeLoading, listLoading, switching]);
 
 	const switchOrg = async (orgId: string) => {
 		setSwitching(true);
 		try {
 			await authClient.organization.setActive({ organizationId: orgId });
-			await queryClient.invalidateQueries();
 		} finally {
 			setSwitching(false);
 		}

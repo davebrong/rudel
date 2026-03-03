@@ -1,5 +1,4 @@
 import type { DeveloperSummary } from "@rudel/api-routes";
-import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
 	Activity,
@@ -11,7 +10,7 @@ import {
 	UserCheck,
 	Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
@@ -21,7 +20,8 @@ import { DeveloperTrendChart } from "@/components/charts/DeveloperTrendChart";
 import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
-import { authClient } from "@/lib/auth-client";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
+import { useFullOrganization } from "@/hooks/useFullOrganization";
 import { formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -32,31 +32,18 @@ export function DevelopersListPage() {
 	const days = calculateDays();
 
 	const { activeOrg } = useOrganization();
-	const [memberCount, setMemberCount] = useState<number | null>(null);
+	const { data: fullOrg } = useFullOrganization(activeOrg?.id);
+	const memberCount = fullOrg?.members.length ?? null;
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: refetch when org changes
-	useEffect(() => {
-		if (!activeOrg) return;
-		authClient.organization
-			.getFullOrganization({ query: { organizationId: activeOrg.id } })
-			.then((res) => {
-				if (res.data) {
-					setMemberCount(
-						(res.data as { members: readonly unknown[] }).members.length,
-					);
-				}
-			});
-	}, [activeOrg?.id]);
-
-	const { data: developers, isLoading } = useQuery(
+	const { data: developers, isLoading } = useAnalyticsQuery(
 		orpc.analytics.developers.list.queryOptions({ input: { days } }),
 	);
 
-	const { data: trendsData } = useQuery(
+	const { data: trendsData } = useAnalyticsQuery(
 		orpc.analytics.developers.trends.queryOptions({ input: { days } }),
 	);
 
-	const { data: userMappings } = useQuery(
+	const { data: userMappings } = useAnalyticsQuery(
 		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
 	);
 

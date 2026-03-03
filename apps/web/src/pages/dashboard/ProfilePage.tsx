@@ -1,14 +1,10 @@
 import { Github, Loader2, LogOut, Mail, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
 import { Button } from "../../components/ui/button";
+import { useAccounts } from "../../hooks/useAccounts";
 import { authClient, signOut } from "../../lib/auth-client";
-
-interface Account {
-	id: string;
-	providerId: string;
-}
 
 const providers = [
 	{ id: "google", label: "Google", icon: Mail },
@@ -17,20 +13,8 @@ const providers = [
 
 export function ProfilePage() {
 	const { data: session } = authClient.useSession();
-	const [accounts, setAccounts] = useState<readonly Account[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { accounts, isLoading: loading } = useAccounts();
 	const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
-
-	useEffect(() => {
-		authClient
-			.listAccounts()
-			.then((res) => {
-				if (res.data) {
-					setAccounts(res.data);
-				}
-			})
-			.finally(() => setLoading(false));
-	}, []);
 
 	const linkedProviders = new Set(accounts.map((a) => a.providerId));
 

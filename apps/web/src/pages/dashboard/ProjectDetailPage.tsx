@@ -1,5 +1,4 @@
 import type { ProjectContributor, ProjectError } from "@rudel/api-routes";
-import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Activity, ArrowLeft, Clock, Code, Users, Zap } from "lucide-react";
 import { useMemo } from "react";
@@ -21,6 +20,7 @@ import { StatCard } from "@/components/analytics/StatCard";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { decodeProjectPath, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
@@ -35,31 +35,31 @@ export function ProjectDetailPage() {
 	const chartTheme = useChartTheme();
 	const days = calculateDays();
 
-	const { data: details, isLoading } = useQuery(
+	const { data: details, isLoading } = useAnalyticsQuery(
 		orpc.analytics.projects.details.queryOptions({
 			input: { projectPath, days },
 		}),
 	);
 
-	const { data: contributors } = useQuery(
+	const { data: contributors } = useAnalyticsQuery(
 		orpc.analytics.projects.contributors.queryOptions({
 			input: { projectPath, days },
 		}),
 	);
 
-	const { data: features } = useQuery(
+	const { data: features } = useAnalyticsQuery(
 		orpc.analytics.projects.features.queryOptions({
 			input: { projectPath, days },
 		}),
 	);
 
-	const { data: errors } = useQuery(
+	const { data: errors } = useAnalyticsQuery(
 		orpc.analytics.projects.errors.queryOptions({
 			input: { projectPath, days },
 		}),
 	);
 
-	const { data: userMappings } = useQuery(
+	const { data: userMappings } = useAnalyticsQuery(
 		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
 	);
 

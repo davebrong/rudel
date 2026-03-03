@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { client } from "../lib/orpc";
@@ -27,8 +28,17 @@ export function DeleteOrganizationDialog({
 	otherOrganizations,
 	onDeleted,
 }: DeleteOrganizationDialogProps) {
-	const [sessionCount, setSessionCount] = useState<number | null>(null);
-	const [loading, setLoading] = useState(true);
+	const { data: sessionCountData, isLoading: loading } = useQuery({
+		queryKey: ["org-session-count", organization.id],
+		queryFn: async () => {
+			const res = await client.getOrganizationSessionCount({
+				organizationId: organization.id,
+			});
+			return res.count;
+		},
+		enabled: open,
+	});
+	const sessionCount = sessionCountData ?? null;
 	const [sessionAction, setSessionAction] = useState<
 		"migrate" | "delete" | null
 	>(null);
@@ -39,22 +49,13 @@ export function DeleteOrganizationDialog({
 
 	useEffect(() => {
 		if (!open) {
-			setSessionCount(null);
-			setLoading(true);
 			setSessionAction(null);
 			setMigrateTarget("");
 			setConfirmName("");
 			setDeleting(false);
 			setError(null);
-			return;
 		}
-
-		client
-			.getOrganizationSessionCount({ organizationId: organization.id })
-			.then((res) => setSessionCount(res.count))
-			.catch(() => setSessionCount(0))
-			.finally(() => setLoading(false));
-	}, [open, organization.id]);
+	}, [open]);
 
 	const nameMatches =
 		confirmName.toLowerCase() === organization.name.toLowerCase();

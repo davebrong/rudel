@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { BookOpen, FolderKanban, Lightbulb, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
@@ -9,6 +8,7 @@ import { StatCard } from "@/components/analytics/StatCard";
 import { LearningsTrendChart } from "@/components/charts/LearningsTrendChart";
 import { LearningsTimeline } from "@/components/learnings/LearningsTimeline";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { orpc } from "@/lib/orpc";
 
 export function LearningsPage() {
@@ -20,31 +20,31 @@ export function LearningsPage() {
 	const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 	const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
-	const { data: learnings, isLoading } = useQuery(
+	const { data: learnings, isLoading } = useAnalyticsQuery(
 		orpc.analytics.learnings.list.queryOptions({
 			input: { days, limit: 100, offset: 0 },
 		}),
 	);
 
-	const { data: stats } = useQuery(
+	const { data: stats } = useAnalyticsQuery(
 		orpc.analytics.learnings.stats.queryOptions({ input: { days } }),
 	);
 
-	const { data: trendData } = useQuery(
+	const { data: trendData } = useAnalyticsQuery(
 		orpc.analytics.learnings.trend.queryOptions({
 			input: { days, splitBy },
 		}),
 	);
 
-	const { data: availableUsers } = useQuery(
+	const { data: availableUsers } = useAnalyticsQuery(
 		orpc.analytics.learnings.users.queryOptions({}),
 	);
 
-	const { data: availableProjects } = useQuery(
+	const { data: availableProjects } = useAnalyticsQuery(
 		orpc.analytics.learnings.projects.queryOptions({}),
 	);
 
-	const { data: userMappings } = useQuery(
+	const { data: userMappings } = useAnalyticsQuery(
 		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
 	);
 
