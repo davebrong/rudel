@@ -3,7 +3,7 @@
   "checkpoint_id": "8d7e14f97e93",
   "strategy": "manual-commit",
   "branch": "marc/dev-name-resolution",
-  "checkpoints_count": 10,
+  "checkpoints_count": 11,
   "files_touched": [
     ".claude/skills/api-testing/SKILL.md",
     "README.md",
@@ -84,13 +84,20 @@
       "context": "/8d/7e14f97e93/6/context.md",
       "content_hash": "/8d/7e14f97e93/6/content_hash.txt",
       "prompt": "/8d/7e14f97e93/6/prompt.txt"
+    },
+    {
+      "metadata": "/8d/7e14f97e93/7/metadata.json",
+      "transcript": "/8d/7e14f97e93/7/full.jsonl",
+      "context": "/8d/7e14f97e93/7/context.md",
+      "content_hash": "/8d/7e14f97e93/7/content_hash.txt",
+      "prompt": "/8d/7e14f97e93/7/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2611,
-    "cache_creation_tokens": 468242,
-    "cache_read_tokens": 8732745,
-    "output_tokens": 57709,
-    "api_call_count": 162
+    "input_tokens": 2625,
+    "cache_creation_tokens": 499968,
+    "cache_read_tokens": 9189213,
+    "output_tokens": 59681,
+    "api_call_count": 175
   }
 }
