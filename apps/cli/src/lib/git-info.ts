@@ -24,21 +24,25 @@ export function normalizeRemoteUrl(url: string): string {
  * Extract git metadata for a given project directory.
  */
 export async function getGitInfo(cwd: string): Promise<GitInfo> {
-	const [remoteUrl, branch, sha, packageName] = await Promise.all([
+	const [remoteUrl, branch, sha, packageInfo] = await Promise.all([
 		getGitRemoteUrl(cwd),
 		getGitBranch(cwd),
 		getGitSha(cwd),
-		getPackageName(cwd),
+		getPackageInfo(cwd),
 	]);
 
 	const gitRemote = remoteUrl ? normalizeRemoteUrl(remoteUrl) : undefined;
-	const repository = getRepositoryName(gitRemote, packageName, cwd);
+	const repository = getRepositoryName(
+		gitRemote,
+		packageInfo?.name ?? null,
+		cwd,
+	);
 
 	return {
 		repository,
 		gitRemote,
-		packageName: packageName ?? undefined,
-		packageType: packageName ? "package.json" : undefined,
+		packageName: packageInfo?.name,
+		packageType: packageInfo?.type,
 		branch: branch ?? undefined,
 		sha: sha ?? undefined,
 	};
@@ -66,24 +70,71 @@ function getRepositoryName(
 	return dirName ?? undefined;
 }
 
-async function getPackageName(cwd: string): Promise<string | null> {
+interface PackageInfo {
+	name: string;
+	type: string;
+}
+
+async function getPackageInfo(cwd: string): Promise<PackageInfo | null> {
 	try {
 		const gitRootResult =
 			await $`git -C ${cwd} rev-parse --show-toplevel`.quiet();
-		const gitRoot =
+		const root =
 			gitRootResult.exitCode === 0 ? gitRootResult.text().trim() : cwd;
 
-		const packageJsonPath = join(gitRoot, "package.json");
-		const packageFile = Bun.file(packageJsonPath);
-		if (await packageFile.exists()) {
-			try {
-				const packageJson = await packageFile.json();
-				if (packageJson.name) return packageJson.name;
-			} catch {
-				// Invalid JSON
-			}
-		}
+		return (
+			(await getNodePackage(root)) ??
+			(await getPythonPackage(root)) ??
+			(await getRustPackage(root)) ??
+			(await getGoModule(root))
+		);
+	} catch {
 		return null;
+	}
+}
+
+async function getNodePackage(root: string): Promise<PackageInfo | null> {
+	try {
+		const file = Bun.file(join(root, "package.json"));
+		if (!(await file.exists())) return null;
+		const pkg = await file.json();
+		return pkg.name ? { name: pkg.name, type: "package.json" } : null;
+	} catch {
+		return null;
+	}
+}
+
+async function getPythonPackage(root: string): Promise<PackageInfo | null> {
+	try {
+		const file = Bun.file(join(root, "pyproject.toml"));
+		if (!(await file.exists())) return null;
+		const content = await file.text();
+		const name = content.match(/^\s*name\s*=\s*"([^"]+)"/m)?.[1];
+		return name ? { name, type: "pyproject.toml" } : null;
+	} catch {
+		return null;
+	}
+}
+
+async function getRustPackage(root: string): Promise<PackageInfo | null> {
+	try {
+		const file = Bun.file(join(root, "Cargo.toml"));
+		if (!(await file.exists())) return null;
+		const content = await file.text();
+		const name = content.match(/^\s*name\s*=\s*"([^"]+)"/m)?.[1];
+		return name ? { name, type: "Cargo.toml" } : null;
+	} catch {
+		return null;
+	}
+}
+
+async function getGoModule(root: string): Promise<PackageInfo | null> {
+	try {
+		const file = Bun.file(join(root, "go.mod"));
+		if (!(await file.exists())) return null;
+		const content = await file.text();
+		const name = content.match(/^module\s+(\S+)/m)?.[1];
+		return name ? { name, type: "go.mod" } : null;
 	} catch {
 		return null;
 	}
