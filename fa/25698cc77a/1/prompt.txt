@@ -1,0 +1,6 @@
+I think the EmptyState on the Dashboard page (http://localhost:4011/dashboard) needs to consider also the range. e.g. if we are fetching for the selected timerange (e.g. just the last 7 days) and dont have any data. we dont want to show the @apps/web/src/components/analytics/CliSetupHint.tsx UNLESS the user has actually over its lifespan 0 sessions. \
+In case the user only has 0 sessions for the selected time filter. Maybe show a hint, that there are no sessions for the selected timeframe and allow him to change it. Potentially also with a button to "fast select" all time. Just to get to a place where he does see any values
+
+---
+
+[Request interrupted by user for tool use]
