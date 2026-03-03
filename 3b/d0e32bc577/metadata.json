@@ -3,7 +3,7 @@
   "checkpoint_id": "3bd0e32bc577",
   "strategy": "manual-commit",
   "branch": "marc/dev-name-resolution",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
     "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx"
   ],
@@ -28,13 +28,20 @@
       "context": "",
       "content_hash": "/3b/d0e32bc577/2/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/3b/d0e32bc577/3/metadata.json",
+      "transcript": "/3b/d0e32bc577/3/full.jsonl",
+      "context": "/3b/d0e32bc577/3/context.md",
+      "content_hash": "/3b/d0e32bc577/3/content_hash.txt",
+      "prompt": "/3b/d0e32bc577/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1,
-    "cache_creation_tokens": 214,
-    "cache_read_tokens": 60667,
-    "output_tokens": 7,
-    "api_call_count": 2
+    "input_tokens": 2,
+    "cache_creation_tokens": 393,
+    "cache_read_tokens": 158011,
+    "output_tokens": 33,
+    "api_call_count": 3
   }
 }
