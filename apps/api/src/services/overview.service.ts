@@ -40,16 +40,26 @@ export async function getOverviewKPIs(
   `;
 
 	const result = await queryClickhouse<OverviewKPIs>(query);
-	return (
-		result[0] || {
+	const row = result[0];
+	if (!row) {
+		return {
 			distinct_users: 0,
 			distinct_sessions: 0,
 			distinct_projects: 0,
 			distinct_subagents: 0,
 			distinct_skills: 0,
 			distinct_slash_commands: 0,
-		}
-	);
+		};
+	}
+	// ClickHouse returns UInt64 as strings when output_format_json_quote_64bit_integers is true (the default)
+	return {
+		distinct_users: Number(row.distinct_users),
+		distinct_sessions: Number(row.distinct_sessions),
+		distinct_projects: Number(row.distinct_projects),
+		distinct_subagents: Number(row.distinct_subagents),
+		distinct_skills: Number(row.distinct_skills),
+		distinct_slash_commands: Number(row.distinct_slash_commands),
+	};
 }
 
 /**
