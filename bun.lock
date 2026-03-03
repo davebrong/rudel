@@ -36,7 +36,7 @@
     },
     "apps/cli": {
       "name": "rudel",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "bin": {
         "rudel": "./dist/cli.js",
       },
@@ -46,11 +46,11 @@
         "@logtape/logtape": "^2.0.4",
         "@orpc/client": "^1.13.5",
         "@orpc/contract": "^1.13.5",
-        "@rudel/agent-adapters": "workspace:*",
         "@stricli/core": "^1.2.5",
         "p-map": "^7.0.4",
       },
       "devDependencies": {
+        "@rudel/agent-adapters": "workspace:*",
         "@rudel/api-routes": "workspace:*",
         "@rudel/typescript-config": "workspace:*",
         "bun-types": "latest",
