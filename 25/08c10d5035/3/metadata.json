@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "2508c10d5035",
+  "session_id": "8d873c1f-a55e-4b62-8e4b-558155698356",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T13:28:57.678292Z",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/analytics/Breadcrumb.tsx"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "97541a9598ff",
+  "token_usage": {
+    "input_tokens": 104,
+    "cache_creation_tokens": 226872,
+    "cache_read_tokens": 9247262,
+    "output_tokens": 28412,
+    "api_call_count": 94
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T13:28:54.351039Z",
+    "agent_lines": 9,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 9,
+    "agent_percentage": 100
+  }
+}

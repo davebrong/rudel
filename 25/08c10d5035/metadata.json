@@ -3,7 +3,7 @@
   "checkpoint_id": "2508c10d5035",
   "strategy": "manual-commit",
   "branch": "marc/dev-name-resolution",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     "apps/web/src/components/analytics/Breadcrumb.tsx"
   ],
@@ -28,13 +28,20 @@
       "context": "/25/08c10d5035/2/context.md",
       "content_hash": "/25/08c10d5035/2/content_hash.txt",
       "prompt": "/25/08c10d5035/2/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/3/metadata.json",
+      "transcript": "/25/08c10d5035/3/full.jsonl",
+      "context": "/25/08c10d5035/3/context.md",
+      "content_hash": "/25/08c10d5035/3/content_hash.txt",
+      "prompt": "/25/08c10d5035/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 90,
-    "cache_creation_tokens": 259902,
-    "cache_read_tokens": 3555293,
-    "output_tokens": 24485,
-    "api_call_count": 70
+    "input_tokens": 194,
+    "cache_creation_tokens": 486774,
+    "cache_read_tokens": 12802555,
+    "output_tokens": 52897,
+    "api_call_count": 164
   }
 }
