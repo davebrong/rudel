@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "fa25698cc77a",
+  "strategy": "manual-commit",
+  "branch": "release-stability",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/api/src/services/overview.service.ts",
+    "apps/web/src/components/analytics/NoSessionsInRange.tsx",
+    "apps/web/src/contexts/OrganizationContext.tsx",
+    "apps/web/src/hooks/useAnalyticsQuery.ts",
+    "apps/web/src/lib/auth-client.ts",
+    "apps/web/src/pages/dashboard/OverviewPage.tsx",
+    "packages/api-routes/src/schemas/analytics.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fa/25698cc77a/0/metadata.json",
+      "transcript": "/fa/25698cc77a/0/full.jsonl",
+      "context": "",
+      "content_hash": "/fa/25698cc77a/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
