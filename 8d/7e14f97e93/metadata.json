@@ -18,12 +18,14 @@
     "apps/api/src/services/project.service.ts",
     "apps/api/src/services/user.service.ts",
     "apps/cli/README.md",
+    "apps/cli/src/lib/git-info.ts",
     "apps/web/src/components/auth/login-form.tsx",
     "apps/web/src/components/auth/signup-form.tsx",
     "apps/web/src/components/charts/DeveloperTrendChart.tsx",
     "apps/web/src/components/charts/DimensionAnalysisChart.tsx",
     "apps/web/src/components/charts/ErrorTrendChart.tsx",
     "apps/web/src/components/charts/LearningsTrendChart.tsx",
+    "apps/web/src/hooks/useUserMap.ts",
     "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
     "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
     "apps/web/src/pages/dashboard/ErrorsPage.tsx",
@@ -32,8 +34,27 @@
     "apps/web/src/pages/dashboard/ROIPage.tsx",
     "bun.lock",
     "docs/deploy-column-migration.md",
+    "packages/agent-adapters/src/adapters/claude-code/index.ts",
+    "packages/agent-adapters/src/adapters/codex/index.ts",
+    "packages/agent-adapters/src/types.ts",
     "packages/api-routes/src/index.ts",
-    "packages/api-routes/src/schemas/analytics.ts"
+    "packages/api-routes/src/schemas/analytics.ts",
+    "packages/ch-schema/chx/meta/backfill/events/059f453e8152a512.ndjson",
+    "packages/ch-schema/chx/meta/backfill/events/3eea159c576b48c8.ndjson",
+    "packages/ch-schema/chx/meta/backfill/events/e1d62173d06b9323.ndjson",
+    "packages/ch-schema/chx/meta/journal.json",
+    "packages/ch-schema/chx/meta/snapshot.json",
+    "packages/ch-schema/chx/migrations/20260220190421_auto.sql",
+    "packages/ch-schema/chx/migrations/20260226054030_auto.sql",
+    "packages/ch-schema/chx/migrations/20260301145916_auto.sql",
+    "packages/ch-schema/chx/migrations/20260302042004_auto.sql",
+    "packages/ch-schema/chx/migrations/20260302051814_auto.sql",
+    "packages/ch-schema/chx/migrations/20260303160252_auto.sql",
+    "packages/ch-schema/src/__tests__/ingest-clickhouse.integration.ts",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/db/schema/base-sessions.ts",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts"
   ],
   "sessions": [
     {
@@ -98,13 +119,20 @@
       "context": "/8d/7e14f97e93/8/context.md",
       "content_hash": "/8d/7e14f97e93/8/content_hash.txt",
       "prompt": "/8d/7e14f97e93/8/prompt.txt"
+    },
+    {
+      "metadata": "/8d/7e14f97e93/9/metadata.json",
+      "transcript": "/8d/7e14f97e93/9/full.jsonl",
+      "context": "/8d/7e14f97e93/9/context.md",
+      "content_hash": "/8d/7e14f97e93/9/content_hash.txt",
+      "prompt": "/8d/7e14f97e93/9/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2636,
-    "cache_creation_tokens": 534237,
-    "cache_read_tokens": 9457881,
-    "output_tokens": 60313,
-    "api_call_count": 183
+    "input_tokens": 2640,
+    "cache_creation_tokens": 564329,
+    "cache_read_tokens": 9507226,
+    "output_tokens": 61252,
+    "api_call_count": 185
   }
 }
