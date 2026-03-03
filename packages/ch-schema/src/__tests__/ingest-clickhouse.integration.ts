@@ -93,6 +93,7 @@ describe("ingestRudelClaudeSessions", () => {
 		repository: null,
 		git_remote: "",
 		package_name: "",
+		package_type: "",
 		content: "test session content",
 		subagents: {},
 		ingested_at: now,

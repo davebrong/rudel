@@ -3,11 +3,15 @@ import type {
 	OverviewKPIs,
 	UsageTrendData,
 } from "@rudel/api-routes";
+import { user } from "@rudel/sql-schema";
+import { eq } from "drizzle-orm";
 import {
+	buildAbsoluteDateFilter,
 	buildDateFilter,
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
+import { db } from "../db.js";
 
 export interface Insight {
 	type: "trend" | "performer" | "alert" | "info";
@@ -21,19 +25,20 @@ export interface Insight {
  */
 export async function getOverviewKPIs(
 	orgId: string,
-	days = 7,
+	startDate: string,
+	endDate: string,
 ): Promise<OverviewKPIs> {
 	const org = escapeString(orgId);
-	const dateFilter = buildDateFilter(days);
+	const dateFilter = buildAbsoluteDateFilter(startDate, endDate);
 
 	const query = `
     SELECT
       uniq(user_id) as distinct_users,
       count() as distinct_sessions,
       uniq(if(git_remote != '', git_remote, if(repository != '', repository, project_path))) as distinct_projects,
-      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN subagent_types as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_subagents,
-      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN skills as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_skills,
-      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildDateFilter(days)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands,
+      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN subagent_types as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_subagents,
+      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN skills as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_skills,
+      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands,
       (SELECT count() FROM rudel.session_analytics WHERE organization_id = '${org}') as total_sessions
     FROM rudel.session_analytics
     WHERE ${dateFilter}
@@ -70,10 +75,11 @@ export async function getOverviewKPIs(
  */
 export async function getModelTokensTrend(
 	orgId: string,
-	days = 30,
+	startDate: string,
+	endDate: string,
 ): Promise<ModelTokensTrendData[]> {
 	const org = escapeString(orgId);
-	const dateFilter = buildDateFilter(days);
+	const dateFilter = buildAbsoluteDateFilter(startDate, endDate);
 
 	const query = `
     SELECT
@@ -99,10 +105,11 @@ export async function getModelTokensTrend(
  */
 export async function getUsageTrendDetailed(
 	orgId: string,
-	days = 30,
+	startDate: string,
+	endDate: string,
 ): Promise<UsageTrendData[]> {
 	const org = escapeString(orgId);
-	const dateFilter = buildDateFilter(days);
+	const dateFilter = buildAbsoluteDateFilter(startDate, endDate);
 
 	const query = `
     SELECT
@@ -126,10 +133,16 @@ export async function getUsageTrendDetailed(
  */
 export async function getOverviewInsights(
 	orgId: string,
-	days = 7,
+	startDate: string,
+	endDate: string,
 ): Promise<Insight[]> {
 	const org = escapeString(orgId);
 	const insights: Insight[] = [];
+	const periodMs = new Date(endDate).getTime() - new Date(startDate).getTime();
+	const prevEnd = new Date(new Date(startDate).getTime() - 1);
+	const prevStart = new Date(prevEnd.getTime() - periodMs);
+	const prevStartStr = prevStart.toISOString().slice(0, 10);
+	const prevEndStr = prevEnd.toISOString().slice(0, 10);
 
 	const currentPeriodQuery = `
     SELECT
@@ -137,19 +150,17 @@ export async function getOverviewInsights(
       uniq(user_id) as total_users,
       round(avg(actual_duration_min), 2) as avg_duration_min
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(days)}
+    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
       AND organization_id = '${org}'
   `;
 
-	const previousDays = Number(days) * 2;
 	const previousPeriodQuery = `
     SELECT
       count() as total_sessions,
       uniq(user_id) as total_users,
       round(avg(actual_duration_min), 2) as avg_duration_min
     FROM rudel.session_analytics
-    WHERE session_date >= now64(3) - INTERVAL ${previousDays} DAY
-      AND session_date < now64(3) - INTERVAL ${Number(days)} DAY
+    WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
       AND organization_id = '${org}'
   `;
 
@@ -195,7 +206,7 @@ export async function getOverviewInsights(
       count() as sessions,
       round(sum(actual_duration_min) / 60, 1) as total_hours
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(days)}
+    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
       AND organization_id = '${org}'
     GROUP BY user_id
     ORDER BY sessions DESC
@@ -209,10 +220,13 @@ export async function getOverviewInsights(
 	}>(topPerformerQuery);
 	if (topPerformer.length > 0 && topPerformer[0]) {
 		const performer = topPerformer[0];
-		const { getUserMapping } = await import("./user.service.js");
-		const userMapping = await getUserMapping(orgId, performer.user_id, days);
+		const [userData] = await db
+			.select({ name: user.name })
+			.from(user)
+			.where(eq(user.id, performer.user_id))
+			.limit(1);
 		const displayName =
-			userMapping?.username || `${performer.user_id.substring(0, 8)}...`;
+			userData?.name || `${performer.user_id.substring(0, 8)}...`;
 
 		insights.push({
 			type: "performer",
@@ -222,7 +236,7 @@ export async function getOverviewInsights(
 		});
 	}
 
-	// Insight 3: Knowledge silos detection
+	// Insight 3: Knowledge silos detection (uses a wider 30-day window)
 	const knowledgeSilosQuery = `
     SELECT
       project_path,
@@ -263,9 +277,17 @@ export interface TeamSummaryPeriodData {
 /**
  * Get team summary with previous period comparison
  */
-export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
+export async function getTeamSummaryWithComparison(
+	orgId: string,
+	startDate: string,
+	endDate: string,
+) {
 	const org = escapeString(orgId);
-	const previousDays = Number(days) * 2;
+	const periodMs = new Date(endDate).getTime() - new Date(startDate).getTime();
+	const prevEnd = new Date(new Date(startDate).getTime() - 1);
+	const prevStart = new Date(prevEnd.getTime() - periodMs);
+	const prevStartStr = prevStart.toISOString().slice(0, 10);
+	const prevEndStr = prevEnd.toISOString().slice(0, 10);
 
 	const currentQuery = `
     SELECT
@@ -274,7 +296,7 @@ export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
       round(avg(actual_duration_min), 2) as avg_duration_min,
       round(count() / uniq(user_id), 2) as avg_sessions_per_user
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(days)}
+    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
       AND organization_id = '${org}'
   `;
 
@@ -285,8 +307,7 @@ export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
       round(avg(actual_duration_min), 2) as avg_duration_min,
       round(count() / uniq(user_id), 2) as avg_sessions_per_user
     FROM rudel.session_analytics
-    WHERE session_date >= now64(3) - INTERVAL ${previousDays} DAY
-      AND session_date < now64(3) - INTERVAL ${Number(days)} DAY
+    WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
       AND organization_id = '${org}'
   `;
 
@@ -335,9 +356,17 @@ export async function getTeamSummaryWithComparison(orgId: string, days = 7) {
 /**
  * Get session success rate metrics with comparison
  */
-export async function getSuccessRateMetrics(orgId: string, days = 7) {
+export async function getSuccessRateMetrics(
+	orgId: string,
+	startDate: string,
+	endDate: string,
+) {
 	const org = escapeString(orgId);
-	const previousDays = Number(days) * 2;
+	const periodMs = new Date(endDate).getTime() - new Date(startDate).getTime();
+	const prevEnd = new Date(new Date(startDate).getTime() - 1);
+	const prevStart = new Date(prevEnd.getTime() - periodMs);
+	const prevStartStr = prevStart.toISOString().slice(0, 10);
+	const prevEndStr = prevEnd.toISOString().slice(0, 10);
 
 	const currentQuery = `
     SELECT
@@ -345,7 +374,7 @@ export async function getSuccessRateMetrics(orgId: string, days = 7) {
       round(avg(success_score), 1) as avg_success_score,
       countIf(success_score >= 70) as high_quality_sessions
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(days)}
+    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
       AND organization_id = '${org}'
   `;
 
@@ -355,8 +384,7 @@ export async function getSuccessRateMetrics(orgId: string, days = 7) {
       round(avg(success_score), 1) as avg_success_score,
       countIf(success_score >= 70) as high_quality_sessions
     FROM rudel.session_analytics
-    WHERE session_date >= now64(3) - INTERVAL ${previousDays} DAY
-      AND session_date < now64(3) - INTERVAL ${Number(days)} DAY
+    WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
       AND organization_id = '${org}'
   `;
 

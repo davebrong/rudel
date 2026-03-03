@@ -115,6 +115,8 @@ export const DeveloperSessionSchema = z.object({
 	session_id: z.string(),
 	session_date: z.string(),
 	project_path: z.string(),
+	git_remote: z.string().optional(),
+	package_name: z.string().optional(),
 	duration_min: z.number(),
 	total_tokens: z.number(),
 	has_subagents: z.boolean(),
@@ -126,6 +128,8 @@ export const DeveloperSessionSchema = z.object({
 
 export const DeveloperProjectSchema = z.object({
 	project_path: z.string(),
+	git_remote: z.string().optional(),
+	package_name: z.string().optional(),
 	sessions: z.number(),
 	total_duration_min: z.number(),
 	total_tokens: z.number(),
@@ -503,13 +507,6 @@ export const LearningsTrendInputSchema = DaysInputSchema.extend({
 	splitBy: z.enum(["user_id", "repository"]),
 });
 
-// ── Users ──────────────────────────────────────────────────────────
-
-export const UserMappingSchema = z.object({
-	user_id: z.string(),
-	username: z.string(),
-});
-
 // ── Type exports ───────────────────────────────────────────────────
 
 export type OverviewKPIs = z.infer<typeof OverviewKPIsSchema>;
@@ -561,4 +558,3 @@ export type LearningsTrendDataPoint = z.infer<
 export type DimensionAnalysisInput = z.infer<
 	typeof DimensionAnalysisInputSchema
 >;
-export type UserMapping = z.infer<typeof UserMappingSchema>;

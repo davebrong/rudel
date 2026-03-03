@@ -105,8 +105,8 @@ export async function getProjectInvestment(
     WITH current_period AS (
       SELECT
         if(git_remote != '', git_remote, repository) as project_key,
-        any(git_remote) as git_remote,
-        any(repository) as repository,
+        any(git_remote) as _git_remote,
+        any(repository) as _repository,
         any(project_path) as project_path,
         COUNT(*) as sessions,
         COUNT(DISTINCT user_id) as unique_users,
@@ -136,8 +136,8 @@ export async function getProjectInvestment(
       GROUP BY project_key
     )
     SELECT
-      c.repository,
-      c.git_remote,
+      c._repository as repository,
+      c._git_remote as git_remote,
       c.project_path,
       c.sessions,
       c.unique_users,

@@ -23,14 +23,11 @@ export interface DeveloperDetails extends DeveloperDetailsBase {
 }
 
 export interface DeveloperSession extends DeveloperSessionBase {
-	project_name?: string;
 	input_tokens: number;
 	output_tokens: number;
 }
 
-export interface DeveloperProject extends DeveloperProjectBase {
-	project_name?: string;
-}
+export type DeveloperProject = DeveloperProjectBase;
 
 export interface DeveloperProjectTimeline {
 	date: string;
@@ -38,15 +35,6 @@ export interface DeveloperProjectTimeline {
 	sessions: number;
 	total_duration_min: number;
 	total_tokens: number;
-}
-
-/**
- * Extract project name from path (last segment)
- */
-function extractProjectName(projectPath: string): string {
-	if (!projectPath) return "";
-	const segments = projectPath.replace(/\\/g, "/").split("/").filter(Boolean);
-	return segments[segments.length - 1] || projectPath;
 }
 
 /**
@@ -229,8 +217,10 @@ export async function getDeveloperSessions(
 	const query = `
     SELECT
       session_id,
-      toString(session_date) as session_date,
+      session_date,
       project_path,
+      git_remote,
+      package_name,
       actual_duration_min as duration_min,
       ifNull(input_tokens, 0) as input_tokens,
       ifNull(output_tokens, 0) as output_tokens,
@@ -254,7 +244,11 @@ export async function getDeveloperSessions(
 
 	return results.map((session) => ({
 		...session,
-		project_name: extractProjectName(session.project_path),
+		has_subagents: Boolean(session.has_subagents),
+		has_skills: Boolean(session.has_skills),
+		has_slash_commands: Boolean(session.has_slash_commands),
+		has_errors: Boolean(session.has_errors),
+		likely_success: Boolean(session.likely_success),
 	}));
 }
 
@@ -273,6 +267,8 @@ export async function getDeveloperProjects(
 	const query = `
     SELECT
       project_path,
+      any(git_remote) as git_remote,
+      any(package_name) as package_name,
       COUNT(*) as sessions,
       round(SUM(actual_duration_min), 2) as total_duration_min,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
@@ -287,12 +283,7 @@ export async function getDeveloperProjects(
     ORDER BY sessions DESC
   `;
 
-	const results = await queryClickhouse<DeveloperProject>(query);
-
-	return results.map((project) => ({
-		...project,
-		project_name: extractProjectName(project.project_path),
-	}));
+	return queryClickhouse<DeveloperProject>(query);
 }
 
 /**
@@ -553,10 +544,5 @@ export async function getDeveloperProjectTimeline(
     ORDER BY date ASC, project_path ASC
   `;
 
-	const results = await queryClickhouse<DeveloperProjectTimeline>(query);
-
-	return results.map((item) => ({
-		...item,
-		project_name: extractProjectName(item.project_path),
-	})) as DeveloperProjectTimeline[];
+	return queryClickhouse<DeveloperProjectTimeline>(query);
 }

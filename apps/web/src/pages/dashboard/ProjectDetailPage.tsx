@@ -22,6 +22,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { useUserMap } from "@/hooks/useUserMap";
 import { decodeProjectPath, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -59,38 +60,26 @@ export function ProjectDetailPage() {
 		}),
 	);
 
-	const { data: userMappings } = useAnalyticsQuery(
-		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
-	);
-
-	const userMapRecord = useMemo(() => {
-		const record: Record<string, string> = {};
-		if (userMappings) {
-			for (const m of userMappings) {
-				record[m.user_id] = m.username;
-			}
-		}
-		return record;
-	}, [userMappings]);
+	const { userMap } = useUserMap();
 
 	const contributorChartData = useMemo(() => {
 		if (!contributors) return [];
 		return contributors.slice(0, 10).map((c) => ({
-			name: formatUsername(c.user_id, userMapRecord),
+			name: formatUsername(c.user_id, userMap),
 			sessions: c.sessions,
 			hours: parseFloat((c.total_duration_min / 60).toFixed(1)),
 		}));
-	}, [contributors, userMapRecord]);
+	}, [contributors, userMap]);
 
 	const contributorColumns = useMemo<ColumnDef<ProjectContributor>[]>(
 		() => [
 			{
-				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				accessorFn: (row) => formatUsername(row.user_id, userMap),
 				id: "developer",
 				header: "Developer",
 				cell: ({ row }) => (
 					<span className="font-medium text-foreground">
-						{formatUsername(row.original.user_id, userMapRecord)}
+						{formatUsername(row.original.user_id, userMap)}
 					</span>
 				),
 			},
@@ -130,7 +119,7 @@ export function ProjectDetailPage() {
 				),
 			},
 		],
-		[userMapRecord],
+		[userMap],
 	);
 
 	const projectErrorColumns = useMemo<ColumnDef<ProjectError>[]>(

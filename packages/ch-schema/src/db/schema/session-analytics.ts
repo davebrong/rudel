@@ -22,6 +22,7 @@ const rudel_session_analytics = table({
 		{ name: "repository", type: "String", nullable: true },
 		{ name: "git_remote", type: "String", default: "''" },
 		{ name: "package_name", type: "String", default: "''" },
+		{ name: "package_type", type: "String", default: "''" },
 		{ name: "content", type: "String" },
 		{ name: "subagents", type: "Map(String, String)", default: "fn:map()" },
 		{ name: "skills", type: "Array(String)", default: "fn:[]" },

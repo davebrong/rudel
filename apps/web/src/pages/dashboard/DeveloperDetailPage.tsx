@@ -2,7 +2,7 @@ import type { DeveloperError, DeveloperSession } from "@rudel/api-routes";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Activity, ArrowLeft, Calendar, Clock, Code, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
 	Bar,
 	BarChart,
@@ -43,8 +43,26 @@ import {
 import { formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
+function resolveProjectName(row: {
+	git_remote?: string;
+	package_name?: string;
+	project_path: string;
+}): { name: string; tooltip?: string } {
+	if (row.git_remote) {
+		return {
+			name: row.git_remote.split("/").pop() || row.git_remote,
+			tooltip: row.git_remote,
+		};
+	}
+	if (row.package_name) {
+		return { name: row.package_name };
+	}
+	return { name: row.project_path.split("/").pop() || row.project_path };
+}
+
 export function DeveloperDetailPage() {
 	const { userId } = useParams<{ userId: string }>();
+	const navigate = useNavigate();
 	const { startDate, endDate, setStartDate, setEndDate, calculateDays } =
 		useDateRange();
 	const chartTheme = useChartTheme();
@@ -142,7 +160,7 @@ export function DeveloperDetailPage() {
 	const projectChartData = useMemo(() => {
 		if (!projects) return [];
 		return projects.slice(0, 10).map((p) => ({
-			name: p.project_path.split("/").pop() || "Unknown",
+			name: resolveProjectName(p).name,
 			sessions: p.sessions,
 			hours: parseFloat((p.total_duration_min / 60).toFixed(1)),
 		}));
@@ -150,7 +168,16 @@ export function DeveloperDetailPage() {
 
 	const uniqueProjects = useMemo(() => {
 		if (!sessions) return [];
-		return Array.from(new Set(sessions.map((s) => s.project_path)));
+		const seen = new Map<string, { path: string; name: string }>();
+		for (const s of sessions) {
+			if (!seen.has(s.project_path)) {
+				seen.set(s.project_path, {
+					path: s.project_path,
+					name: resolveProjectName(s).name,
+				});
+			}
+		}
+		return Array.from(seen.values());
 	}, [sessions]);
 
 	const errorColumns = useMemo<ColumnDef<DeveloperError>[]>(
@@ -200,11 +227,14 @@ export function DeveloperDetailPage() {
 			{
 				accessorKey: "project_path",
 				header: "Project",
-				cell: ({ row }) => (
-					<span className="font-medium text-foreground">
-						{row.original.project_path.split("/").pop()}
-					</span>
-				),
+				cell: ({ row }) => {
+					const { name, tooltip } = resolveProjectName(row.original);
+					return (
+						<span className="font-medium text-foreground" title={tooltip}>
+							{name}
+						</span>
+					);
+				},
 			},
 			{
 				accessorKey: "duration_min",
@@ -552,9 +582,9 @@ export function DeveloperDetailPage() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">All Projects</SelectItem>
-								{uniqueProjects.map((path) => (
-									<SelectItem key={path} value={path}>
-										{path.split("/").pop()}
+								{uniqueProjects.map((p) => (
+									<SelectItem key={p.path} value={p.path}>
+										{p.name}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -578,6 +608,9 @@ export function DeveloperDetailPage() {
 					columns={sessionColumns}
 					data={sessions ?? []}
 					defaultSorting={[{ id: "date", desc: true }]}
+					onRowClick={(row) =>
+						navigate(`/dashboard/sessions/${row.session_id}`)
+					}
 				/>
 			</AnalyticsCard>
 		</div>

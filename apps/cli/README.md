@@ -65,6 +65,17 @@ Show the currently authenticated user.
 
 Clear stored credentials.
 
+## What Data Is Collected
+
+Each uploaded session includes:
+
+- Session ID & timestamps (start, last interaction)
+- User ID & organization ID
+- Project path & package name
+- Git context (repository, branch, SHA, remote)
+- Session transcript (full prompt & response content)
+- Sub-agent usage
+
 ## Links
 
 - **Web App**: [app.rudel.ai](https://app.rudel.ai)

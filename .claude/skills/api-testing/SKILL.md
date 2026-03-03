@@ -185,6 +185,18 @@ curl -s -X POST http://localhost:4010/rpc/me \
   -d "{}" | jq '.json'
 ```
 
+## API Server Logs
+
+When `RUDEL_LOG_DIR` is set (configured in the `prd_local` Doppler env), the API writes logs to a daily file in that directory, resolved from the project root. The current value is `.context`, so logs are at:
+
+```
+.context/api-logs-YYYY-MM-DD.txt
+```
+
+For today's date, read `.context/api-logs-$(date +%Y-%m-%d).txt`. The log file contains all API debug-level output (requests, errors, ClickHouse queries, etc.).
+
+**When debugging errors**: After a failing request, read the tail of the log file to see the server-side error, stack trace, or query details. This is especially useful for 500 errors where the curl response is generic.
+
 ## Troubleshooting
 
 - **401 Unauthorized**: Cookie expired or missing. Re-run the sign-in step.
@@ -192,6 +204,7 @@ curl -s -X POST http://localhost:4010/rpc/me \
 - **MISSING_OR_NULL_ORIGIN on auth endpoints**: Add `-H "Origin: http://localhost:4010"` to better-auth API calls (`/api/auth/*`).
 - **BAD_REQUEST on analytics endpoints**: No active organization set. Run step 2 to set the active org.
 - **Connection refused**: API server not running. Start it with `bun run dev:local` or `bun run --cwd apps/api dev:env`.
+- **Unexpected 500 or unclear error**: Read the API log file at `.context/api-logs-$(date +%Y-%m-%d).txt` for the server-side stack trace.
 
 ## Best Practices
 

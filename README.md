@@ -31,6 +31,17 @@ See the [CLI documentation](apps/cli/README.md) for all available commands.
 3. The hook uploads the session transcript to Rudel
 4. Transcripts are stored in ClickHouse and processed into analytics
 
+## What Data Is Collected
+
+Each uploaded session includes:
+
+- Session ID & timestamps (start, last interaction)
+- User ID & organization ID
+- Project path & package name
+- Git context (repository, branch, SHA, remote)
+- Session transcript (full prompt & response content)
+- Sub-agent usage
+
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, development commands, and PR guidelines.

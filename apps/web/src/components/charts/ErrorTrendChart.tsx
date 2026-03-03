@@ -35,7 +35,7 @@ interface ErrorTrendChartProps {
 			| "total_errors",
 	) => void;
 	onSplitByChange: (splitBy: "repository" | "user_id" | "model") => void;
-	userMap?: Map<string, string>;
+	userMap?: Record<string, string>;
 }
 
 const COLORS = [
@@ -127,7 +127,7 @@ export function ErrorTrendChart({
 
 	const getDisplayName = (key: string): string => {
 		if (splitBy === "user_id" && userMap) {
-			return userMap.get(key) || `${key.substring(0, 12)}...`;
+			return userMap[key] || `${key.substring(0, 12)}...`;
 		}
 		return key;
 	};

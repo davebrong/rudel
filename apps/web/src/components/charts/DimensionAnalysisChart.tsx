@@ -30,7 +30,7 @@ interface DimensionAnalysisChartProps {
 	metric: string;
 	split_by?: string;
 	showPercentage?: boolean;
-	userMap?: Map<string, string>;
+	userMap?: Record<string, string>;
 }
 
 const CHART_COLORS = [
@@ -67,7 +67,7 @@ function formatMetricLabel(metric: string): string {
 function formatDimensionValue(
 	value: string,
 	dimension: string,
-	userMap?: Map<string, string>,
+	userMap?: Record<string, string>,
 ): string {
 	if (
 		dimension === "has_commit" ||
@@ -85,7 +85,7 @@ function formatDimensionValue(
 	}
 
 	if (dimension === "user_id") {
-		return formatUsername(value, Object.fromEntries(userMap || new Map()));
+		return formatUsername(value, userMap);
 	}
 
 	return value;

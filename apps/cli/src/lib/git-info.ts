@@ -5,6 +5,7 @@ export interface GitInfo {
 	repository?: string;
 	gitRemote?: string;
 	packageName?: string;
+	packageType?: string;
 	branch?: string;
 	sha?: string;
 }
@@ -37,6 +38,7 @@ export async function getGitInfo(cwd: string): Promise<GitInfo> {
 		repository,
 		gitRemote,
 		packageName: packageName ?? undefined,
+		packageType: packageName ? "package.json" : undefined,
 		branch: branch ?? undefined,
 		sha: sha ?? undefined,
 	};

@@ -120,6 +120,18 @@ export function LoginForm({
 					</Button>
 				</div>
 
+				<p className="text-center text-xs text-muted-foreground">
+					By signing up, you agree to our{" "}
+					<a
+						href="https://rudel.ai/terms"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="underline underline-offset-4 hover:text-primary"
+					>
+						Terms of Service
+					</a>
+				</p>
+
 				<p className="text-center text-sm text-muted-foreground">
 					Don&apos;t have an account?{" "}
 					<button

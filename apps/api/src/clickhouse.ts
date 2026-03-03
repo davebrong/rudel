@@ -23,6 +23,7 @@ export function createClickHouseExecutor(config: {
 		request_timeout: 120_000,
 		clickhouse_settings: {
 			wait_end_of_query: 1,
+			output_format_json_quote_64bit_integers: 0,
 		},
 	});
 	return {
@@ -99,6 +100,14 @@ export function escapeString(value: string): string {
 
 export function buildDateFilter(days: number, column = "session_date"): string {
 	return `${column} >= now64(3) - INTERVAL ${Number(days)} DAY AND ${column} <= now64(3)`;
+}
+
+export function buildAbsoluteDateFilter(
+	startDate: string,
+	endDate: string,
+	column = "session_date",
+): string {
+	return `toDate(${column}) >= '${startDate}' AND toDate(${column}) <= '${endDate}'`;
 }
 
 export async function queryClickhouse<T>(sql: string): Promise<T[]> {

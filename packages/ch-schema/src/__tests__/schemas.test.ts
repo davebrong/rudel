@@ -11,6 +11,7 @@ describe("RudelClaudeSessionsRowSchema", () => {
 		repository: "github.com/org/repo",
 		git_remote: "github.com/org/repo",
 		package_name: "my-project",
+		package_type: "package.json",
 		content: "session transcript content",
 		subagents: { agent1: "result1" },
 		ingested_at: "2026-02-13T09:24:27.180Z",

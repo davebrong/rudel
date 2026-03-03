@@ -23,7 +23,7 @@ interface LearningsTrendChartProps {
 	data: Record<string, string | number>[];
 	splitBy: "user_id" | "repository";
 	onSplitByChange: (splitBy: "user_id" | "repository") => void;
-	userMap?: Map<string, string>;
+	userMap?: Record<string, string>;
 }
 
 const COLORS = [
@@ -101,7 +101,7 @@ export function LearningsTrendChart({
 
 	const getDisplayName = (key: string): string => {
 		if (splitBy === "user_id" && userMap) {
-			return userMap.get(key) || `${key.substring(0, 12)}...`;
+			return userMap[key] || `${key.substring(0, 12)}...`;
 		}
 		return key;
 	};

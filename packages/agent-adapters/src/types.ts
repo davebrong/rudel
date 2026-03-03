@@ -27,6 +27,7 @@ export interface GitInfo {
 	repository?: string;
 	gitRemote?: string;
 	packageName?: string;
+	packageType?: string;
 	branch?: string;
 	sha?: string;
 }

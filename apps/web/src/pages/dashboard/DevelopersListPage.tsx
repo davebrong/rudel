@@ -22,6 +22,7 @@ import { useDateRange } from "@/contexts/DateRangeContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useFullOrganization } from "@/hooks/useFullOrganization";
+import { useUserMap } from "@/hooks/useUserMap";
 import { formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -43,40 +44,26 @@ export function DevelopersListPage() {
 		orpc.analytics.developers.trends.queryOptions({ input: { days } }),
 	);
 
-	const { data: userMappings } = useAnalyticsQuery(
-		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
-	);
-
-	const userMap = useMemo(() => {
-		const map = new Map<string, string>();
-		if (userMappings) {
-			for (const m of userMappings) {
-				map.set(m.user_id, m.username);
-			}
-		}
-		return map;
-	}, [userMappings]);
-
-	const userMapRecord = useMemo(() => Object.fromEntries(userMap), [userMap]);
+	const { userMap } = useUserMap();
 
 	const columns = useMemo<ColumnDef<DeveloperSummary>[]>(
 		() => [
 			{
-				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				accessorFn: (row) => formatUsername(row.user_id, userMap),
 				id: "developer",
 				header: "Developer",
 				cell: ({ row }) => (
 					<div className="flex items-center">
 						<div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
 							<span className="text-blue-600 font-semibold text-sm">
-								{formatUsername(row.original.user_id, userMapRecord)
+								{formatUsername(row.original.user_id, userMap)
 									.substring(0, 2)
 									.toUpperCase()}
 							</span>
 						</div>
 						<div className="ml-4">
 							<div className="text-sm font-medium text-foreground">
-								{formatUsername(row.original.user_id, userMapRecord)}
+								{formatUsername(row.original.user_id, userMap)}
 							</div>
 						</div>
 					</div>
@@ -181,7 +168,7 @@ export function DevelopersListPage() {
 				),
 			},
 		],
-		[userMapRecord],
+		[userMap],
 	);
 
 	const totalSessions =

@@ -11,37 +11,61 @@ import {
 const kpis = os.analytics.overview.kpis
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getOverviewKPIs(context.organizationId, input.days);
+		return getOverviewKPIs(
+			context.organizationId,
+			input.startDate,
+			input.endDate,
+		);
 	});
 
 const usageTrend = os.analytics.overview.usageTrend
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getUsageTrendDetailed(context.organizationId, input.days);
+		return getUsageTrendDetailed(
+			context.organizationId,
+			input.startDate,
+			input.endDate,
+		);
 	});
 
 const modelTokensTrend = os.analytics.overview.modelTokensTrend
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getModelTokensTrend(context.organizationId, input.days);
+		return getModelTokensTrend(
+			context.organizationId,
+			input.startDate,
+			input.endDate,
+		);
 	});
 
 const insights = os.analytics.overview.insights
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getOverviewInsights(context.organizationId, input.days);
+		return getOverviewInsights(
+			context.organizationId,
+			input.startDate,
+			input.endDate,
+		);
 	});
 
 const teamSummaryComparison = os.analytics.overview.teamSummaryComparison
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getTeamSummaryWithComparison(context.organizationId, input.days);
+		return getTeamSummaryWithComparison(
+			context.organizationId,
+			input.startDate,
+			input.endDate,
+		);
 	});
 
 const successRate = os.analytics.overview.successRate
 	.use(orgMiddleware)
 	.handler(async ({ input, context }) => {
-		return getSuccessRateMetrics(context.organizationId, input.days);
+		return getSuccessRateMetrics(
+			context.organizationId,
+			input.startDate,
+			input.endDate,
+		);
 	});
 
 export const overviewRouter = os.analytics.overview.router({

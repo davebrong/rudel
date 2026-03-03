@@ -1,5 +1,5 @@
 import { AlertCircle, AlertTriangle, Clock, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
@@ -7,6 +7,7 @@ import { StatCard } from "@/components/analytics/StatCard";
 import { ErrorTrendChart } from "@/components/charts/ErrorTrendChart";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
+import { useUserMap } from "@/hooks/useUserMap";
 import { orpc } from "@/lib/orpc";
 
 const severityColors = {
@@ -46,19 +47,7 @@ export function ErrorsPage() {
 		}),
 	);
 
-	const { data: userMappings } = useAnalyticsQuery(
-		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
-	);
-
-	const userMap = useMemo(() => {
-		const map = new Map<string, string>();
-		if (userMappings) {
-			for (const m of userMappings) {
-				map.set(m.user_id, m.username);
-			}
-		}
-		return map;
-	}, [userMappings]);
+	const { userMap } = useUserMap();
 
 	const totalErrors = errors?.reduce((sum, e) => sum + e.occurrences, 0) ?? 0;
 	const highSeverityCount =
