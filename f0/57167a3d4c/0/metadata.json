@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f057167a3d4c",
+  "session_id": "216ef1c7-3857-4e38-9a45-edddc9fc9a4f",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T07:18:45.187687Z",
+  "branch": "marc/fix-cli-workspace-protocol",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/package.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 74,
+    "cache_creation_tokens": 73681,
+    "cache_read_tokens": 644503,
+    "output_tokens": 4521,
+    "api_call_count": 16
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T07:18:44.966392Z",
+    "agent_lines": 1,
+    "human_added": 2,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 3,
+    "agent_percentage": 33.33333333333333
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-dakar-v1/216ef1c7-3857-4e38-9a45-edddc9fc9a4f.jsonl"
+}
