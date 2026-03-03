@@ -1,5 +1,9 @@
 import * as p from "@clack/prompts";
-import { type AgentAdapter, getAvailableAdapters } from "@rudel/agent-adapters";
+import {
+	type AgentAdapter,
+	getAdapter,
+	getAvailableAdapters,
+} from "@rudel/agent-adapters";
 import { buildCommand } from "@stricli/core";
 import { createApiClient } from "../lib/api-client.js";
 import { verifyAuth } from "../lib/auth.js";
@@ -7,6 +11,7 @@ import type { BatchUploadItem } from "../lib/batch-upload.js";
 import { renderBatchSummary, runBatchUpload } from "../lib/batch-upload-ui.js";
 import { getGitInfo } from "../lib/git-info.js";
 import { getProjectOrgId, setProjectOrgId } from "../lib/project-config.js";
+import { scanAndGroupProjects } from "../lib/project-grouping.js";
 import { uploadSession } from "../lib/uploader.js";
 
 async function runEnable(): Promise<void> {
@@ -120,54 +125,66 @@ async function runEnable(): Promise<void> {
 		}
 	}
 
-	// Check for existing sessions to upload from all enabled agents
+	// Check for existing sessions to upload (including other checkouts of the same repo)
 	const endpoint = `${credentials.apiBaseUrl}/rpc`;
 	let totalFailed = 0;
 
-	for (const adapter of adaptersToEnable) {
-		const sessions = await adapter.findProjectSessions(cwd);
-		if (sessions.length === 0) continue;
+	const enabledSources = new Set(adaptersToEnable.map((a) => a.source));
+	const { groups } = await scanAndGroupProjects(cwd);
+	const cwdGroup = groups.find((g) => g.containsCwd);
+	const matchingProjects = cwdGroup
+		? cwdGroup.projects.filter((proj) => enabledSources.has(proj.source))
+		: [];
+	const totalSessions = matchingProjects.reduce(
+		(sum, p) => sum + p.sessionCount,
+		0,
+	);
 
+	if (totalSessions > 0) {
 		const shouldUpload = await p.confirm({
-			message: `Found ${sessions.length} previous ${adapter.name} session(s). Upload them now?`,
+			message: `Found ${totalSessions} previous session(s) across ${matchingProjects.length} checkout(s). Upload them now?`,
 			initialValue: false,
 		});
 
-		if (p.isCancel(shouldUpload) || !shouldUpload) continue;
-
-		const gitInfo = await getGitInfo(cwd);
-
-		const items: BatchUploadItem[] = sessions.map((session) => ({
-			sessionId: session.sessionId,
-			label: session.sessionId,
-			transcriptPath: session.transcriptPath,
-			projectPath: session.projectPath,
-			source: adapter.source,
-			organizationId: selectedOrgId,
-		}));
-
-		const summary = await runBatchUpload({
-			items,
-			label: `Uploading ${adapter.name} sessions...`,
-			upload: async (item, onRetry) => {
-				const session = sessions.find((s) => s.sessionId === item.sessionId);
-				if (!session) {
-					return { success: false, error: "Session not found" };
-				}
-				const request = await adapter.buildUploadRequest(session, {
-					gitInfo,
+		if (!p.isCancel(shouldUpload) && shouldUpload) {
+			const items: BatchUploadItem[] = matchingProjects.flatMap((proj) =>
+				proj.sessions.map((session) => ({
+					sessionId: session.sessionId,
+					label: `${proj.displayPath}/${session.sessionId}`,
+					transcriptPath: session.transcriptPath,
+					projectPath: session.projectPath,
+					source: proj.source,
 					organizationId: selectedOrgId,
-				});
-				return uploadSession(request, {
-					endpoint,
-					token: credentials.token,
-					onRetry,
-				});
-			},
-		});
+				})),
+			);
 
-		renderBatchSummary(summary, { context: adapter.name });
-		totalFailed += summary.failed;
+			const summary = await runBatchUpload({
+				items,
+				label: "Uploading sessions...",
+				upload: async (item, onRetry) => {
+					const adapter = getAdapter(item.source ?? "claude_code");
+					const session = matchingProjects
+						.flatMap((proj) => proj.sessions)
+						.find((s) => s.sessionId === item.sessionId);
+					if (!session) {
+						return { success: false, error: "Session not found" };
+					}
+					const gitInfo = await getGitInfo(session.projectPath);
+					const request = await adapter.buildUploadRequest(session, {
+						gitInfo,
+						organizationId: selectedOrgId,
+					});
+					return uploadSession(request, {
+						endpoint,
+						token: credentials.token,
+						onRetry,
+					});
+				},
+			});
+
+			renderBatchSummary(summary);
+			totalFailed += summary.failed;
+		}
 	}
 
 	if (totalFailed > 0) {
