@@ -3,7 +3,7 @@
   "checkpoint_id": "fa25698cc77a",
   "strategy": "manual-commit",
   "branch": "release-stability",
-  "checkpoints_count": 1,
+  "checkpoints_count": 6,
   "files_touched": [
     "apps/api/src/services/overview.service.ts",
     "apps/web/src/components/analytics/NoSessionsInRange.tsx",
@@ -41,13 +41,20 @@
       "context": "/fa/25698cc77a/3/context.md",
       "content_hash": "/fa/25698cc77a/3/content_hash.txt",
       "prompt": "/fa/25698cc77a/3/prompt.txt"
+    },
+    {
+      "metadata": "/fa/25698cc77a/4/metadata.json",
+      "transcript": "/fa/25698cc77a/4/full.jsonl",
+      "context": "/fa/25698cc77a/4/context.md",
+      "content_hash": "/fa/25698cc77a/4/content_hash.txt",
+      "prompt": "/fa/25698cc77a/4/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2015,
-    "cache_creation_tokens": 131474,
-    "cache_read_tokens": 969861,
-    "output_tokens": 8712,
-    "api_call_count": 21
+    "input_tokens": 2051,
+    "cache_creation_tokens": 225564,
+    "cache_read_tokens": 2100833,
+    "output_tokens": 17337,
+    "api_call_count": 43
   }
 }
