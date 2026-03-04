@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "bf4a248a8a59",
+  "session_id": "c9bd120a-1594-4c4f-bc1e-9e4a762935b1",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-04T02:47:42.831082Z",
+  "branch": "marc/cli-bun-target-issue",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/package.json",
+    "apps/cli/src/bin/cli.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/lib/classifier.ts",
+    "apps/cli/src/lib/exec.ts",
+    "apps/cli/src/lib/failed-uploads.ts",
+    "apps/cli/src/lib/git-info.ts",
+    "apps/cli/src/lib/project-config.ts",
+    "apps/cli/src/lib/remote-cache.ts",
+    "apps/cli/src/lib/stdin.ts",
+    "apps/cli/tsconfig.json",
+    "bun.lock"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "91d0549c4d31",
+  "token_usage": {
+    "input_tokens": 42,
+    "cache_creation_tokens": 62759,
+    "cache_read_tokens": 2384170,
+    "output_tokens": 11547,
+    "api_call_count": 41
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-04T02:47:42.749708Z",
+    "agent_lines": 151,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 151,
+    "agent_percentage": 100
+  }
+}
