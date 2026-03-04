@@ -15,16 +15,21 @@ export async function getOrgSessionCount(orgId: string): Promise<number> {
 	return results.reduce((sum, rows) => sum + Number(rows[0]?.count ?? 0), 0);
 }
 
-export async function deleteOrgSessions(orgId: string): Promise<void> {
+export function deleteOrgSessions(orgId: string): void {
 	const ch = getClickhouse();
 	const escaped = escapeString(orgId);
 	const tables = getAllAdapters().map((a) => a.rawTableName);
-	await Promise.all([
+	Promise.all([
 		...tables.map((table) =>
 			ch.execute(`DELETE FROM ${table} WHERE organization_id = '${escaped}'`),
 		),
 		ch.execute(
 			`DELETE FROM rudel.session_analytics WHERE organization_id = '${escaped}'`,
 		),
-	]);
+	]).catch((error) => {
+		console.error(
+			`[deleteOrgSessions] async ClickHouse deletion failed for org=${orgId}:`,
+			error,
+		);
+	});
 }

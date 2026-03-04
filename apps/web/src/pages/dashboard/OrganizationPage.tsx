@@ -411,6 +411,11 @@ export function OrganizationPage() {
 						if (other) {
 							await switchOrg(other.id);
 						}
+						for (const key of Object.keys(authClient.$store.atoms)) {
+							if (key.startsWith("$")) {
+								authClient.$store.notify(key);
+							}
+						}
 						navigate("/dashboard");
 					}}
 				/>
