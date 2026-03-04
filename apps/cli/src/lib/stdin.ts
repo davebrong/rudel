@@ -16,18 +16,10 @@ export async function readStdin(): Promise<string> {
 		return "";
 	}
 
-	if (process.platform === "win32") {
-		const chunks: Buffer[] = [];
+	const chunks: Buffer[] = [];
+	try {
 		for await (const chunk of process.stdin) {
 			chunks.push(Buffer.from(chunk));
-		}
-		return Buffer.concat(chunks).toString("utf8");
-	}
-
-	const chunks: Uint8Array[] = [];
-	try {
-		for await (const chunk of Bun.stdin.stream()) {
-			chunks.push(chunk);
 		}
 	} catch (error: unknown) {
 		const code = (error as { code?: string }).code;

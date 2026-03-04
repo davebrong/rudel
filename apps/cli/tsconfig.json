@@ -3,7 +3,8 @@
 	"compilerOptions": {
 		"outDir": "./dist",
 		"rootDir": "./src",
-		"types": ["bun-types"]
+		"types": ["@types/node"]
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"exclude": ["src/__tests__"]
 }

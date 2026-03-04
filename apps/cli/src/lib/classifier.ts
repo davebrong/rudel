@@ -1,6 +1,7 @@
-import { mkdir, unlink } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { exec } from "./exec.js";
 import { SESSION_TAGS, type SessionTag } from "./types.js";
 
 const SYSTEM_PROMPT = `You are a session classifier. Analyze the Claude Code session transcript and classify it into exactly ONE of these categories:
@@ -29,7 +30,7 @@ export async function classifySession(
 
 	try {
 		await mkdir(tempDir, { recursive: true });
-		await Bun.write(
+		await writeFile(
 			tempFile,
 			`Classify this session transcript:\n\n${truncatedContent}`,
 		);
@@ -38,23 +39,16 @@ export async function classifySession(
 		const escapedPrompt = prompt.replace(/'/g, "'\\''");
 		const escapedSystemPrompt = SYSTEM_PROMPT.replace(/'/g, "'\\''");
 
-		const proc = Bun.spawn(
-			[
-				"sh",
-				"-c",
-				`echo '${escapedPrompt}' | claude --output-format text --print --model haiku --no-session-persistence --dangerously-skip-permissions --system-prompt '${escapedSystemPrompt}'`,
-			],
-			{ stdout: "pipe", stderr: "pipe" },
-		);
+		const result = await exec("sh", [
+			"-c",
+			`echo '${escapedPrompt}' | claude --output-format text --print --model haiku --no-session-persistence --dangerously-skip-permissions --system-prompt '${escapedSystemPrompt}'`,
+		]);
 
-		const exitCode = await proc.exited;
-		const stdout = await new Response(proc.stdout).text();
-
-		if (exitCode !== 0) {
+		if (result.exitCode !== 0) {
 			return "other";
 		}
 
-		const output = stdout.trim().toLowerCase();
+		const output = result.stdout.trim().toLowerCase();
 
 		// Exact match
 		if (SESSION_TAGS.includes(output as SessionTag)) {

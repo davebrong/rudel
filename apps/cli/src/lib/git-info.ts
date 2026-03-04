@@ -1,5 +1,6 @@
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { $ } from "bun";
+import { exec } from "./exec.js";
 
 export interface GitInfo {
 	repository?: string;
@@ -66,16 +67,18 @@ function getRepositoryName(
 
 async function getPackageName(cwd: string): Promise<string | null> {
 	try {
-		const gitRootResult =
-			await $`git -C ${cwd} rev-parse --show-toplevel`.quiet();
-		const gitRoot =
-			gitRootResult.exitCode === 0 ? gitRootResult.text().trim() : cwd;
+		const result = await exec("git", [
+			"-C",
+			cwd,
+			"rev-parse",
+			"--show-toplevel",
+		]);
+		const gitRoot = result.exitCode === 0 ? result.stdout.trim() : cwd;
 
 		const packageJsonPath = join(gitRoot, "package.json");
-		const packageFile = Bun.file(packageJsonPath);
-		if (await packageFile.exists()) {
+		if (existsSync(packageJsonPath)) {
 			try {
-				const packageJson = await packageFile.json();
+				const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 				if (packageJson.name) return packageJson.name;
 			} catch {
 				// Invalid JSON
@@ -89,9 +92,15 @@ async function getPackageName(cwd: string): Promise<string | null> {
 
 export async function getGitRemoteUrl(cwd: string): Promise<string | null> {
 	try {
-		const result = await $`git -C ${cwd} remote get-url origin`.quiet();
+		const result = await exec("git", [
+			"-C",
+			cwd,
+			"remote",
+			"get-url",
+			"origin",
+		]);
 		if (result.exitCode !== 0) return null;
-		return result.text().trim() || null;
+		return result.stdout.trim() || null;
 	} catch {
 		return null;
 	}
@@ -99,9 +108,15 @@ export async function getGitRemoteUrl(cwd: string): Promise<string | null> {
 
 async function getGitBranch(cwd: string): Promise<string | null> {
 	try {
-		const result = await $`git -C ${cwd} rev-parse --abbrev-ref HEAD`.quiet();
+		const result = await exec("git", [
+			"-C",
+			cwd,
+			"rev-parse",
+			"--abbrev-ref",
+			"HEAD",
+		]);
 		if (result.exitCode !== 0) return null;
-		return result.text().trim();
+		return result.stdout.trim();
 	} catch {
 		return null;
 	}
@@ -109,9 +124,9 @@ async function getGitBranch(cwd: string): Promise<string | null> {
 
 async function getGitSha(cwd: string): Promise<string | null> {
 	try {
-		const result = await $`git -C ${cwd} rev-parse HEAD`.quiet();
+		const result = await exec("git", ["-C", cwd, "rev-parse", "HEAD"]);
 		if (result.exitCode !== 0) return null;
-		return result.text().trim();
+		return result.stdout.trim();
 	} catch {
 		return null;
 	}

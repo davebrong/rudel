@@ -1,5 +1,7 @@
+import { existsSync, readFileSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { type Source, SourceSchema } from "@rudel/api-routes";
 
 const FAILED_UPLOADS_PATH = join(homedir(), ".rudel", "failed-uploads.json");
@@ -27,9 +29,10 @@ function normalizeSource(raw: unknown): Source | undefined {
 
 export async function loadFailedUploads(): Promise<FailedUpload[]> {
 	try {
-		const file = Bun.file(FAILED_UPLOADS_PATH);
-		if (!(await file.exists())) return [];
-		const data = (await file.json()) as FailedUploadsData;
+		if (!existsSync(FAILED_UPLOADS_PATH)) return [];
+		const data = JSON.parse(
+			readFileSync(FAILED_UPLOADS_PATH, "utf-8"),
+		) as FailedUploadsData;
 		return data.failures.map((f) => ({
 			...f,
 			source: normalizeSource(f.source),
@@ -41,11 +44,9 @@ export async function loadFailedUploads(): Promise<FailedUpload[]> {
 
 async function saveFailedUploads(failures: FailedUpload[]): Promise<void> {
 	try {
-		const { mkdir } = await import("node:fs/promises");
-		const { dirname } = await import("node:path");
 		await mkdir(dirname(FAILED_UPLOADS_PATH), { recursive: true });
 		const data: FailedUploadsData = { failures };
-		await Bun.write(FAILED_UPLOADS_PATH, JSON.stringify(data, null, 2));
+		await writeFile(FAILED_UPLOADS_PATH, JSON.stringify(data, null, 2));
 	} catch {
 		// Best-effort — don't break the upload flow
 	}
