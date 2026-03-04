@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "cd7f1c6cc500",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "scripts/release-cli.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cd/7f1c6cc500/0/metadata.json",
+      "transcript": "/cd/7f1c6cc500/0/full.jsonl",
+      "context": "",
+      "content_hash": "/cd/7f1c6cc500/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
