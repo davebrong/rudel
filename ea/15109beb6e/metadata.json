@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "ea15109beb6e",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-pr-title-lint",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/pr-title.yml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ea/15109beb6e/0/metadata.json",
+      "transcript": "/ea/15109beb6e/0/full.jsonl",
+      "context": "/ea/15109beb6e/0/context.md",
+      "content_hash": "/ea/15109beb6e/0/content_hash.txt",
+      "prompt": "/ea/15109beb6e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 66,
+    "cache_creation_tokens": 111050,
+    "cache_read_tokens": 1095753,
+    "output_tokens": 7423,
+    "api_call_count": 27
+  }
+}
