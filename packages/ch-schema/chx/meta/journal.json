@@ -1,10 +1,1 @@
-{
-	"version": 1,
-	"applied": [
-		{
-			"name": "20260220190421_auto.sql",
-			"appliedAt": "2026-02-22T06:41:16.058Z",
-			"checksum": "5f0a659c576d08ffcf65e731497a5a35f7c794e81e809fa9a141cca707e88a1c"
-		}
-	]
-}
+{ "version": 1, "applied": [] }

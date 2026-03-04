@@ -1,4 +1,4 @@
-import { BookOpen, FolderKanban, Lightbulb, Users } from "lucide-react";
+import { BookOpen, FolderKanban, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
@@ -6,9 +6,11 @@ import { MultiSelect } from "@/components/analytics/MultiSelect";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { LearningsTrendChart } from "@/components/charts/LearningsTrendChart";
+import { LearningsEmptyState } from "@/components/learnings/LearningsEmptyState";
 import { LearningsTimeline } from "@/components/learnings/LearningsTimeline";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
+import { useUserMap } from "@/hooks/useUserMap";
 import { orpc } from "@/lib/orpc";
 
 export function LearningsPage() {
@@ -44,24 +46,12 @@ export function LearningsPage() {
 		orpc.analytics.learnings.projects.queryOptions({}),
 	);
 
-	const { data: userMappings } = useAnalyticsQuery(
-		orpc.analytics.users.mappings.queryOptions({ input: { days: 30 } }),
-	);
-
-	const userMap = useMemo(() => {
-		const map = new Map<string, string>();
-		if (userMappings) {
-			for (const m of userMappings) {
-				map.set(m.user_id, m.username);
-			}
-		}
-		return map;
-	}, [userMappings]);
+	const { userMap } = useUserMap();
 
 	const userDisplayOptions = useMemo(() => {
 		if (!availableUsers) return [];
 		return availableUsers.map(
-			(userId) => userMap.get(userId) || `${userId.substring(0, 8)}...`,
+			(userId) => userMap[userId] || `${userId.substring(0, 8)}...`,
 		);
 	}, [availableUsers, userMap]);
 
@@ -96,7 +86,7 @@ export function LearningsPage() {
 		if (!availableUsers) return;
 		const userIds = selectedNames.map((name) => {
 			const userId = availableUsers.find(
-				(id) => (userMap.get(id) || `${id.substring(0, 8)}...`) === name,
+				(id) => (userMap[id] || `${id.substring(0, 8)}...`) === name,
 			);
 			return userId || name;
 		});
@@ -131,36 +121,7 @@ export function LearningsPage() {
 				}
 			/>
 
-			{!isLoading && !hasData && (
-				<AnalyticsCard className="mt-4">
-					<div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-						<div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-6">
-							<Lightbulb className="w-8 h-8 text-muted-foreground" />
-						</div>
-						<h3 className="text-lg font-semibold text-foreground mb-3">
-							No learnings yet
-						</h3>
-						<p className="text-sm text-muted-foreground max-w-lg mb-6">
-							This feature is powered by our internal continuous improvement
-							system at{" "}
-							<a
-								href="https://obsessiondb.com"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-foreground underline underline-offset-2 hover:text-foreground/80"
-							>
-								ObsessionDB
-							</a>
-							. We are working on open-sourcing this workflow so you can set up
-							your own continuous improvement agent system for your team.
-						</p>
-						<p className="text-xs text-muted-foreground/60 max-w-md">
-							Stay tuned — once available, learnings will automatically appear
-							here as your team captures feedback during coding sessions.
-						</p>
-					</div>
-				</AnalyticsCard>
-			)}
+			{!isLoading && !hasData && <LearningsEmptyState />}
 
 			{hasData && (
 				<>
@@ -193,8 +154,7 @@ export function LearningsPage() {
 						<MultiSelect
 							options={userDisplayOptions}
 							selected={selectedUsers.map(
-								(userId) =>
-									userMap.get(userId) || `${userId.substring(0, 8)}...`,
+								(userId) => userMap[userId] || `${userId.substring(0, 8)}...`,
 							)}
 							onChange={handleUserFilterChange}
 							placeholder="All Users"
@@ -257,7 +217,7 @@ export function LearningsPage() {
 							<LearningsTimeline
 								learnings={filteredLearnings}
 								isLoading={isLoading}
-								userMap={Object.fromEntries(userMap)}
+								userMap={userMap}
 							/>
 						</div>
 					</AnalyticsCard>

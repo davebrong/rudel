@@ -1,7 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { GroupedProjects, ScannedProject } from "./types.js";
 
 export function toClickHouseDateTime(isoString: string): string {
 	return isoString.replace("T", " ").replace("Z", "").replace(/\+.*$/, "");
@@ -69,24 +68,4 @@ export function toDisplayPath(absolutePath: string): string {
 	return absolutePath.startsWith(home)
 		? `~${absolutePath.slice(home.length)}`
 		: absolutePath;
-}
-
-export function groupProjectsForCwd(
-	projects: ScannedProject[],
-	cwd: string,
-): GroupedProjects {
-	const current = projects.filter((p) => p.projectPath === cwd);
-	const currentSet = new Set(current);
-	const subfolders = projects.filter(
-		(p) => !currentSet.has(p) && p.projectPath.startsWith(`${cwd}/`),
-	);
-	const subfoldersSet = new Set(subfolders);
-	const others = projects.filter(
-		(p) => !currentSet.has(p) && !subfoldersSet.has(p),
-	);
-
-	subfolders.sort((a, b) => a.projectPath.localeCompare(b.projectPath));
-	others.sort((a, b) => a.displayPath.localeCompare(b.displayPath));
-
-	return { current, subfolders, others };
 }

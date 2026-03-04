@@ -41,7 +41,6 @@ async function waitForRow(
 	Array<{
 		session_id: string;
 		project_path: string;
-		repository: string;
 		tag: string;
 		user_id: string;
 		organization_id: string;
@@ -53,12 +52,11 @@ async function waitForRow(
 			const results = await executor.query<{
 				session_id: string;
 				project_path: string;
-				repository: string;
 				tag: string;
 				user_id: string;
 				organization_id: string;
 			}>(
-				`SELECT session_id, project_path, repository, tag, user_id, organization_id FROM rudel.claude_sessions WHERE session_id = '${sessionId}' LIMIT 1`,
+				`SELECT session_id, project_path, tag, user_id, organization_id FROM rudel.claude_sessions WHERE session_id = '${sessionId}' LIMIT 1`,
 			);
 			if (results.length > 0) return results;
 		} catch {
@@ -75,7 +73,6 @@ describe("ingestSession", () => {
 			source: "claude_code",
 			sessionId: testId,
 			projectPath: "/test/api-ingest",
-			repository: "test-repo",
 			gitBranch: "feature-branch",
 			gitSha: "deadbeef",
 			tag: "tests",
@@ -104,7 +101,6 @@ describe("ingestSession", () => {
 		expect(results).toHaveLength(1);
 		expect(results[0]?.session_id).toBe(testId);
 		expect(results[0]?.project_path).toBe("/test/api-ingest");
-		expect(results[0]?.repository).toBe("test-repo");
 		expect(results[0]?.tag).toBe("tests");
 		expect(results[0]?.user_id).toBe("test_user");
 		expect(results[0]?.organization_id).toBe("test_org");

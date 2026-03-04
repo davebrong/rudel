@@ -8,9 +8,9 @@ describe("RudelClaudeSessionsRowSchema", () => {
 		session_id: "sess_abc123",
 		organization_id: "org_xyz",
 		project_path: "/Users/dev/project",
-		repository: "github.com/org/repo",
 		git_remote: "github.com/org/repo",
 		package_name: "my-project",
+		package_type: "package.json",
 		content: "session transcript content",
 		subagents: { agent1: "result1" },
 		ingested_at: "2026-02-13T09:24:27.180Z",
@@ -30,13 +30,11 @@ describe("RudelClaudeSessionsRowSchema", () => {
 	it("accepts null for nullable fields", () => {
 		const row = {
 			...validRow,
-			repository: null,
 			git_branch: null,
 			git_sha: null,
 			tag: null,
 		};
 		const result = RudelClaudeSessionsRowSchema.parse(row);
-		expect(result.repository).toBeNull();
 		expect(result.git_branch).toBeNull();
 		expect(result.git_sha).toBeNull();
 		expect(result.tag).toBeNull();

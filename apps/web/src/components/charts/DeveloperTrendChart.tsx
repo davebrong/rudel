@@ -17,7 +17,7 @@ import { useChartTheme } from "@/hooks/useChartTheme";
 
 interface DeveloperTrendChartProps {
 	data: DeveloperTrendDataPoint[];
-	userMap: Map<string, string>;
+	userMap: Record<string, string>;
 }
 
 type MetricType = "sessions" | "hours" | "tokens" | "success_rate";
@@ -102,9 +102,7 @@ export function DeveloperTrendChart({
 	});
 
 	const formatUsername = (userId: string) => {
-		const username = userMap.get(userId);
-		if (username) return username;
-		return userId.substring(0, 12);
+		return userMap[userId] || userId.substring(0, 12);
 	};
 
 	return (

@@ -21,30 +21,34 @@ import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { orpc } from "@/lib/orpc";
 
 export function OverviewPage() {
-	const { startDate, endDate, setStartDate, setEndDate, calculateDays } =
-		useDateRange();
-	const days = calculateDays();
+	const { startDate, endDate, setStartDate, setEndDate } = useDateRange();
 
 	const {
 		data: kpis,
 		isPending: kpisLoading,
 		isError: kpisError,
 	} = useAnalyticsQuery(
-		orpc.analytics.overview.kpis.queryOptions({ input: { days } }),
+		orpc.analytics.overview.kpis.queryOptions({
+			input: { startDate, endDate },
+		}),
 	);
 
 	const { data: usageTrendData } = useAnalyticsQuery(
-		orpc.analytics.overview.usageTrend.queryOptions({ input: { days } }),
+		orpc.analytics.overview.usageTrend.queryOptions({
+			input: { startDate, endDate },
+		}),
 	);
 
 	const { data: modelTokensData } = useAnalyticsQuery(
 		orpc.analytics.overview.modelTokensTrend.queryOptions({
-			input: { days },
+			input: { startDate, endDate },
 		}),
 	);
 
 	const { data: insights } = useAnalyticsQuery(
-		orpc.analytics.overview.insights.queryOptions({ input: { days } }),
+		orpc.analytics.overview.insights.queryOptions({
+			input: { startDate, endDate },
+		}),
 	);
 
 	const hasData = !kpisLoading && kpis && kpis.distinct_sessions > 0;

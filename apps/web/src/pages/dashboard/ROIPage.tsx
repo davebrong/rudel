@@ -31,6 +31,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { useUserMap } from "@/hooks/useUserMap";
 import { formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
 
@@ -63,29 +64,17 @@ export function ROIPage() {
 		orpc.analytics.roi.breakdownProjects.queryOptions({ input: { days } }),
 	);
 
-	const { data: userMappings } = useAnalyticsQuery(
-		orpc.analytics.users.mappings.queryOptions({ input: { days: 90 } }),
-	);
-
-	const userMapRecord = useMemo(() => {
-		const record: Record<string, string> = {};
-		if (userMappings) {
-			for (const m of userMappings) {
-				record[m.user_id] = m.username;
-			}
-		}
-		return record;
-	}, [userMappings]);
+	const { userMap } = useUserMap();
 
 	const devCostColumns = useMemo<ColumnDef<DeveloperCostBreakdown>[]>(
 		() => [
 			{
-				accessorFn: (row) => formatUsername(row.user_id, userMapRecord),
+				accessorFn: (row) => formatUsername(row.user_id, userMap),
 				id: "developer",
 				header: "Developer",
 				cell: ({ row }) => (
 					<span className="font-medium text-foreground">
-						{formatUsername(row.original.user_id, userMapRecord)}
+						{formatUsername(row.original.user_id, userMap)}
 					</span>
 				),
 			},
@@ -108,7 +97,7 @@ export function ROIPage() {
 				),
 			},
 		],
-		[userMapRecord],
+		[userMap],
 	);
 
 	const projectCostColumns = useMemo<ColumnDef<ProjectCostBreakdown>[]>(

@@ -3,9 +3,9 @@ import { join } from "node:path";
 import { exec } from "./exec.js";
 
 export interface GitInfo {
-	repository?: string;
 	gitRemote?: string;
 	packageName?: string;
+	packageType?: string;
 	branch?: string;
 	sha?: string;
 }
@@ -24,48 +24,30 @@ export function normalizeRemoteUrl(url: string): string {
  * Extract git metadata for a given project directory.
  */
 export async function getGitInfo(cwd: string): Promise<GitInfo> {
-	const [remoteUrl, branch, sha, packageName] = await Promise.all([
+	const [remoteUrl, branch, sha, packageInfo] = await Promise.all([
 		getGitRemoteUrl(cwd),
 		getGitBranch(cwd),
 		getGitSha(cwd),
-		getPackageName(cwd),
+		getPackageInfo(cwd),
 	]);
 
 	const gitRemote = remoteUrl ? normalizeRemoteUrl(remoteUrl) : undefined;
-	const repository = getRepositoryName(gitRemote, packageName, cwd);
 
 	return {
-		repository,
 		gitRemote,
-		packageName: packageName ?? undefined,
+		packageName: packageInfo?.name,
+		packageType: packageInfo?.type,
 		branch: branch ?? undefined,
 		sha: sha ?? undefined,
 	};
 }
 
-/**
- * Extract a display name for the repository.
- * Prefers owner/repo from git remote, falls back to package name, then dir name.
- */
-function getRepositoryName(
-	gitRemote: string | undefined,
-	packageName: string | null,
-	cwd: string,
-): string | undefined {
-	if (gitRemote) {
-		// "github.com/owner/repo" → "owner/repo"
-		const parts = gitRemote.split("/");
-		if (parts.length >= 3) {
-			return parts.slice(1).join("/");
-		}
-		return gitRemote;
-	}
-	if (packageName) return packageName;
-	const dirName = cwd.split("/").pop();
-	return dirName ?? undefined;
+interface PackageInfo {
+	name: string;
+	type: string;
 }
 
-async function getPackageName(cwd: string): Promise<string | null> {
+async function getPackageInfo(cwd: string): Promise<PackageInfo | null> {
 	try {
 		const result = await exec("git", [
 			"-C",
@@ -73,18 +55,61 @@ async function getPackageName(cwd: string): Promise<string | null> {
 			"rev-parse",
 			"--show-toplevel",
 		]);
-		const gitRoot = result.exitCode === 0 ? result.stdout.trim() : cwd;
+		const root = result.exitCode === 0 ? result.stdout.trim() : cwd;
 
-		const packageJsonPath = join(gitRoot, "package.json");
-		if (existsSync(packageJsonPath)) {
-			try {
-				const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
-				if (packageJson.name) return packageJson.name;
-			} catch {
-				// Invalid JSON
-			}
-		}
+		return (
+			getNodePackage(root) ??
+			getPythonPackage(root) ??
+			getRustPackage(root) ??
+			getGoModule(root)
+		);
+	} catch {
 		return null;
+	}
+}
+
+function getNodePackage(root: string): PackageInfo | null {
+	try {
+		const filePath = join(root, "package.json");
+		if (!existsSync(filePath)) return null;
+		const pkg = JSON.parse(readFileSync(filePath, "utf-8"));
+		return pkg.name ? { name: pkg.name, type: "package.json" } : null;
+	} catch {
+		return null;
+	}
+}
+
+function getPythonPackage(root: string): PackageInfo | null {
+	try {
+		const filePath = join(root, "pyproject.toml");
+		if (!existsSync(filePath)) return null;
+		const content = readFileSync(filePath, "utf-8");
+		const name = content.match(/^\s*name\s*=\s*"([^"]+)"/m)?.[1];
+		return name ? { name, type: "pyproject.toml" } : null;
+	} catch {
+		return null;
+	}
+}
+
+function getRustPackage(root: string): PackageInfo | null {
+	try {
+		const filePath = join(root, "Cargo.toml");
+		if (!existsSync(filePath)) return null;
+		const content = readFileSync(filePath, "utf-8");
+		const name = content.match(/^\s*name\s*=\s*"([^"]+)"/m)?.[1];
+		return name ? { name, type: "Cargo.toml" } : null;
+	} catch {
+		return null;
+	}
+}
+
+function getGoModule(root: string): PackageInfo | null {
+	try {
+		const filePath = join(root, "go.mod");
+		if (!existsSync(filePath)) return null;
+		const content = readFileSync(filePath, "utf-8");
+		const name = content.match(/^module\s+(\S+)/m)?.[1];
+		return name ? { name, type: "go.mod" } : null;
 	} catch {
 		return null;
 	}

@@ -143,6 +143,14 @@ function isVersionPublished(name: string, version: string): boolean {
 // Git
 // ---------------------------------------------------------------------------
 
+function tagExists(tag: string): boolean {
+	const result = spawnSync("git", ["tag", "-l", tag], {
+		encoding: "utf8",
+		env: process.env,
+	});
+	return result.status === 0 && result.stdout.trim() === tag;
+}
+
 function tagAndPush(version: string, commitVersionBump: boolean): void {
 	const tag = `rudel@${version}`;
 
@@ -152,7 +160,12 @@ function tagAndPush(version: string, commitVersionBump: boolean): void {
 		runCommand("git", ["commit", "-m", `chore: release rudel@${version}`]);
 	}
 
-	runCommand("git", ["tag", tag]);
+	if (tagExists(tag)) {
+		logLine(`Tag ${tag} already exists, skipping.`);
+	} else {
+		runCommand("git", ["tag", tag]);
+	}
+
 	runCommand("git", ["push", "origin", "main"]);
 	runCommand("git", ["push", "origin", tag]);
 

@@ -17,16 +17,10 @@ export interface ScannedProject {
 	sessionCount: number;
 }
 
-export interface GroupedProjects {
-	current: ScannedProject[];
-	subfolders: ScannedProject[];
-	others: ScannedProject[];
-}
-
 export interface GitInfo {
-	repository?: string;
 	gitRemote?: string;
 	packageName?: string;
+	packageType?: string;
 	branch?: string;
 	sha?: string;
 }

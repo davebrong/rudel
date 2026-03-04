@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 import {
+	DateRangeInputSchema,
 	DaysInputSchema,
 	DeveloperCostBreakdownSchema,
 	DeveloperDetailsInputSchema,
@@ -46,7 +47,6 @@ import {
 	SuccessRateSchema,
 	TeamSummaryComparisonSchema,
 	UsageTrendDataSchema,
-	UserMappingSchema,
 } from "./schemas/analytics.js";
 
 export * from "./schemas/analytics.js";
@@ -95,9 +95,9 @@ export const IngestSessionInputSchema = z.object({
 	source: SourceSchema.default("claude_code"),
 	sessionId: z.string(),
 	projectPath: z.string(),
-	repository: z.string().optional(),
 	gitRemote: z.string().optional(),
 	packageName: z.string().optional(),
+	packageType: z.string().optional(),
 	gitBranch: z.string().optional(),
 	gitSha: z.string().optional(),
 	tag: SessionTagSchema.optional(),
@@ -124,27 +124,22 @@ export const contract = {
 		.input(z.object({ organizationId: z.string() }))
 		.output(z.object({ count: z.number() })),
 	deleteOrganization: oc
-		.input(
-			z.object({
-				organizationId: z.string(),
-				migrateSessionsTo: z.string().optional(),
-			}),
-		)
+		.input(z.object({ organizationId: z.string() }))
 		.output(z.object({ success: z.literal(true) })),
 	analytics: {
 		overview: {
-			kpis: oc.input(DaysInputSchema).output(OverviewKPIsSchema),
+			kpis: oc.input(DateRangeInputSchema).output(OverviewKPIsSchema),
 			usageTrend: oc
-				.input(DaysInputSchema)
+				.input(DateRangeInputSchema)
 				.output(z.array(UsageTrendDataSchema)),
 			modelTokensTrend: oc
-				.input(DaysInputSchema)
+				.input(DateRangeInputSchema)
 				.output(z.array(ModelTokensTrendDataSchema)),
-			insights: oc.input(DaysInputSchema).output(z.array(InsightSchema)),
+			insights: oc.input(DateRangeInputSchema).output(z.array(InsightSchema)),
 			teamSummaryComparison: oc
-				.input(DaysInputSchema)
+				.input(DateRangeInputSchema)
 				.output(TeamSummaryComparisonSchema),
-			successRate: oc.input(DaysInputSchema).output(SuccessRateSchema),
+			successRate: oc.input(DateRangeInputSchema).output(SuccessRateSchema),
 		},
 		developers: {
 			list: oc.input(DaysInputSchema).output(z.array(DeveloperSummarySchema)),
@@ -231,9 +226,6 @@ export const contract = {
 			trend: oc
 				.input(LearningsTrendInputSchema)
 				.output(z.array(LearningsTrendDataPointSchema)),
-		},
-		users: {
-			mappings: oc.input(DaysInputSchema).output(z.array(UserMappingSchema)),
 		},
 	},
 };

@@ -2,6 +2,10 @@
 
 CLI for uploading [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session transcripts to [Rudel](https://app.rudel.ai) for analytics.
 
+## Prerequisites
+
+- [Bun](https://bun.sh) runtime installed
+
 ## Installation
 
 ```bash
@@ -64,6 +68,17 @@ Show the currently authenticated user.
 ### `rudel logout`
 
 Clear stored credentials.
+
+## What Data Is Collected
+
+Each uploaded session includes:
+
+- Session ID & timestamps (start, last interaction)
+- User ID & organization ID
+- Project path & package name
+- Git context (repository, branch, SHA, remote)
+- Session transcript (full prompt & response content)
+- Sub-agent usage
 
 ## Links
 

@@ -9,7 +9,6 @@ import { authMiddleware, os } from "./middleware.js";
 import {
 	deleteOrgSessions,
 	getOrgSessionCount,
-	migrateOrgSessions,
 } from "./services/org-session.service.js";
 
 const health = os.health.handler(() => {
@@ -124,9 +123,7 @@ const deleteOrganization = os.deleteOrganization
 	.handler(async ({ input, context }) => {
 		const orgId = input.organizationId;
 		const userId = context.user.id;
-		console.log(
-			`[deleteOrganization] user=${userId} org=${orgId} migrateSessionsTo=${input.migrateSessionsTo ?? "none"}`,
-		);
+		console.log(`[deleteOrganization] user=${userId} org=${orgId}`);
 
 		// Check user has more than one org
 		const memberships = await db
@@ -166,48 +163,11 @@ const deleteOrganization = os.deleteOrganization
 		}
 
 		try {
-			if (input.migrateSessionsTo) {
-				if (input.migrateSessionsTo === orgId) {
-					throw new ORPCError("BAD_REQUEST", {
-						message: "Cannot migrate sessions to the same organization",
-					});
-				}
-
-				// Verify user is a member of the target org
-				const targetMembership = await db
-					.select({ id: member.id })
-					.from(member)
-					.where(
-						and(
-							eq(member.organizationId, input.migrateSessionsTo),
-							eq(member.userId, userId),
-						),
-					)
-					.limit(1);
-
-				if (targetMembership.length === 0) {
-					console.log(
-						`[deleteOrganization] rejected: user=${userId} not member of target org=${input.migrateSessionsTo}`,
-					);
-					throw new ORPCError("FORBIDDEN", {
-						message: "Not a member of the target organization",
-					});
-				}
-
-				console.log(
-					`[deleteOrganization] migrating sessions from org=${orgId} to org=${input.migrateSessionsTo}`,
-				);
-				await migrateOrgSessions(orgId, input.migrateSessionsTo);
-				console.log(`[deleteOrganization] session migration complete`);
-			} else {
-				console.log(
-					`[deleteOrganization] deleting ClickHouse sessions for org=${orgId}`,
-				);
-				await deleteOrgSessions(orgId);
-				console.log(
-					`[deleteOrganization] ClickHouse session deletion complete`,
-				);
-			}
+			console.log(
+				`[deleteOrganization] deleting ClickHouse sessions for org=${orgId}`,
+			);
+			await deleteOrgSessions(orgId);
+			console.log(`[deleteOrganization] ClickHouse session deletion complete`);
 
 			// Delete the organization from Postgres (cascade handles member + invitation)
 			console.log(`[deleteOrganization] deleting org=${orgId} from Postgres`);

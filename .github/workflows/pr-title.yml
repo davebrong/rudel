@@ -31,3 +31,9 @@ jobs:
             ci
             chore
             revert
+          # If there's only one commit, also validate its message matches
+          # the PR title. This prevents squash merges from using a
+          # non-conventional commit message (e.g. with emoji prefixes)
+          # when GitHub's COMMIT_OR_PR_TITLE setting picks the commit.
+          validateSingleCommit: true
+          validateSingleCommitMatchesPrTitle: true
