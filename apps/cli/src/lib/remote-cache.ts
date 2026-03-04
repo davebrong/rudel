@@ -1,5 +1,7 @@
+import { existsSync, readFileSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 const CACHE_PATH = join(homedir(), ".rudel", "remote-cache.json");
 
@@ -7,9 +9,8 @@ type RemoteCacheData = Record<string, string>;
 
 export async function getRemoteCache(): Promise<RemoteCacheData> {
 	try {
-		const file = Bun.file(CACHE_PATH);
-		if (!(await file.exists())) return {};
-		return (await file.json()) as RemoteCacheData;
+		if (!existsSync(CACHE_PATH)) return {};
+		return JSON.parse(readFileSync(CACHE_PATH, "utf-8")) as RemoteCacheData;
 	} catch {
 		return {};
 	}
@@ -32,10 +33,8 @@ export function cacheRemote(
 
 export async function cacheRemotes(cache: RemoteCacheData): Promise<void> {
 	try {
-		const { mkdir } = await import("node:fs/promises");
-		const { dirname } = await import("node:path");
 		await mkdir(dirname(CACHE_PATH), { recursive: true });
-		await Bun.write(CACHE_PATH, JSON.stringify(cache));
+		await writeFile(CACHE_PATH, JSON.stringify(cache));
 	} catch {
 		// Fire-and-forget — cache is best-effort
 	}

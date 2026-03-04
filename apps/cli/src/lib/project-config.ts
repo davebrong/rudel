@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { $ } from "bun";
+import { exec } from "./exec.js";
 
 interface ProjectEntry {
 	organizationId: string;
@@ -39,9 +39,15 @@ function saveProjectsConfig(config: ProjectsConfig): void {
 async function getProjectKey(cwd: string): Promise<string> {
 	// Prefer git remote URL (portable across clones)
 	try {
-		const result = await $`git -C ${cwd} remote get-url origin`.quiet();
+		const result = await exec("git", [
+			"-C",
+			cwd,
+			"remote",
+			"get-url",
+			"origin",
+		]);
 		if (result.exitCode === 0) {
-			const url = result.text().trim();
+			const url = result.stdout.trim();
 			// Normalize: strip .git suffix and protocol
 			return url
 				.replace(/^(https?:\/\/|git@|ssh:\/\/)/, "")
@@ -54,9 +60,14 @@ async function getProjectKey(cwd: string): Promise<string> {
 
 	// Fall back to absolute path
 	try {
-		const result = await $`git -C ${cwd} rev-parse --show-toplevel`.quiet();
+		const result = await exec("git", [
+			"-C",
+			cwd,
+			"rev-parse",
+			"--show-toplevel",
+		]);
 		if (result.exitCode === 0) {
-			return result.text().trim();
+			return result.stdout.trim();
 		}
 	} catch {
 		// Not a git repo

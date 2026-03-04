@@ -32,7 +32,7 @@
 	"scripts": {
 		"dev": "bun run src/bin/cli.ts",
 		"check-types": "tsc --noEmit",
-		"build": "bun build src/bin/cli.ts --outdir dist --target bun",
+		"build": "bun build src/bin/cli.ts --outdir dist --target node",
 		"test": "bun test"
 	},
 	"dependencies": {
@@ -48,6 +48,7 @@
 		"@rudel/agent-adapters": "workspace:*",
 		"@rudel/api-routes": "workspace:*",
 		"@rudel/typescript-config": "workspace:*",
+		"@types/node": "^22",
 		"bun-types": "latest",
 		"typescript": "5.9.2"
 	}

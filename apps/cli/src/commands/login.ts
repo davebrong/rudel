@@ -1,4 +1,11 @@
+import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
+import {
+	createServer,
+	type IncomingMessage,
+	type ServerResponse,
+} from "node:http";
+import type { AddressInfo } from "node:net";
 import * as p from "@clack/prompts";
 import { buildCommand } from "@stricli/core";
 import { loadCredentials, saveCredentials } from "../lib/credentials.js";
@@ -30,43 +37,48 @@ async function runLogin(flags: {
 		rejectCallback = reject;
 	});
 
-	const server = Bun.serve({
-		port: 0,
-		hostname: "127.0.0.1",
-		fetch(request) {
-			const url = new URL(request.url);
-			if (url.pathname !== "/callback") {
-				return new Response("Not found", { status: 404 });
-			}
+	const server = createServer((req: IncomingMessage, res: ServerResponse) => {
+		const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
+		if (url.pathname !== "/callback") {
+			res.writeHead(404, { "Content-Type": "text/plain" });
+			res.end("Not found");
+			return;
+		}
 
-			const receivedToken = url.searchParams.get("token");
-			const receivedState = url.searchParams.get("state");
+		const receivedToken = url.searchParams.get("token");
+		const receivedState = url.searchParams.get("state");
 
-			if (receivedState !== state) {
-				rejectCallback(new Error("State mismatch — possible CSRF attack"));
-				return new Response(
-					"<html><body><h1>Login failed</h1><p>State mismatch. Please try again.</p></body></html>",
-					{ headers: { "Content-Type": "text/html" } },
-				);
-			}
-
-			if (!receivedToken) {
-				rejectCallback(new Error("No token received"));
-				return new Response(
-					"<html><body><h1>Login failed</h1><p>No token received.</p></body></html>",
-					{ headers: { "Content-Type": "text/html" } },
-				);
-			}
-
-			resolveCallback(receivedToken);
-			return new Response(
-				"<html><body><h1>Login successful!</h1><p>You can close this tab and return to the terminal.</p></body></html>",
-				{ headers: { "Content-Type": "text/html" } },
+		if (receivedState !== state) {
+			rejectCallback(new Error("State mismatch — possible CSRF attack"));
+			res.writeHead(200, { "Content-Type": "text/html" });
+			res.end(
+				"<html><body><h1>Login failed</h1><p>State mismatch. Please try again.</p></body></html>",
 			);
-		},
+			return;
+		}
+
+		if (!receivedToken) {
+			rejectCallback(new Error("No token received"));
+			res.writeHead(200, { "Content-Type": "text/html" });
+			res.end(
+				"<html><body><h1>Login failed</h1><p>No token received.</p></body></html>",
+			);
+			return;
+		}
+
+		resolveCallback(receivedToken);
+		res.writeHead(200, { "Content-Type": "text/html" });
+		res.end(
+			"<html><body><h1>Login successful!</h1><p>You can close this tab and return to the terminal.</p></body></html>",
+		);
 	});
 
-	const callbackUrl = `http://127.0.0.1:${server.port}/callback`;
+	await new Promise<void>((resolve) => {
+		server.listen(0, "127.0.0.1", resolve);
+	});
+
+	const port = (server.address() as AddressInfo).port;
+	const callbackUrl = `http://127.0.0.1:${port}/callback`;
 	const loginUrl = `${flags.webUrl}?cli_callback=${encodeURIComponent(callbackUrl)}&state=${state}`;
 
 	p.log.info(`If the browser doesn't open, visit:\n${loginUrl}`);
@@ -74,13 +86,18 @@ async function runLogin(flags: {
 	// Open browser
 	if (!flags.noBrowser) {
 		if (process.platform === "win32") {
-			Bun.spawn(["cmd", "/c", "start", "", loginUrl], {
-				stdout: "ignore",
-				stderr: "ignore",
+			const child = spawn("cmd", ["/c", "start", "", loginUrl], {
+				detached: true,
+				stdio: "ignore",
 			});
+			child.unref();
 		} else {
 			const opener = process.platform === "darwin" ? "open" : "xdg-open";
-			Bun.spawn([opener, loginUrl], { stdout: "ignore", stderr: "ignore" });
+			const child = spawn(opener, [loginUrl], {
+				detached: true,
+				stdio: "ignore",
+			});
+			child.unref();
 		}
 	}
 
@@ -97,14 +114,14 @@ async function runLogin(flags: {
 		token = await tokenPromise;
 	} catch (error) {
 		clearTimeout(timeout);
-		server.stop();
+		server.close();
 		spin.stop("Authentication failed");
 		p.log.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 		return;
 	}
 	clearTimeout(timeout);
-	server.stop();
+	server.close();
 
 	spin.message("Validating token...");
 
