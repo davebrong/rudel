@@ -1,0 +1,57 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+Tokens by model chart in overview looks like this
+
+### Prompt 2
+
+The stacked areas look off in comparison this second image, the errors stacked areas look smooth there is somethign wrong with the rendering of the token my podel
+
+### Prompt 3
+
+Ok nice! Can you check all time series charts in the the app and make sure all have this configuration?
+
+### Prompt 4
+
+In all timeseries charts we also have the issue that the x axis labels overlay with the xaxis I want to avoid this in all of the time series charts - see image
+
+### Prompt 5
+
+This is not what I meant, please revert the change. The problem is that the actual string is on top of the x-axis line and it looks bad looks at these:
+
+### Prompt 6
+
+Yes now it looks good thanks. Now I ant to try a stacked bar chart for this  the token model respecting always to show also dates with values 0 - this btw should be a mandatory rule everywhere.
+
+### Prompt 7
+
+Ok this is much more sexy, let's update all other stacked area charts to stacked bar charts and also make sure that none of these time series charts has more than 15 values in and the 15th is always an agregation of "Other".
+
+### Prompt 8
+
+When we make requests by "Project" like here in the sessions bar chart we get zeus several times even if the pahths might be the same how would you suggest we fix this?
+
+### Prompt 9
+
+did you try running a server on port 4010  error: Failed to start server. Is port 4010 in use?
+ syscall: "listen",
+   errno: 0,
+    code: "EADDRINUSE"
+
+      at /Users/rafa/Obsession/rudel/apps/api/src/index.ts:64:20 getting this please kill 4010 and lmk don't start anything else yet i will do it manually
+
+### Prompt 10
+
+Ok the poject change seems that worked. Thanks. now make Project the default filter in the sessions bar chart where it says Group By (X-Axis).
+
+### Prompt 11
+
+When the absolute/relative toggle is not actiate you can barely see it  here is it activated and here itS not  can you either put a margin stroke or something to mkae it visitble in light mode?
+
+### Prompt 12
+
+Change the text to "Scale to 100%" and don't change it when activated.
+
