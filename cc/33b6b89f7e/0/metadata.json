@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "cc33b6b89f7e",
+  "session_id": "3a31d010-303b-487d-a6ff-7d4d6a406b38",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T07:10:17.183724Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/lib/auth-client.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "3e125e14-6de6-43be-b81c-dd88aa1cc69a",
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 61223,
+    "cache_read_tokens": 1338642,
+    "output_tokens": 7574,
+    "api_call_count": 28
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T07:10:17.039062Z",
+    "agent_lines": 7,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 7,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/3a31d010-303b-487d-a6ff-7d4d6a406b38.jsonl"
+}

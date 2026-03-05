@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "ea3a453f4f58",
+  "session_id": "c416999c-7139-42e8-b79d-b27199f57694",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T18:06:31.494827Z",
+  "branch": "marc/remove-repository-column",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/src/__tests__/ingest-clickhouse.integration.ts",
+    "apps/api/src/services/error.service.ts",
+    "apps/api/src/services/learnings.service.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/project.service.ts",
+    "apps/api/src/services/session-analytics.service.ts",
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "apps/cli/src/commands/hook-upload.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/git-info.ts",
+    "packages/agent-adapters/src/adapters/claude-code/index.ts",
+    "packages/agent-adapters/src/adapters/codex/index.ts",
+    "packages/agent-adapters/src/types.ts",
+    "packages/api-routes/src/index.ts",
+    "packages/ch-schema/scripts/duplicate_org.sql",
+    "packages/ch-schema/src/__tests__/ingest-clickhouse.integration.ts",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/db/schema/base-sessions.ts",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "92538c114d90",
+  "token_usage": {
+    "input_tokens": 177,
+    "cache_creation_tokens": 289604,
+    "cache_read_tokens": 14583465,
+    "output_tokens": 34121,
+    "api_call_count": 128
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T18:06:30.900688Z",
+    "agent_lines": 50,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 50,
+    "agent_percentage": 100
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "72243cd1a78c",
+  "session_id": "a500a672-4cec-42d7-a651-09d10990e1c9",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T16:13:26.146623Z",
+  "branch": "marc/ch-backfill-run",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/ingest.ts",
+    "packages/ch-schema/chx/meta/backfill/plans/3eea159c576b48c8.json",
+    "packages/ch-schema/chx/meta/backfill/plans/e1d62173d06b9323.json",
+    "packages/ch-schema/chx/migrations/20260301135131_auto.sql",
+    "scripts/reingest-sessions.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 68,
+    "cache_creation_tokens": 137048,
+    "cache_read_tokens": 2179999,
+    "output_tokens": 9611,
+    "api_call_count": 35
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T16:13:25.937575Z",
+    "agent_lines": 0,
+    "human_added": 9916,
+    "human_modified": 313,
+    "human_removed": 0,
+    "total_committed": 10156,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-managua/a500a672-4cec-42d7-a651-09d10990e1c9.jsonl"
+}

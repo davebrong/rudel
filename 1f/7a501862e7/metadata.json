@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1f7a501862e7",
+  "strategy": "manual-commit",
+  "branch": "marc/add-codec-support",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/src/ingest-codex.ts",
+    "apps/api/src/ingest.ts",
+    "apps/api/src/services/org-session.service.ts",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "apps/cli/src/commands/dev/list-sessions.ts",
+    "apps/cli/src/commands/hook-upload.ts",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/agents/claude-code.ts",
+    "apps/cli/src/lib/agents/codex.ts",
+    "apps/cli/src/lib/agents/index.ts",
+    "apps/cli/src/lib/agents/types.ts",
+    "apps/cli/src/lib/batch-uploader.ts",
+    "apps/cli/src/lib/claude-settings.ts",
+    "apps/cli/src/lib/codex-scanner.ts",
+    "apps/cli/src/lib/codex-uploader.ts",
+    "apps/cli/src/lib/project-grouping.ts",
+    "apps/cli/src/lib/project-scanner.ts",
+    "apps/cli/src/lib/subagent-reader.ts",
+    "apps/cli/src/lib/transcript-reader.ts",
+    "apps/cli/src/lib/types.ts",
+    "packages/agent-adapters/src/adapters/claude-code/index.ts",
+    "packages/agent-adapters/src/types.ts",
+    "packages/ch-schema/chx/meta/snapshot.json",
+    "packages/ch-schema/src/db/schema/claude-sessions.ts",
+    "packages/ch-schema/src/db/schema/session-analytics.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1f/7a501862e7/0/metadata.json",
+      "transcript": "/1f/7a501862e7/0/full.jsonl",
+      "context": "/1f/7a501862e7/0/context.md",
+      "content_hash": "/1f/7a501862e7/0/content_hash.txt",
+      "prompt": "/1f/7a501862e7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 75,
+    "cache_creation_tokens": 206499,
+    "cache_read_tokens": 6574169,
+    "output_tokens": 45398,
+    "api_call_count": 67
+  }
+}

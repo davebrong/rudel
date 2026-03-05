@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "a0be092435d2",
+  "session_id": "9e935438-8c0c-4712-968d-594372908e1c",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T02:29:28.472267Z",
+  "branch": "marc/fix-invite-redirect",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/handlers/analytics/sessions.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 89,
+    "cache_creation_tokens": 70345,
+    "cache_read_tokens": 585673,
+    "output_tokens": 4713,
+    "api_call_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T02:29:28.375849Z",
+    "agent_lines": 16,
+    "human_added": 28,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 44,
+    "agent_percentage": 36.36363636363637
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-paris-v2/9e935438-8c0c-4712-968d-594372908e1c.jsonl"
+}

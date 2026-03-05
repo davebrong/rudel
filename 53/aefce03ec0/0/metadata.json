@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "53aefce03ec0",
+  "session_id": "a87412ae-e1b9-48a4-a63b-4fff40ea5521",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-23T02:00:20.44137Z",
+  "branch": "KeKs0r/ui-profile-social-link",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "apps/web/src/pages/dashboard/ProfilePage.tsx",
+    "scripts/dev-local.sh"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 37805,
+    "cache_read_tokens": 1319288,
+    "output_tokens": 442,
+    "api_call_count": 32
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-23T02:00:20.290144Z",
+    "agent_lines": 14,
+    "human_added": 524,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 538,
+    "agent_percentage": 2.6022304832713754
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-casablanca/a87412ae-e1b9-48a4-a63b-4fff40ea5521.jsonl"
+}

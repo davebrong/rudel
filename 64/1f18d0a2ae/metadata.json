@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "641f18d0a2ae",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/update-claude-md",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/lib/claude-settings.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/64/1f18d0a2ae/0/metadata.json",
+      "transcript": "/64/1f18d0a2ae/0/full.jsonl",
+      "context": "/64/1f18d0a2ae/0/context.md",
+      "content_hash": "/64/1f18d0a2ae/0/content_hash.txt",
+      "prompt": "/64/1f18d0a2ae/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 337,
+    "cache_creation_tokens": 136583,
+    "cache_read_tokens": 2699137,
+    "output_tokens": 653,
+    "api_call_count": 56
+  }
+}

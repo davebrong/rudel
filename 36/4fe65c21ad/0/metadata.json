@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "364fe65c21ad",
+  "session_id": "4cfce010-c352-4d4a-8a2b-eff681000134",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T01:32:38.228824Z",
+  "branch": "KeKs0r/update-html-metadata",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/index.html"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 10292,
+    "cache_read_tokens": 96976,
+    "output_tokens": 41,
+    "api_call_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T01:32:38.131826Z",
+    "agent_lines": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-dalat/4cfce010-c352-4d4a-8a2b-eff681000134.jsonl"
+}

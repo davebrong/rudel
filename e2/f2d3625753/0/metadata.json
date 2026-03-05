@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "e2f2d3625753",
+  "session_id": "8ecf33ca-ae9c-4771-9c6c-a05a63e5c528",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-22T06:10:32.320587Z",
+  "branch": "KeKs0r/simplify-infra",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/db.ts",
+    "packages/sql-schema/src/migrate.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "eec46590-32ec-4fe5-9312-ed1fcd6c3995",
+  "token_usage": {
+    "input_tokens": 4041,
+    "cache_creation_tokens": 270431,
+    "cache_read_tokens": 1960392,
+    "output_tokens": 389,
+    "api_call_count": 33
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-22T06:10:31.171118Z",
+    "agent_lines": 2,
+    "human_added": 614,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 616,
+    "agent_percentage": 0.3246753246753247
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-lagos/8ecf33ca-ae9c-4771-9c6c-a05a63e5c528.jsonl"
+}

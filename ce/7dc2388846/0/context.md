@@ -1,0 +1,68 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/marc/conductor/workspaces/rudel/albuquerque directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is main. Use this for actions like creating new PRs, bisecting, ...
+
+### Prompt 2
+
+can we also call the cli `rudel` in npm, or do we have to scope it? What is the best practice here. e.g. turborepo, i think internal things are also scoped as `@turbo` but the main cli is published as `turbo`.
+What are the best pracitices here?
+
+### Prompt 3
+
+okay can you prepare this change
+
+### Prompt 4
+
+do we have everything ready, for also a release of the CLI?
+
+### Prompt 5
+
+assign this workspace to this linear ticket: `marc/num-6505-rudel-cli-release`
+and check how we are publishing the CLI in this repo: `/Users/marc/Workspace/chkit` i think we should do it the same way
+
+### Prompt 6
+
+for rudel we ONLY want to publish the CLI. Also does the rudel CLI actually need the full api-routes? Doesnt the apir routes actually contain backend logic?
+
+### Prompt 7
+
+yes go ahead and implement those changes
+
+### Prompt 8
+
+what is the best way, to do releases? since we only want to release a single package from here, do we need the full `changeset` setup like in chkit, or is there a simpler way? Also happy to do it the same way for consistency
+
+### Prompt 9
+
+yeah lets do that
+
+### Prompt 10
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- /Users/marc/conductor/workspaces/rudel/albuquerque/.context/attachments/PR instructions.md
+</system_instruction>
+
+
+
+Create a PR
+
+### Prompt 11
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- /Users/marc/conductor/workspaces/rudel/albuquerque/.context/attachments/verify_64130921407.log
+</system_instruction>
+
+
+
+Fix the failing CI actions. I've attached the failure logs.
+

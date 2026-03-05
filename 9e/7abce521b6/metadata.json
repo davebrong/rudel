@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "9e7abce521b6",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-workspace-grouping",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "apps/cli/src/commands/dev/list-sessions.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/project-grouping.ts",
+    "packages/agent-adapters/src/index.ts",
+    "packages/agent-adapters/src/types.ts",
+    "packages/agent-adapters/src/utils.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/9e/7abce521b6/0/metadata.json",
+      "transcript": "/9e/7abce521b6/0/full.jsonl",
+      "context": "/9e/7abce521b6/0/context.md",
+      "content_hash": "/9e/7abce521b6/0/content_hash.txt",
+      "prompt": "/9e/7abce521b6/0/prompt.txt"
+    },
+    {
+      "metadata": "/9e/7abce521b6/1/metadata.json",
+      "transcript": "/9e/7abce521b6/1/full.jsonl",
+      "context": "/9e/7abce521b6/1/context.md",
+      "content_hash": "/9e/7abce521b6/1/content_hash.txt",
+      "prompt": "/9e/7abce521b6/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 160,
+    "cache_creation_tokens": 215744,
+    "cache_read_tokens": 4239362,
+    "output_tokens": 23348,
+    "api_call_count": 64
+  }
+}

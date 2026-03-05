@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "3edbecf56bb6",
+  "session_id": "17290abb-8757-4e7b-a0a3-4dcc44da9ccf",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-23T09:35:36.237469Z",
+  "branch": "marc/num-6530-document-the-setup",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".dockerignore",
+    "Dockerfile",
+    "README.md",
+    "apps/cli/README.md",
+    "docs/self-hosting.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "7540dd1b-af4f-4aa2-ae4f-c81233d063f9",
+  "token_usage": {
+    "input_tokens": 53,
+    "cache_creation_tokens": 45091,
+    "cache_read_tokens": 2169006,
+    "output_tokens": 575,
+    "api_call_count": 47
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-23T09:35:36.08624Z",
+    "agent_lines": 140,
+    "human_added": 16,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 156,
+    "agent_percentage": 89.74358974358975
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-pangyo/17290abb-8757-4e7b-a0a3-4dcc44da9ccf.jsonl"
+}

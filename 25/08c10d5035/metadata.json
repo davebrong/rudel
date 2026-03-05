@@ -1,0 +1,82 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "2508c10d5035",
+  "strategy": "manual-commit",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "apps/web/src/components/analytics/Breadcrumb.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/25/08c10d5035/0/metadata.json",
+      "transcript": "/25/08c10d5035/0/full.jsonl",
+      "context": "/25/08c10d5035/0/context.md",
+      "content_hash": "/25/08c10d5035/0/content_hash.txt",
+      "prompt": "/25/08c10d5035/0/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/1/metadata.json",
+      "transcript": "/25/08c10d5035/1/full.jsonl",
+      "context": "/25/08c10d5035/1/context.md",
+      "content_hash": "/25/08c10d5035/1/content_hash.txt",
+      "prompt": "/25/08c10d5035/1/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/2/metadata.json",
+      "transcript": "/25/08c10d5035/2/full.jsonl",
+      "context": "/25/08c10d5035/2/context.md",
+      "content_hash": "/25/08c10d5035/2/content_hash.txt",
+      "prompt": "/25/08c10d5035/2/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/3/metadata.json",
+      "transcript": "/25/08c10d5035/3/full.jsonl",
+      "context": "/25/08c10d5035/3/context.md",
+      "content_hash": "/25/08c10d5035/3/content_hash.txt",
+      "prompt": "/25/08c10d5035/3/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/4/metadata.json",
+      "transcript": "/25/08c10d5035/4/full.jsonl",
+      "context": "/25/08c10d5035/4/context.md",
+      "content_hash": "/25/08c10d5035/4/content_hash.txt",
+      "prompt": "/25/08c10d5035/4/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/5/metadata.json",
+      "transcript": "/25/08c10d5035/5/full.jsonl",
+      "context": "/25/08c10d5035/5/context.md",
+      "content_hash": "/25/08c10d5035/5/content_hash.txt",
+      "prompt": "/25/08c10d5035/5/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/6/metadata.json",
+      "transcript": "/25/08c10d5035/6/full.jsonl",
+      "context": "/25/08c10d5035/6/context.md",
+      "content_hash": "/25/08c10d5035/6/content_hash.txt",
+      "prompt": "/25/08c10d5035/6/prompt.txt"
+    },
+    {
+      "metadata": "/25/08c10d5035/7/metadata.json",
+      "transcript": "/25/08c10d5035/7/full.jsonl",
+      "context": "",
+      "content_hash": "/25/08c10d5035/7/content_hash.txt",
+      "prompt": ""
+    },
+    {
+      "metadata": "/25/08c10d5035/8/metadata.json",
+      "transcript": "/25/08c10d5035/8/full.jsonl",
+      "context": "/25/08c10d5035/8/context.md",
+      "content_hash": "/25/08c10d5035/8/content_hash.txt",
+      "prompt": "/25/08c10d5035/8/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 246,
+    "cache_creation_tokens": 635692,
+    "cache_read_tokens": 15419292,
+    "output_tokens": 73504,
+    "api_call_count": 214
+  }
+}

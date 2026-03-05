@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "9f22269342bc",
+  "session_id": "b20bf544-2842-47e7-9b28-04fa1184eda1",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-19T10:38:47.625076Z",
+  "branch": "add-chcli-skill",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".agents/skills/clickhouse-query/SKILL.md",
+    ".agents/skills/clickhouse-query/references/connection.md",
+    "CLAUDE.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 59131,
+    "cache_read_tokens": 1323052,
+    "output_tokens": 9207,
+    "api_call_count": 32
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-19T10:38:47.305473Z",
+    "agent_lines": 107,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 107,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/b20bf544-2842-47e7-9b28-04fa1184eda1.jsonl"
+}

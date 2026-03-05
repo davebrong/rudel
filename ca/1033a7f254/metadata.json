@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "ca1033a7f254",
+  "strategy": "manual-commit",
+  "branch": "marc/cli-upload-project-picker",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/router-auth.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ca/1033a7f254/0/metadata.json",
+      "transcript": "/ca/1033a7f254/0/full.jsonl",
+      "context": "/ca/1033a7f254/0/context.md",
+      "content_hash": "/ca/1033a7f254/0/content_hash.txt",
+      "prompt": "/ca/1033a7f254/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 137,
+    "cache_creation_tokens": 363722,
+    "cache_read_tokens": 9239238,
+    "output_tokens": 29130,
+    "api_call_count": 99
+  }
+}

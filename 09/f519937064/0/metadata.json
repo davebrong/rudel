@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "09f519937064",
+  "session_id": "eddd81f5-6871-40c6-a573-6f973df28561",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T06:14:01.705345Z",
+  "branch": "marc/fix-session-discovery",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/lib/project-scanner.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 105,
+    "cache_creation_tokens": 125546,
+    "cache_read_tokens": 1145620,
+    "output_tokens": 7303,
+    "api_call_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T06:14:01.47032Z",
+    "agent_lines": 29,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 29,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-pattaya/eddd81f5-6871-40c6-a573-6f973df28561.jsonl"
+}

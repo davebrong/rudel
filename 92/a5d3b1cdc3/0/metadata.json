@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "92a5d3b1cdc3",
+  "session_id": "b67ecb89-0b7b-40a8-bfbc-9bd1ff836006",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-23T14:54:22.130362Z",
+  "branch": "KeKs0r/install-rudel-cli",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".claude/settings.json",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "package.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "7ee8b8d5-8a1e-476b-b0a2-fb59b3f663b0",
+  "token_usage": {
+    "input_tokens": 91,
+    "cache_creation_tokens": 144614,
+    "cache_read_tokens": 3022737,
+    "output_tokens": 1016,
+    "api_call_count": 79
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-23T14:54:21.981336Z",
+    "agent_lines": 3,
+    "human_added": 29,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 32,
+    "agent_percentage": 9.375
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-harare/b67ecb89-0b7b-40a8-bfbc-9bd1ff836006.jsonl"
+}

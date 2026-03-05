@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "62add4d68b46",
+  "session_id": "d64e5ae1-b801-4415-bdcc-214d3ca127a0",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-16T13:35:13.951857Z",
+  "branch": "KeKs0r/github-actions-ci",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "package.json",
+    "turbo.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 31,
+    "cache_creation_tokens": 19792,
+    "cache_read_tokens": 661809,
+    "output_tokens": 254,
+    "api_call_count": 23
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T13:35:13.901586Z",
+    "agent_lines": 35,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 35,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-gazed-palembang/d64e5ae1-b801-4415-bdcc-214d3ca127a0.jsonl"
+}

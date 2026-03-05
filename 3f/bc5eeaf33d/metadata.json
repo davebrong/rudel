@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "3fbc5eeaf33d",
+  "strategy": "manual-commit",
+  "branch": "marc/delete-domain-skill",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".claude/skills/search-domain-validator/SKILL.md",
+    ".claude/skills/search-domain-validator/plugin.json",
+    ".claude/skills/testing-bun/SKILL.md",
+    ".claude/skills/testing-vitest/SKILL.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3f/bc5eeaf33d/0/metadata.json",
+      "transcript": "/3f/bc5eeaf33d/0/full.jsonl",
+      "context": "/3f/bc5eeaf33d/0/context.md",
+      "content_hash": "/3f/bc5eeaf33d/0/content_hash.txt",
+      "prompt": "/3f/bc5eeaf33d/0/prompt.txt"
+    },
+    {
+      "metadata": "/3f/bc5eeaf33d/1/metadata.json",
+      "transcript": "/3f/bc5eeaf33d/1/full.jsonl",
+      "context": "/3f/bc5eeaf33d/1/context.md",
+      "content_hash": "/3f/bc5eeaf33d/1/content_hash.txt",
+      "prompt": "/3f/bc5eeaf33d/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 136,
+    "cache_creation_tokens": 103861,
+    "cache_read_tokens": 750162,
+    "output_tokens": 4874,
+    "api_call_count": 19
+  }
+}

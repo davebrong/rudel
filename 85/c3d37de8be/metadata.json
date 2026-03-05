@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "85c3d37de8be",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-flaky-verify",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/__tests__/api-upload.integration.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/85/c3d37de8be/0/metadata.json",
+      "transcript": "/85/c3d37de8be/0/full.jsonl",
+      "context": "/85/c3d37de8be/0/context.md",
+      "content_hash": "/85/c3d37de8be/0/content_hash.txt",
+      "prompt": "/85/c3d37de8be/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 89,
+    "cache_creation_tokens": 138682,
+    "cache_read_tokens": 1632004,
+    "output_tokens": 7834,
+    "api_call_count": 27
+  }
+}

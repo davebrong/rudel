@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "7097c55cd049",
+  "strategy": "manual-commit",
+  "branch": "marc/delete-claude-plugin",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".claude-plugin/marketplace.json",
+    "apps/web/src/components/analytics/CliSetupHint.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/70/97c55cd049/0/metadata.json",
+      "transcript": "/70/97c55cd049/0/full.jsonl",
+      "context": "/70/97c55cd049/0/context.md",
+      "content_hash": "/70/97c55cd049/0/content_hash.txt",
+      "prompt": "/70/97c55cd049/0/prompt.txt"
+    },
+    {
+      "metadata": "/70/97c55cd049/1/metadata.json",
+      "transcript": "/70/97c55cd049/1/full.jsonl",
+      "context": "/70/97c55cd049/1/context.md",
+      "content_hash": "/70/97c55cd049/1/content_hash.txt",
+      "prompt": "/70/97c55cd049/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 45,
+    "cache_creation_tokens": 110119,
+    "cache_read_tokens": 568077,
+    "output_tokens": 2275,
+    "api_call_count": 17
+  }
+}

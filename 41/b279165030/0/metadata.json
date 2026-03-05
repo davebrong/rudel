@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "41b279165030",
+  "session_id": "f2c05508-b324-4a6a-a51a-08ff5975d35e",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-23T00:11:15.070039Z",
+  "branch": "KeKs0r/fly-deployment",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "Dockerfile",
+    "apps/api/src/index.ts",
+    "fly.toml"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "2aa7716f-2dfb-4ef5-bbb3-a15cd5774210",
+  "token_usage": {
+    "input_tokens": 64,
+    "cache_creation_tokens": 76866,
+    "cache_read_tokens": 3054667,
+    "output_tokens": 703,
+    "api_call_count": 60
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-23T00:11:14.909208Z",
+    "agent_lines": 27,
+    "human_added": 6,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 33,
+    "agent_percentage": 81.81818181818183
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-colombo/f2c05508-b324-4a6a-a51a-08ff5975d35e.jsonl"
+}

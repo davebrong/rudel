@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "e6e215a9d16a",
+  "session_id": "bcf4c074-725e-4e12-ab13-9d4f678a5326",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-16T13:19:33.468409Z",
+  "branch": "KeKs0r/bun-serve-api",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/index.ts",
+    "apps/api/tsconfig.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 31,
+    "cache_creation_tokens": 20279,
+    "cache_read_tokens": 699586,
+    "output_tokens": 200,
+    "api_call_count": 25
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T13:19:33.403468Z",
+    "agent_lines": 19,
+    "human_added": 70,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 89,
+    "agent_percentage": 21.34831460674157
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-gazed-oslo/bcf4c074-725e-4e12-ab13-9d4f678a5326.jsonl"
+}

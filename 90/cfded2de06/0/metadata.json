@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "90cfded2de06",
+  "session_id": "06d4e5d4-4655-4676-b849-614dd827081e",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T14:18:49.120825Z",
+  "branch": "marc/num-6593-rudel-org-invites-not-working-v3",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/ingest.ts",
+    "packages/ch-schema/chx/meta/backfill/plans/3eea159c576b48c8.json",
+    "packages/ch-schema/chx/meta/backfill/plans/e1d62173d06b9323.json",
+    "packages/ch-schema/chx/migrations/20260301135131_auto.sql",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 57,
+    "cache_creation_tokens": 96479,
+    "cache_read_tokens": 3344984,
+    "output_tokens": 12116,
+    "api_call_count": 48
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T14:18:48.857404Z",
+    "agent_lines": 30672,
+    "human_added": 53645,
+    "human_modified": 26,
+    "human_removed": 0,
+    "total_committed": 84343,
+    "agent_percentage": 36.365792063360324
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-montpellier-v1/06d4e5d4-4655-4676-b849-614dd827081e.jsonl"
+}

@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4ca7b429f4ae",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/fix-auth-origin",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/src/__tests__/ingest.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4c/a7b429f4ae/0/metadata.json",
+      "transcript": "/4c/a7b429f4ae/0/full.jsonl",
+      "context": "/4c/a7b429f4ae/0/context.md",
+      "content_hash": "/4c/a7b429f4ae/0/content_hash.txt",
+      "prompt": "/4c/a7b429f4ae/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 11,
+    "cache_creation_tokens": 9403,
+    "cache_read_tokens": 633598,
+    "output_tokens": 137,
+    "api_call_count": 9
+  }
+}

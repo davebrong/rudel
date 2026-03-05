@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "e331c0653a14",
+  "strategy": "manual-commit",
+  "branch": "marc/org-deletion",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude-plugin/marketplace.json",
+    "apps/cli/src/commands/config-show.ts",
+    "apps/cli/src/commands/hook-upload.ts",
+    "apps/cli/src/lib/config.ts",
+    "apps/cli/src/lib/logger.ts",
+    "apps/cli/src/lib/stdin.ts",
+    "packages/claude-plugin/.claude-plugin/plugin.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e3/31c0653a14/0/metadata.json",
+      "transcript": "/e3/31c0653a14/0/full.jsonl",
+      "context": "/e3/31c0653a14/0/context.md",
+      "content_hash": "/e3/31c0653a14/0/content_hash.txt",
+      "prompt": "/e3/31c0653a14/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 91748,
+    "cache_read_tokens": 2342321,
+    "output_tokens": 2429,
+    "api_call_count": 22
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "7fe0702c13ad",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/copy-arch-skills",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".agents/skills/clickhouse-query/SKILL.md",
+    ".agents/skills/clickhouse-query/references/connection.md",
+    ".agents/skills/clickhouse-query/references/formats.md",
+    ".agents/skills/code-architecture/SKILL.md",
+    ".agents/skills/environment-variables/SKILL.md",
+    ".agents/skills/library-docs/SKILL.md",
+    ".agents/skills/search-domain-validator/SKILL.md",
+    ".agents/skills/search-domain-validator/plugin.json",
+    ".agents/skills/testing-vitest/SKILL.md",
+    ".agents/skills/typescript-standards/SKILL.md",
+    ".claude/skills/clickhouse-query",
+    ".claude/skills/clickhouse-query/SKILL.md",
+    ".claude/skills/clickhouse-query/references/connection.md",
+    ".claude/skills/clickhouse-query/references/formats.md",
+    ".claude/skills/code-architecture",
+    ".claude/skills/code-architecture/SKILL.md",
+    ".claude/skills/environment-variables",
+    ".claude/skills/environment-variables/SKILL.md",
+    ".claude/skills/library-docs",
+    ".claude/skills/library-docs/SKILL.md",
+    ".claude/skills/search-domain-validator/SKILL.md",
+    ".claude/skills/search-domain-validator/plugin.json",
+    ".claude/skills/testing-vitest",
+    ".claude/skills/testing-vitest/SKILL.md",
+    ".claude/skills/typescript-standards",
+    ".claude/skills/typescript-standards/SKILL.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7f/e0702c13ad/0/metadata.json",
+      "transcript": "/7f/e0702c13ad/0/full.jsonl",
+      "context": "/7f/e0702c13ad/0/context.md",
+      "content_hash": "/7f/e0702c13ad/0/content_hash.txt",
+      "prompt": "/7f/e0702c13ad/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 200,
+    "cache_creation_tokens": 89712,
+    "cache_read_tokens": 1509649,
+    "output_tokens": 326,
+    "api_call_count": 39
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "9659ef8a0a2d",
+  "session_id": "056e9071-647c-4d12-8bee-45e3e5c44693",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T05:27:43.355795Z",
+  "branch": "marc/fix-org-migration-delete",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/services/org-session.service.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 67265,
+    "cache_read_tokens": 489725,
+    "output_tokens": 2312,
+    "api_call_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T05:27:43.197225Z",
+    "agent_lines": 32,
+    "human_added": 202,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 234,
+    "agent_percentage": 13.675213675213676
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-baghdad/056e9071-647c-4d12-8bee-45e3e5c44693.jsonl"
+}

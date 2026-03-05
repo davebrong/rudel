@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "445358c43677",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/add-api-auth",
+  "checkpoints_count": 6,
+  "files_touched": [
+    ".env.example",
+    ".gitignore",
+    "apps/api/.env",
+    "apps/api/.env.example",
+    "apps/api/src/auth.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/middleware.ts",
+    "apps/api/src/router.ts",
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/auth/login-form.tsx",
+    "apps/web/src/components/auth/signup-form.tsx",
+    "apps/web/src/components/ui/card.tsx",
+    "apps/web/src/components/ui/input.tsx",
+    "apps/web/src/components/ui/label.tsx",
+    "apps/web/src/components/ui/separator.tsx",
+    "apps/web/src/lib/auth-client.ts",
+    "apps/web/src/lib/orpc.ts",
+    "packages/api-routes/src/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/44/5358c43677/0/metadata.json",
+      "transcript": "/44/5358c43677/0/full.jsonl",
+      "context": "/44/5358c43677/0/context.md",
+      "content_hash": "/44/5358c43677/0/content_hash.txt",
+      "prompt": "/44/5358c43677/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 114,
+    "cache_creation_tokens": 103171,
+    "cache_read_tokens": 4728675,
+    "output_tokens": 678,
+    "api_call_count": 62
+  }
+}

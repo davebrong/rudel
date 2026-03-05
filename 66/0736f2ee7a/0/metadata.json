@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "660736f2ee7a",
+  "session_id": "96e15baa-d2cb-41b5-a83e-7d95d09601b9",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T04:19:00.638128Z",
+  "branch": "KeKs0r/rename-gazed-to-rudel",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/middleware.ts",
+    "apps/web/src/lib/orpc.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "f1a227c2-c1eb-46d5-95b9-e0e94da7e062",
+  "token_usage": {
+    "input_tokens": 35,
+    "cache_creation_tokens": 44382,
+    "cache_read_tokens": 1170681,
+    "output_tokens": 212,
+    "api_call_count": 27
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T04:19:00.561442Z",
+    "agent_lines": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-gazed-porto/96e15baa-d2cb-41b5-a83e-7d95d09601b9.jsonl"
+}

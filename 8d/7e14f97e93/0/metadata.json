@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "8d7e14f97e93",
+  "session_id": "25b636dc-b85c-43ce-83e5-4145a6380f34",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T16:29:10.206479Z",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/handlers/analytics/index.ts",
+    "apps/api/src/handlers/analytics/users.ts",
+    "apps/api/src/services/developer.service.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/user.service.ts",
+    "apps/web/src/components/charts/DeveloperTrendChart.tsx",
+    "apps/web/src/components/charts/DimensionAnalysisChart.tsx",
+    "apps/web/src/components/charts/ErrorTrendChart.tsx",
+    "apps/web/src/components/charts/LearningsTrendChart.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "docs/deploy-column-migration.md",
+    "packages/api-routes/src/schemas/analytics.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "55a05eaea33a",
+  "token_usage": {
+    "input_tokens": 63,
+    "cache_creation_tokens": 114221,
+    "cache_read_tokens": 3917887,
+    "output_tokens": 17836,
+    "api_call_count": 59
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T16:29:10.036876Z",
+    "agent_lines": 113,
+    "human_added": 396,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 509,
+    "agent_percentage": 22.20039292730845
+  }
+}

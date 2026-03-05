@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "bf4a248a8a59",
+  "strategy": "manual-commit",
+  "branch": "marc/cli-bun-target-issue",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/package.json",
+    "apps/cli/src/bin/cli.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/lib/classifier.ts",
+    "apps/cli/src/lib/exec.ts",
+    "apps/cli/src/lib/failed-uploads.ts",
+    "apps/cli/src/lib/git-info.ts",
+    "apps/cli/src/lib/project-config.ts",
+    "apps/cli/src/lib/remote-cache.ts",
+    "apps/cli/src/lib/stdin.ts",
+    "apps/cli/tsconfig.json",
+    "bun.lock"
+  ],
+  "sessions": [
+    {
+      "metadata": "/bf/4a248a8a59/0/metadata.json",
+      "transcript": "/bf/4a248a8a59/0/full.jsonl",
+      "context": "/bf/4a248a8a59/0/context.md",
+      "content_hash": "/bf/4a248a8a59/0/content_hash.txt",
+      "prompt": "/bf/4a248a8a59/0/prompt.txt"
+    },
+    {
+      "metadata": "/bf/4a248a8a59/1/metadata.json",
+      "transcript": "/bf/4a248a8a59/1/full.jsonl",
+      "context": "/bf/4a248a8a59/1/context.md",
+      "content_hash": "/bf/4a248a8a59/1/content_hash.txt",
+      "prompt": "/bf/4a248a8a59/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 75,
+    "cache_creation_tokens": 144909,
+    "cache_read_tokens": 2861871,
+    "output_tokens": 16398,
+    "api_call_count": 53
+  }
+}

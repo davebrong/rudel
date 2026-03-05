@@ -1,0 +1,30 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+in the page for http://localhost:4011/dashboard we show the empty state, before the org is loaded, and then when the org is loading (which does not immediately start) it goes back to loading state.\
+1. why is the loading of the org delayed?\
+2. i dont want to see the empty state, only if we have loaded the active org, and it does not have sessions
+
+### Prompt 2
+
+now the screen is empty while the ORG is still loading. and then when the org is loaded and the query starts loading, it shows a loading spinner. So apparently a "disabled" query is not triggering as isPending
+
+### Prompt 3
+
+the activeOrg is somehow in the criticalPath, is there a possibility to cache this value in localStorage? Also how are we determining the "activeOrg" in the backedn for the api requests? How can we do all of this more performant, right now the loading of the active org is quite in the critical path.
+
+### Prompt 4
+
+would this allow an attack vector, of writing a different org id into the localStorage?
+
+### Prompt 5
+
+okay then this is a good strategy implement it
+
+### Prompt 6
+
+okay commit those changes
+

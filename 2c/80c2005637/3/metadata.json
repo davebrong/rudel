@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2c80c2005637",
+  "session_id": "367d2413-d689-4de0-ba05-f5e8fb1b8574",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-22T06:54:25.185888Z",
+  "branch": "lucas-setup-everything",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".dev.vars",
+    "apps/web/vite.config.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "5fd0a634-8eec-4052-bf2f-4c6305b78524",
+  "token_usage": {
+    "input_tokens": 86,
+    "cache_creation_tokens": 159107,
+    "cache_read_tokens": 3107396,
+    "output_tokens": 1929,
+    "api_call_count": 68
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-22T06:54:25.048404Z",
+    "agent_lines": 0,
+    "human_added": 5176,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 5180,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/367d2413-d689-4de0-ba05-f5e8fb1b8574.jsonl"
+}

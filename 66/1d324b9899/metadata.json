@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "661d324b9899",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/ci-bun-cache",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/66/1d324b9899/0/metadata.json",
+      "transcript": "/66/1d324b9899/0/full.jsonl",
+      "context": "/66/1d324b9899/0/context.md",
+      "content_hash": "/66/1d324b9899/0/content_hash.txt",
+      "prompt": "/66/1d324b9899/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1506,
+    "cache_creation_tokens": 32577,
+    "cache_read_tokens": 440366,
+    "output_tokens": 83,
+    "api_call_count": 15
+  }
+}

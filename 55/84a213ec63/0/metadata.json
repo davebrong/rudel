@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "5584a213ec63",
+  "session_id": "92176c72-cb43-400e-9a75-7bea2fd6ba2c",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T10:51:18.111494Z",
+  "branch": "marc/fix-claude-code-adapter",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/commands/hooks/codex/turn-complete.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/batch-upload.ts",
+    "apps/cli/src/lib/failed-uploads.ts",
+    "packages/agent-adapters/src/adapters/claude-code/index.ts",
+    "packages/agent-adapters/src/adapters/codex/index.ts",
+    "packages/agent-adapters/src/registry.ts",
+    "packages/agent-adapters/src/types.ts",
+    "packages/api-routes/src/index.ts",
+    "packages/api-routes/src/schemas/analytics.ts",
+    "packages/api-routes/src/schemas/source.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 126,
+    "cache_creation_tokens": 195659,
+    "cache_read_tokens": 5228007,
+    "output_tokens": 16873,
+    "api_call_count": 68
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T10:51:17.517569Z",
+    "agent_lines": 42,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 42,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-london/92176c72-cb43-400e-9a75-7bea2fd6ba2c.jsonl"
+}

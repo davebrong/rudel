@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1434f795913a",
+  "session_id": "79180725-03a7-4a1e-85e4-4c7830417b59",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T04:19:28.363121Z",
+  "branch": "marc/num-6532-make-rudel-multitenant-team",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/auth.ts",
+    "packages/sql-schema/db/migrations/0001_flippant_sharon_ventura.sql",
+    "packages/sql-schema/db/migrations/0002_migrate-users-to-orgs.sql",
+    "packages/sql-schema/db/migrations/meta/0001_snapshot.json",
+    "packages/sql-schema/db/migrations/meta/0002_snapshot.json",
+    "packages/sql-schema/src/auth-schema.ts",
+    "packages/sql-schema/src/index.ts",
+    "scripts/migrate-users-to-orgs.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 3566,
+    "cache_creation_tokens": 94255,
+    "cache_read_tokens": 1950357,
+    "output_tokens": 419,
+    "api_call_count": 38
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T04:19:28.15797Z",
+    "agent_lines": 1183,
+    "human_added": 1157,
+    "human_modified": 66,
+    "human_removed": 0,
+    "total_committed": 2406,
+    "agent_percentage": 49.16874480465503
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-wellington/79180725-03a7-4a1e-85e4-4c7830417b59.jsonl"
+}

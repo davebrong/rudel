@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "6c5d217093b9",
+  "session_id": "e455609a-29f2-4d62-a1b4-31ef3f4e83a0",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-20T10:17:21.955439Z",
+  "branch": "KeKs0r/update-claude-md",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "package.json",
+    "packages/ch-schema/package.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "b5a7c295-c226-442e-acc5-c4757955f350",
+  "token_usage": {
+    "input_tokens": 314,
+    "cache_creation_tokens": 98872,
+    "cache_read_tokens": 1497126,
+    "output_tokens": 464,
+    "api_call_count": 39
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-20T10:17:21.71601Z",
+    "agent_lines": 6,
+    "human_added": 171,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 177,
+    "agent_percentage": 3.389830508474576
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-douala/e455609a-29f2-4d62-a1b4-31ef3f4e83a0.jsonl"
+}

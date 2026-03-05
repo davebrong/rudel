@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "0e16b1bedd66",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/cli-publish-check",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".context/linear-ticket",
+    "apps/cli/package.json",
+    "apps/cli/src/app.ts",
+    "apps/cli/src/bin/cli.ts",
+    "package.json",
+    "scripts/release-cli.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0e/16b1bedd66/0/metadata.json",
+      "transcript": "/0e/16b1bedd66/0/full.jsonl",
+      "context": "/0e/16b1bedd66/0/context.md",
+      "content_hash": "/0e/16b1bedd66/0/content_hash.txt",
+      "prompt": "/0e/16b1bedd66/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 955,
+    "cache_creation_tokens": 138170,
+    "cache_read_tokens": 2317042,
+    "output_tokens": 479,
+    "api_call_count": 50
+  }
+}

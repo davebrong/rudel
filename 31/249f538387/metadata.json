@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "31249f538387",
+  "strategy": "manual-commit",
+  "branch": "rudel-streamline-release",
+  "checkpoints_count": 7,
+  "files_touched": [
+    ".claude/skills/search-domain-validator/SKILL.md",
+    ".claude/skills/search-domain-validator/plugin.json",
+    "apps/cli/package.json",
+    "apps/cli/src/app.ts",
+    "release-please-config.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/31/249f538387/0/metadata.json",
+      "transcript": "/31/249f538387/0/full.jsonl",
+      "context": "/31/249f538387/0/context.md",
+      "content_hash": "/31/249f538387/0/content_hash.txt",
+      "prompt": "/31/249f538387/0/prompt.txt"
+    },
+    {
+      "metadata": "/31/249f538387/1/metadata.json",
+      "transcript": "/31/249f538387/1/full.jsonl",
+      "context": "/31/249f538387/1/context.md",
+      "content_hash": "/31/249f538387/1/content_hash.txt",
+      "prompt": "/31/249f538387/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 62,
+    "cache_creation_tokens": 73072,
+    "cache_read_tokens": 1593227,
+    "output_tokens": 6651,
+    "api_call_count": 42
+  }
+}

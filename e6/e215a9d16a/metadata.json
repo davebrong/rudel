@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "e6e215a9d16a",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/bun-serve-api",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/index.ts",
+    "apps/api/tsconfig.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e6/e215a9d16a/0/metadata.json",
+      "transcript": "/e6/e215a9d16a/0/full.jsonl",
+      "context": "/e6/e215a9d16a/0/context.md",
+      "content_hash": "/e6/e215a9d16a/0/content_hash.txt",
+      "prompt": "/e6/e215a9d16a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 31,
+    "cache_creation_tokens": 20279,
+    "cache_read_tokens": 699586,
+    "output_tokens": 200,
+    "api_call_count": 25
+  }
+}

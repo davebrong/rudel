@@ -1,0 +1,10 @@
+run current migrations for staging and prod in packages/ch-schema
+
+---
+
+[Request interrupted by user]
+
+---
+
+actually we are not live yet. just delete the migrations journal and snapshot, regenerate it from current schema. \
+fully delete the datase instaging and prod and generate everything from scratch

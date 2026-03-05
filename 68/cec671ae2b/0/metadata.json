@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "68cec671ae2b",
+  "session_id": "edb7b8c2-d71e-4663-bfce-11bc58e04e9f",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T17:00:34.029688Z",
+  "branch": "marc/fix-deploy-failure",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "Dockerfile"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "717663456129",
+  "token_usage": {
+    "input_tokens": 87,
+    "cache_creation_tokens": 77059,
+    "cache_read_tokens": 568954,
+    "output_tokens": 2236,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T17:00:33.983572Z",
+    "agent_lines": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1,
+    "agent_percentage": 100
+  }
+}

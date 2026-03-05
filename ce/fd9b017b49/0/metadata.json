@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "cefd9b017b49",
+  "session_id": "a0aa5c4e-957a-4b99-b594-90575d8c1cb4",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T07:31:23.759927Z",
+  "branch": "marc/cli-upload-progress",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/commands/hooks/codex/turn-complete.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/batch-uploader.ts",
+    "apps/cli/src/lib/failed-uploads.ts",
+    "apps/cli/src/lib/types.ts",
+    "apps/cli/src/lib/uploader.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 130,
+    "cache_creation_tokens": 296344,
+    "cache_read_tokens": 9783101,
+    "output_tokens": 35776,
+    "api_call_count": 95
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T07:31:23.029195Z",
+    "agent_lines": 586,
+    "human_added": 1681,
+    "human_modified": 149,
+    "human_removed": 0,
+    "total_committed": 2416,
+    "agent_percentage": 24.25496688741722
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-santo-domingo/a0aa5c4e-957a-4b99-b594-90575d8c1cb4.jsonl"
+}

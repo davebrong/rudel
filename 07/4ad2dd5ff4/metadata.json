@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "074ad2dd5ff4",
+  "strategy": "manual-commit",
+  "branch": "marc/api-testing-skill",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".claude/skills/api-testing/SKILL.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/07/4ad2dd5ff4/0/metadata.json",
+      "transcript": "/07/4ad2dd5ff4/0/full.jsonl",
+      "context": "/07/4ad2dd5ff4/0/context.md",
+      "content_hash": "/07/4ad2dd5ff4/0/content_hash.txt",
+      "prompt": "/07/4ad2dd5ff4/0/prompt.txt"
+    },
+    {
+      "metadata": "/07/4ad2dd5ff4/1/metadata.json",
+      "transcript": "/07/4ad2dd5ff4/1/full.jsonl",
+      "context": "",
+      "content_hash": "/07/4ad2dd5ff4/1/content_hash.txt",
+      "prompt": ""
+    },
+    {
+      "metadata": "/07/4ad2dd5ff4/2/metadata.json",
+      "transcript": "/07/4ad2dd5ff4/2/full.jsonl",
+      "context": "",
+      "content_hash": "/07/4ad2dd5ff4/2/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 587,
+    "cache_creation_tokens": 161542,
+    "cache_read_tokens": 2164537,
+    "output_tokens": 12263,
+    "api_call_count": 36
+  }
+}

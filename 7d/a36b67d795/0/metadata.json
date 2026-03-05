@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "7da36b67d795",
+  "session_id": "0d1a105e-7b60-4e35-bf44-36a0f2c76142",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T04:04:18.881561Z",
+  "branch": "marc/fix-browser-open-tests",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/__tests__/auth.e2e.test.ts",
+    "apps/cli/src/commands/login.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 72,
+    "cache_creation_tokens": 84003,
+    "cache_read_tokens": 692103,
+    "output_tokens": 3690,
+    "api_call_count": 16
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T04:04:18.632939Z",
+    "agent_lines": 17,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 17,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-el-paso/0d1a105e-7b60-4e35-bf44-36a0f2c76142.jsonl"
+}

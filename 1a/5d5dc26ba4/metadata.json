@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1a5d5dc26ba4",
+  "strategy": "manual-commit",
+  "branch": "marc/session-grouping",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/__tests__/api-upload.integration.test.ts",
+    "apps/cli/src/__tests__/upload.integration.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1a/5d5dc26ba4/0/metadata.json",
+      "transcript": "/1a/5d5dc26ba4/0/full.jsonl",
+      "context": "/1a/5d5dc26ba4/0/context.md",
+      "content_hash": "/1a/5d5dc26ba4/0/content_hash.txt",
+      "prompt": "/1a/5d5dc26ba4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 111,
+    "cache_creation_tokens": 122863,
+    "cache_read_tokens": 1313555,
+    "output_tokens": 6505,
+    "api_call_count": 27
+  }
+}

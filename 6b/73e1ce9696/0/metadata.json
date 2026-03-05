@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "6b73e1ce9696",
+  "session_id": "26b714eb-fab0-46ee-b85a-af224e6e61ed",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T04:11:23.820045Z",
+  "branch": "marc/overview-empty-install-hint",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/web/src/components/analytics/CliSetupHint.tsx",
+    "apps/web/src/pages/dashboard/OverviewPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 94,
+    "cache_creation_tokens": 187397,
+    "cache_read_tokens": 1729566,
+    "output_tokens": 10219,
+    "api_call_count": 30
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T04:11:23.547684Z",
+    "agent_lines": 65,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 65,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-madrid/26b714eb-fab0-46ee-b85a-af224e6e61ed.jsonl"
+}

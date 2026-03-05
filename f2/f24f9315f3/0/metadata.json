@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "f2f24f9315f3",
+  "session_id": "2a6b20d4-cf34-4fd6-b50a-9c3c7064ba21",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-04T08:19:54.130022Z",
+  "branch": "marc/verify-api-endpoints",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/__tests__/analytics.integration.ts",
+    "scripts/seed-analytics-test-data.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "1fa0072d8897",
+  "token_usage": {
+    "input_tokens": 562,
+    "cache_creation_tokens": 290601,
+    "cache_read_tokens": 8764359,
+    "output_tokens": 31655,
+    "api_call_count": 88
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-04T08:19:52.569619Z",
+    "agent_lines": 831,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 831,
+    "agent_percentage": 100
+  }
+}

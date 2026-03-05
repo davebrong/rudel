@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "72243cd1a78c",
+  "strategy": "manual-commit",
+  "branch": "marc/ch-backfill-run",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/ingest.ts",
+    "packages/ch-schema/chx/meta/backfill/events/059f453e8152a512.ndjson",
+    "packages/ch-schema/chx/meta/backfill/events/3eea159c576b48c8.ndjson",
+    "packages/ch-schema/chx/meta/backfill/events/e1d62173d06b9323.ndjson",
+    "packages/ch-schema/chx/meta/backfill/plans/3eea159c576b48c8.json",
+    "packages/ch-schema/chx/meta/backfill/plans/e1d62173d06b9323.json",
+    "packages/ch-schema/chx/meta/backfill/runs/e1d62173d06b9323.json",
+    "packages/ch-schema/chx/migrations/20260301135131_auto.sql",
+    "packages/ch-schema/chx/migrations/20260301145916_auto.sql",
+    "packages/ch-schema/scripts/backfill-session-analytics.sql",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts",
+    "scripts/reingest-sessions.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/72/243cd1a78c/0/metadata.json",
+      "transcript": "/72/243cd1a78c/0/full.jsonl",
+      "context": "/72/243cd1a78c/0/context.md",
+      "content_hash": "/72/243cd1a78c/0/content_hash.txt",
+      "prompt": "/72/243cd1a78c/0/prompt.txt"
+    },
+    {
+      "metadata": "/72/243cd1a78c/1/metadata.json",
+      "transcript": "/72/243cd1a78c/1/full.jsonl",
+      "context": "/72/243cd1a78c/1/context.md",
+      "content_hash": "/72/243cd1a78c/1/content_hash.txt",
+      "prompt": "/72/243cd1a78c/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 154,
+    "cache_creation_tokens": 260287,
+    "cache_read_tokens": 7916188,
+    "output_tokens": 48079,
+    "api_call_count": 110
+  }
+}

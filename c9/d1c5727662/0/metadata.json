@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "c9d1c5727662",
+  "session_id": "6b3d0131-3c45-4f14-ac66-de844f15a97a",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:49:47.399382Z",
+  "branch": "marc/disable-release-automerge",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/release.yml"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 70,
+    "cache_creation_tokens": 62653,
+    "cache_read_tokens": 509111,
+    "output_tokens": 2597,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:49:47.270771Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-algiers/6b3d0131-3c45-4f14-ac66-de844f15a97a.jsonl"
+}

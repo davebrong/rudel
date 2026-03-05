@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "bbf72a7cb0a6",
+  "session_id": "946b30a6-18a8-4373-8c73-eac14aa9b793",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T05:55:55.368435Z",
+  "branch": "proper-logout",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/analytics/Sidebar.tsx",
+    "apps/web/src/lib/auth-client.ts",
+    "apps/web/src/lib/query-client.ts",
+    "apps/web/src/main.tsx",
+    "apps/web/src/pages/dashboard/ProfilePage.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "6e822774-6906-46bc-822e-1c679291a377",
+  "token_usage": {
+    "input_tokens": 17,
+    "cache_creation_tokens": 29843,
+    "cache_read_tokens": 510011,
+    "output_tokens": 1061,
+    "api_call_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T05:55:55.232174Z",
+    "agent_lines": 17,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 17,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/946b30a6-18a8-4373-8c73-eac14aa9b793.jsonl"
+}
