@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "8980d62fa26e",
+  "strategy": "manual-commit",
+  "branch": "launch-readiness-app",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/learnings/feedback/2026-02-25-offer-single-or-batch-upload.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/89/80d62fa26e/0/metadata.json",
+      "transcript": "/89/80d62fa26e/0/full.jsonl",
+      "context": "/89/80d62fa26e/0/context.md",
+      "content_hash": "/89/80d62fa26e/0/content_hash.txt",
+      "prompt": "/89/80d62fa26e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 267,
+    "cache_creation_tokens": 115393,
+    "cache_read_tokens": 840215,
+    "output_tokens": 6341,
+    "api_call_count": 25
+  }
+}

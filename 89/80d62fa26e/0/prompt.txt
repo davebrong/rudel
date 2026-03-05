@@ -1,0 +1,222 @@
+how do i upload historical sessions?
+
+---
+
+please upload historical sessions and let me know when done
+
+---
+
+Analyze the current conversation and create a feedback entry capturing the issue.
+
+## Step 1: Gather Context
+
+Get datetime and git SHA:
+
+```bash
+date '+%Y-%m-%d %H:%M:%S'
+git rev-parse --short HEAD 2>/dev/null || echo "no-git"
+```
+
+From the conversation, extract:
+
+- What task was being worked on
+- What the agent did (the problematic behavior)
+- The user's observation (from the argument)
+
+## Step 2: Extract Observed Workflows
+
+Carefully review the conversation and extract ALL workflows that were involved:
+
+### Subagents
+Look for Task tool invocations with `subagent_type`. Common types:
+- `Explore`, `Plan`, `Bash`, `general-purpose`
+- `code:codebase-analyzer`, `code:codebase-locator`, `code:web-search-researcher`
+- Any `plugin-name:agent-name` pattern
+
+### Skills
+Look for Skill tool invocations. Examples:
+- `code:testing-vitest`, `code:typescript-standards`
+- `prompt-engineering`, `compound:feedback`
+
+### Slash Commands
+Look for commands the user invoked (starts with `/`). Examples:
+- `/commit`, `/compound:improve`, `/review-pr`
+- Exclude `/compound:feedback` itself
+
+**Important**: Be thorough. Empty arrays mean the extraction failed. If you see ANY tool calls or workflow invocations in the conversation, capture them.
+
+## Step 3: Categorize the Issue
+
+Categorize as one of:
+
+| Category              | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `missing-context`     | Agent lacks project-specific knowledge          |
+| `wrong-pattern`       | Agent used incorrect approach for this codebase |
+| `missing-check`       | Agent skipped a step it should always do        |
+| `unclear-instruction` | Existing guidance is ambiguous                  |
+| `tool-misuse`         | Wrong tool or wrong parameters                  |
+| `other`               | Doesn't fit above categories                    |
+
+## Step 4: Create Feedback Entry
+
+Derive a short kebab-case slug from the observation (max 30 chars).
+
+Create parent directories if needed:
+
+```bash
+mkdir -p .claude/learnings/feedback
+```
+
+Write to `.claude/learnings/feedback/YYYY-MM-DD-{slug}.md` (always relative to **repository root**, not current directory):
+
+```markdown
+---
+date: "{YYYY-MM-DD HH:MM:SS}"
+sha: "{git_sha}"
+category: "{category_from_step_3}"
+status: pending
+observed-workflows:
+  subagents: ["{list of subagent types observed}"]
+  skills: ["{list of skills invoked}"]
+  commands: ["{list of slash commands used}"]
+---
+
+# {descriptive title}
+
+## Observation
+
+{user's observation - what went wrong, verbatim or paraphrased}
+
+## Context
+
+{what task was being worked on when this happened}
+
+## Analysis
+
+{why this happened - root cause explanation linking to the category}
+```
+
+**Note**: Do NOT include target identification or proposed improvements. That happens in `/compound:improve`.
+
+## Step 5: Respond
+
+Confirm:
+
+1. What was understood from the observation
+2. Category and brief root cause analysis
+3. Workflows captured (subagents, skills, commands)
+4. Path to feedback file
+5. Next step: "Use `/compound:improve` to identify the target and apply the fix"
+
+---
+
+[Request interrupted by user]
+
+---
+
+Analyze the current conversation and create a feedback entry capturing the issue.
+
+## Step 1: Gather Context
+
+Get datetime and git SHA:
+
+```bash
+date '+%Y-%m-%d %H:%M:%S'
+git rev-parse --short HEAD 2>/dev/null || echo "no-git"
+```
+
+From the conversation, extract:
+
+- What task was being worked on
+- What the agent did (the problematic behavior)
+- The user's observation (from the argument)
+
+## Step 2: Extract Observed Workflows
+
+Carefully review the conversation and extract ALL workflows that were involved:
+
+### Subagents
+Look for Task tool invocations with `subagent_type`. Common types:
+- `Explore`, `Plan`, `Bash`, `general-purpose`
+- `code:codebase-analyzer`, `code:codebase-locator`, `code:web-search-researcher`
+- Any `plugin-name:agent-name` pattern
+
+### Skills
+Look for Skill tool invocations. Examples:
+- `code:testing-vitest`, `code:typescript-standards`
+- `prompt-engineering`, `compound:feedback`
+
+### Slash Commands
+Look for commands the user invoked (starts with `/`). Examples:
+- `/commit`, `/compound:improve`, `/review-pr`
+- Exclude `/compound:feedback` itself
+
+**Important**: Be thorough. Empty arrays mean the extraction failed. If you see ANY tool calls or workflow invocations in the conversation, capture them.
+
+## Step 3: Categorize the Issue
+
+Categorize as one of:
+
+| Category              | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `missing-context`     | Agent lacks project-specific knowledge          |
+| `wrong-pattern`       | Agent used incorrect approach for this codebase |
+| `missing-check`       | Agent skipped a step it should always do        |
+| `unclear-instruction` | Existing guidance is ambiguous                  |
+| `tool-misuse`         | Wrong tool or wrong parameters                  |
+| `other`               | Doesn't fit above categories                    |
+
+## Step 4: Create Feedback Entry
+
+Derive a short kebab-case slug from the observation (max 30 chars).
+
+Create parent directories if needed:
+
+```bash
+mkdir -p .claude/learnings/feedback
+```
+
+Write to `.claude/learnings/feedback/YYYY-MM-DD-{slug}.md` (always relative to **repository root**, not current directory):
+
+```markdown
+---
+date: "{YYYY-MM-DD HH:MM:SS}"
+sha: "{git_sha}"
+category: "{category_from_step_3}"
+status: pending
+observed-workflows:
+  subagents: ["{list of subagent types observed}"]
+  skills: ["{list of skills invoked}"]
+  commands: ["{list of slash commands used}"]
+---
+
+# {descriptive title}
+
+## Observation
+
+{user's observation - what went wrong, verbatim or paraphrased}
+
+## Context
+
+{what task was being worked on when this happened}
+
+## Analysis
+
+{why this happened - root cause explanation linking to the category}
+```
+
+**Note**: Do NOT include target identification or proposed improvements. That happens in `/compound:improve`.
+
+## Step 5: Respond
+
+Confirm:
+
+1. What was understood from the observation
+2. Category and brief root cause analysis
+3. Workflows captured (subagents, skills, commands)
+4. Path to feedback file
+5. Next step: "Use `/compound:improve` to identify the target and apply the fix"
+
+
+ARGUMENTS: please make sure that if the users wants you to upload sessions you always offer either uploading a single session OR btach uploads
