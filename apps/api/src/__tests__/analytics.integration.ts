@@ -27,8 +27,11 @@ import {
 	OverviewKPIsSchema,
 	ProjectContributorSchema,
 	ProjectCostBreakdownSchema,
+	ProjectDetailDataSchema,
 	ProjectErrorSchema,
 	ProjectFeatureUsageSchema,
+	ProjectInvestmentSchema,
+	ProjectTrendDataPointSchema,
 	RecurringErrorSchema,
 	ROIMetricsSchema,
 	ROITrendSchema,
@@ -390,14 +393,32 @@ describe("analytics/developers", () => {
 // ── Projects ────────────────────────────────────────────────────────
 
 describe("analytics/projects", () => {
-	// Known bug: ClickHouse query error on projects/investment
-	test.todo("investment", () => {});
+	test("investment", async () => {
+		const result = await rpc("analytics/projects/investment", {
+			days: DAYS,
+		});
+		const parsed = parseArray(ProjectInvestmentSchema, result);
+		expect(Array.isArray(parsed)).toBe(true);
+	}, 30_000);
 
-	// Known bug: ClickHouse query error on projects/trends
-	test.todo("trends", () => {});
+	test("trends", async () => {
+		const result = await rpc("analytics/projects/trends", {
+			days: DAYS,
+		});
+		const parsed = parseArray(ProjectTrendDataPointSchema, result);
+		expect(Array.isArray(parsed)).toBe(true);
+	}, 30_000);
 
-	// Known bug: Internal server error from ClickHouse query on projects/details
-	test.todo("details", () => {});
+	test("details", async () => {
+		const projectPath = sessionList[0]?.project_path;
+		expect(projectPath).toBeDefined();
+		const result = await rpc("analytics/projects/details", {
+			days: DAYS,
+			projectPath,
+		});
+		const parsed = ProjectDetailDataSchema.parse(result);
+		expect(parsed.project_path).toBe(projectPath as string);
+	}, 30_000);
 
 	test("contributors", async () => {
 		const projectPath = sessionList[0]?.project_path;
