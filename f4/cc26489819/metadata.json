@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "f4cc26489819",
+  "strategy": "manual-commit",
+  "branch": "fix-projects",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/api/src/__tests__/analytics.integration.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f4/cc26489819/0/metadata.json",
+      "transcript": "/f4/cc26489819/0/full.jsonl",
+      "context": "",
+      "content_hash": "/f4/cc26489819/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}

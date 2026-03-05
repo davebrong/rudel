@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "f4cc26489819",
+  "session_id": "1dcfc77f-ccd6-4974-b66b-c5fb1f6f5142",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-05T02:00:20.475579Z",
+  "branch": "fix-projects",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/api/src/__tests__/analytics.integration.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "7f93204b779f",
+  "initial_attribution": {
+    "calculated_at": "2026-03-05T02:00:20.4705Z",
+    "agent_lines": 589,
+    "human_added": 453,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1042,
+    "agent_percentage": 56.52591170825336
+  }
+}
