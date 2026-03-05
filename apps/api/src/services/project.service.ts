@@ -101,12 +101,14 @@ export async function getProjectInvestment(
 		projectFilter = `AND project_path IN (${escaped})`;
 	}
 
+	const projectKeyExpr = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
+
 	const query = `
     WITH current_period AS (
       SELECT
-        if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as project_key,
+        ${projectKeyExpr} as project_key,
         any(git_remote) as _git_remote,
-        any(project_path) as project_path,
+        any(project_path) as _project_path,
         COUNT(*) as sessions,
         COUNT(DISTINCT user_id) as unique_users,
         SUM(ifNull(input_tokens, 0)) as input_tokens_sum,
@@ -120,11 +122,11 @@ export async function getProjectInvestment(
         AND organization_id = '${org}'
         AND (git_remote != '' OR package_name != '' OR project_path != '')
         ${projectFilter}
-      GROUP BY project_key
+      GROUP BY ${projectKeyExpr}
     ),
     previous_period AS (
       SELECT
-        if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as project_key,
+        ${projectKeyExpr} as project_key,
         round(AVG(success_score), 2) as prev_success_rate
       FROM rudel.session_analytics
       WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
@@ -132,12 +134,12 @@ export async function getProjectInvestment(
         AND organization_id = '${org}'
         AND (git_remote != '' OR package_name != '' OR project_path != '')
         ${projectFilter}
-      GROUP BY project_key
+      GROUP BY ${projectKeyExpr}
     )
     SELECT
       c.project_key as repository,
       c._git_remote as git_remote,
-      c.project_path,
+      c._project_path as project_path,
       c.sessions,
       c.unique_users,
       c.total_tokens,
@@ -603,11 +605,13 @@ export async function getProjectTrends(
 			? "toMonday(toDate(session_date))"
 			: "toDate(session_date)";
 
+	const projectKeyExpr = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
+
 	const query = `
     SELECT
       toString(${dateFunc}) as date,
-      if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as project_key,
-      any(project_path) as project_path,
+      ${projectKeyExpr} as project_key,
+      any(project_path) as _project_path,
       COUNT(*) as sessions,
       round(SUM(actual_duration_min) / 60, 2) as total_hours,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
@@ -616,17 +620,17 @@ export async function getProjectTrends(
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND (git_remote != '' OR package_name != '' OR project_path != '')
-    GROUP BY date, project_key
+    GROUP BY date, ${projectKeyExpr}
     ORDER BY date ASC, project_key ASC
   `;
 
 	const results = await queryClickhouse<
-		ProjectTrendDataPoint & { project_key: string }
+		ProjectTrendDataPoint & { project_key: string; _project_path: string }
 	>(query);
 
 	return results.map((item) => ({
 		date: item.date,
-		project_path: item.project_path,
+		project_path: item._project_path,
 		project_name: item.project_key,
 		sessions: item.sessions,
 		total_hours: item.total_hours,
