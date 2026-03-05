@@ -3,9 +3,13 @@
   "checkpoint_id": "8980d62fa26e",
   "strategy": "manual-commit",
   "branch": "launch-readiness-app",
-  "checkpoints_count": 1,
+  "checkpoints_count": 6,
   "files_touched": [
-    ".claude/learnings/feedback/2026-02-25-offer-single-or-batch-upload.md"
+    ".claude/learnings/feedback/2026-02-25-offer-single-or-batch-upload.md",
+    "CLAUDE.md",
+    "apps/cli/reupload-with-org.sh",
+    "apps/cli/upload-all.sh",
+    "scripts/init-clickhouse-local.sql"
   ],
   "sessions": [
     {
@@ -14,13 +18,20 @@
       "context": "/89/80d62fa26e/0/context.md",
       "content_hash": "/89/80d62fa26e/0/content_hash.txt",
       "prompt": "/89/80d62fa26e/0/prompt.txt"
+    },
+    {
+      "metadata": "/89/80d62fa26e/1/metadata.json",
+      "transcript": "/89/80d62fa26e/1/full.jsonl",
+      "context": "/89/80d62fa26e/1/context.md",
+      "content_hash": "/89/80d62fa26e/1/content_hash.txt",
+      "prompt": "/89/80d62fa26e/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 267,
-    "cache_creation_tokens": 115393,
-    "cache_read_tokens": 840215,
-    "output_tokens": 6341,
-    "api_call_count": 25
+    "input_tokens": 2403,
+    "cache_creation_tokens": 788068,
+    "cache_read_tokens": 11535077,
+    "output_tokens": 44342,
+    "api_call_count": 151
   }
 }

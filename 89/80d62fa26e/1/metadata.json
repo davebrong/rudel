@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "8980d62fa26e",
+  "session_id": "7a40230e-1fbf-4534-abb7-d20f1daeb4c9",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-05T12:57:16.871078Z",
+  "branch": "launch-readiness-app",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "CLAUDE.md",
+    "apps/cli/reupload-with-org.sh",
+    "apps/cli/upload-all.sh",
+    "scripts/init-clickhouse-local.sql"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "8c258cea-2c47-4897-afd0-f8a0eed36ab1",
+  "token_usage": {
+    "input_tokens": 2136,
+    "cache_creation_tokens": 672675,
+    "cache_read_tokens": 10694862,
+    "output_tokens": 38001,
+    "api_call_count": 126
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-05T12:57:16.371729Z",
+    "agent_lines": 72,
+    "human_added": 0,
+    "human_modified": 30,
+    "human_removed": 39,
+    "total_committed": 102,
+    "agent_percentage": 70.58823529411765
+  },
+  "transcript_path": ".claude/projects/-Users-rafa-Obsession-rudel/7a40230e-1fbf-4534-abb7-d20f1daeb4c9.jsonl"
+}
