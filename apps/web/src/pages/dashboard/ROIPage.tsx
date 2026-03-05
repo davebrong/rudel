@@ -6,6 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import {
 	Activity,
 	DollarSign,
+	HelpCircle,
 	Target,
 	TrendingDown,
 	TrendingUp,
@@ -15,8 +16,8 @@ import {
 	CartesianGrid,
 	Line,
 	LineChart,
+	Tooltip as RechartsTooltip,
 	ResponsiveContainer,
-	Tooltip,
 	XAxis,
 	YAxis,
 } from "recharts";
@@ -28,6 +29,12 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { useChartTheme } from "@/hooks/useChartTheme";
@@ -42,7 +49,7 @@ export function ROIPage() {
 	const days = calculateDays();
 
 	const [roiInputs, setRoiInputs] = useState({
-		codePercentage: 65,
+		codePercentage: 10,
 		tokensPerLOC: 15,
 		locPerHour: 30,
 		devHourlyRate: 100,
@@ -168,17 +175,38 @@ export function ROIPage() {
 
 	const resetToDefaults = () => {
 		setRoiInputs({
-			codePercentage: 65,
+			codePercentage: 10,
 			tokensPerLOC: 15,
 			locPerHour: 30,
 			devHourlyRate: 100,
 		});
 	};
 
+	const pricingTooltip = (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<HelpCircle className="h-4 w-4 text-muted cursor-help shrink-0" />
+				</TooltipTrigger>
+				<TooltipContent className="max-w-xs">
+					<p className="font-medium mb-1">Token pricing (approximation)</p>
+					<p className="text-xs text-muted mb-2">
+						Based on Claude Sonnet 4 rates. Per-model pricing coming soon.
+					</p>
+					<div className="font-mono text-xs space-y-0.5">
+						<p>Input: $3 / MTok</p>
+						<p>Output: $15 / MTok</p>
+					</div>
+				</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
+	);
+
 	return (
 		<div className="px-8 py-6">
 			<PageHeader
-				title="ROI & Business Value"
+				title="ROI Calculator"
+				titleSuffix={pricingTooltip}
 				description="Track return on investment and measure business impact of Claude Code"
 				actions={
 					<DatePicker
@@ -426,9 +454,12 @@ export function ROIPage() {
 						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 							<AnalyticsCard>
 								<div className="mb-4">
-									<h3 className="text-lg font-semibold text-heading">
-										Weekly Cost Trend
-									</h3>
+									<div className="flex items-center gap-1.5">
+										<h3 className="text-lg font-semibold text-heading">
+											Weekly Cost Trend
+										</h3>
+										{pricingTooltip}
+									</div>
 									<p className="text-sm text-muted mt-1">
 										Total spend over time
 									</p>
@@ -455,7 +486,7 @@ export function ROIPage() {
 											fontSize={12}
 											tickFormatter={(value) => `$${value}`}
 										/>
-										<Tooltip
+										<RechartsTooltip
 											contentStyle={{
 												backgroundColor: chartTheme.tooltipBg,
 												borderColor: chartTheme.tooltipBorder,
@@ -481,9 +512,30 @@ export function ROIPage() {
 
 							<AnalyticsCard>
 								<div className="mb-4">
-									<h3 className="text-lg font-semibold text-heading">
-										Weekly Productivity Score
-									</h3>
+									<div className="flex items-center gap-1.5">
+										<h3 className="text-lg font-semibold text-heading">
+											Weekly Productivity Score
+										</h3>
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<HelpCircle className="h-4 w-4 text-muted cursor-help shrink-0" />
+												</TooltipTrigger>
+												<TooltipContent className="max-w-xs">
+													<p className="font-medium mb-1">
+														Productivity Score formula:
+													</p>
+													<p className="font-mono text-xs">
+														(commits ÷ total spend) × 100
+													</p>
+													<p className="text-xs text-muted mt-1">
+														Higher is better — more commits delivered per dollar
+														spent on Claude.
+													</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									</div>
 									<p className="text-sm text-muted mt-1">
 										Commits per dollar x 100
 									</p>
@@ -506,7 +558,7 @@ export function ROIPage() {
 											}
 										/>
 										<YAxis stroke={chartTheme.axisStroke} fontSize={12} />
-										<Tooltip
+										<RechartsTooltip
 											contentStyle={{
 												backgroundColor: chartTheme.tooltipBg,
 												borderColor: chartTheme.tooltipBorder,
@@ -539,7 +591,7 @@ export function ROIPage() {
 								columns={devCostColumns}
 								data={developerCosts ?? []}
 								defaultSorting={[{ id: "cost", desc: true }]}
-								defaultPageSize={50}
+								defaultPageSize={10}
 							/>
 						</AnalyticsCard>
 
@@ -551,7 +603,7 @@ export function ROIPage() {
 								columns={projectCostColumns}
 								data={projectCosts ?? []}
 								defaultSorting={[{ id: "cost", desc: true }]}
-								defaultPageSize={50}
+								defaultPageSize={10}
 							/>
 						</AnalyticsCard>
 					</div>

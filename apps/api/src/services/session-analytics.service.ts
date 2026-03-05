@@ -120,7 +120,7 @@ export async function getSessionAnalytics(
     SELECT
       session_id,
       user_id,
-      formatDateTime(sa.session_date, '%Y-%m-%d %H:%i:%S') as session_date,
+      formatDateTime(sa.session_date, '%Y-%m-%dT%H:%i:%SZ') as session_date,
       project_path,
       organization_id,
       git_remote,
@@ -132,7 +132,7 @@ export async function getSessionAnalytics(
       normal_responses,
       long_pauses,
       actual_duration_min,
-      formatDateTime(sa.last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
+      formatDateTime(sa.last_interaction_date, '%Y-%m-%dT%H:%i:%SZ') as last_interaction_date,
       total_tokens,
       input_tokens,
       output_tokens,
@@ -501,6 +501,7 @@ export async function getSessionDimensionAnalysis(
 		used_skills: "if(length(skills) > 0, 1, 0)",
 		used_slash_commands: "if(length(slash_commands) > 0, 1, 0)",
 		used_subagents: "if(length(subagent_types) > 0, 1, 0)",
+		project_path: "arrayElement(splitByChar('/', project_path), -1)",
 	};
 
 	const dimensionExpression = dimensionExpressions[dimension] || dimension;
@@ -609,8 +610,8 @@ export async function getSessionDetail(
     SELECT
       session_id,
       user_id,
-      formatDateTime(sa.session_date, '%Y-%m-%d %H:%i:%S') as session_date,
-      formatDateTime(sa.last_interaction_date, '%Y-%m-%d %H:%i:%S') as last_interaction_date,
+      formatDateTime(sa.session_date, '%Y-%m-%dT%H:%i:%SZ') as session_date,
+      formatDateTime(sa.last_interaction_date, '%Y-%m-%dT%H:%i:%SZ') as last_interaction_date,
       project_path,
       if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as repository,
       content,

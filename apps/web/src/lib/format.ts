@@ -1,3 +1,5 @@
+// Claude Sonnet 4 rates, used as a default approximation across all models.
+// TODO: implement per-model pricing using model_used.
 const INPUT_PRICE_PER_MILLION = 3;
 const OUTPUT_PRICE_PER_MILLION = 15;
 

@@ -40,7 +40,7 @@ export function SessionsListPage() {
 	const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
 	const [selectedDimension, setSelectedDimension] =
-		useState<DimensionAnalysisInput["dimension"]>("repository");
+		useState<DimensionAnalysisInput["dimension"]>("project_path");
 	const [selectedMetric, setSelectedMetric] =
 		useState<DimensionAnalysisInput["metric"]>("session_count");
 	const [selectedSplitBy, setSelectedSplitBy] = useState<
@@ -49,7 +49,7 @@ export function SessionsListPage() {
 	const [showPercentage, setShowPercentage] = useState(false);
 
 	const [debouncedDimension, setDebouncedDimension] =
-		useState<DimensionAnalysisInput["dimension"]>("repository");
+		useState<DimensionAnalysisInput["dimension"]>("project_path");
 	const [debouncedMetric, setDebouncedMetric] =
 		useState<DimensionAnalysisInput["metric"]>("session_count");
 	const [debouncedSplitBy, setDebouncedSplitBy] = useState<
@@ -386,9 +386,7 @@ export function SessionsListPage() {
 
 				{selectedSplitBy && (
 					<div className="mb-4 flex justify-end items-center gap-3">
-						<span className="text-sm text-muted">
-							{showPercentage ? "Showing as %" : "Showing absolute values"}
-						</span>
+						<span className="text-sm text-muted">Scale to 100%</span>
 						<Switch
 							checked={showPercentage}
 							onCheckedChange={setShowPercentage}

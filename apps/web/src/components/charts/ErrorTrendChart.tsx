@@ -1,8 +1,8 @@
 import type { ErrorTrendDataPoint } from "@rudel/api-routes";
 import { useMemo } from "react";
 import {
-	Area,
-	AreaChart,
+	Bar,
+	BarChart,
 	CartesianGrid,
 	Legend,
 	Line,
@@ -20,6 +20,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useChartTheme } from "@/hooks/useChartTheme";
+
+const MAX_SERIES = 14;
+const OTHER_COLOR = "#9ca3af";
 
 interface ErrorTrendChartProps {
 	data: ErrorTrendDataPoint[];
@@ -49,6 +52,10 @@ const COLORS = [
 	"#14b8a6",
 	"#f97316",
 	"#6366f1",
+	"#84cc16",
+	"#a855f7",
+	"#f43f5e",
+	"#0ea5e9",
 ];
 
 const METRIC_LABELS: Record<string, string> = {
@@ -73,31 +80,38 @@ export function ErrorTrendChart({
 }: ErrorTrendChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
 
-	const seriesKeys = useMemo(() => {
-		if (data.length === 0) return [];
-		const keys = new Set<string>();
+	const { seriesKeys, chartData } = useMemo(() => {
+		if (data.length === 0) return { seriesKeys: [], chartData: [] };
+
+		// Compute totals per dimension to rank and cap at MAX_SERIES
+		const dimTotals = new Map<string, number>();
 		for (const item of data) {
-			keys.add(item.dimension);
+			dimTotals.set(
+				item.dimension,
+				(dimTotals.get(item.dimension) ?? 0) + ((item[metric] as number) ?? 0),
+			);
 		}
-		return Array.from(keys).sort();
-	}, [data]);
 
-	const chartData = useMemo(() => {
-		if (data.length === 0) return [];
+		const sortedDims = Array.from(dimTotals.entries()).sort(
+			(a, b) => b[1] - a[1],
+		);
+		const topDims = sortedDims.slice(0, MAX_SERIES).map(([k]) => k);
+		const topDimsSet = new Set(topDims);
+		// Only add "Other" for total_errors (summable); avg metrics are not meaningful to sum
+		const hasOther =
+			metric === "total_errors" && sortedDims.length > MAX_SERIES;
+		const seriesKeys = hasOther ? [...topDims, "Other"] : topDims;
 
+		// Build full date range
 		const allDates = Array.from(new Set(data.map((item) => item.date))).sort();
-		if (allDates.length === 0) return [];
-
 		const minDate = new Date(allDates[0]);
 		const maxDate = new Date(allDates[allDates.length - 1]);
 		const dateRange: string[] = [];
-
 		for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
 			dateRange.push(d.toISOString().split("T")[0]);
 		}
 
 		const dateMap = new Map<string, Record<string, unknown>>();
-
 		for (const dateKey of dateRange) {
 			const dateData: Record<string, unknown> = {
 				date: dateKey,
@@ -113,19 +127,26 @@ export function ErrorTrendChart({
 		}
 
 		for (const item of data) {
-			const dateKey = item.date;
-			const dateData = dateMap.get(dateKey);
-			if (dateData) {
+			const dateData = dateMap.get(item.date);
+			if (!dateData) continue;
+			if (topDimsSet.has(item.dimension)) {
 				dateData[item.dimension] = item[metric];
+			} else if (hasOther) {
+				dateData.Other =
+					((dateData.Other as number) ?? 0) + ((item[metric] as number) ?? 0);
 			}
 		}
 
-		return Array.from(dateMap.values()).sort((a, b) =>
-			(a.date as string).localeCompare(b.date as string),
-		);
-	}, [data, metric, seriesKeys]);
+		return {
+			seriesKeys,
+			chartData: Array.from(dateMap.values()).sort((a, b) =>
+				(a.date as string).localeCompare(b.date as string),
+			),
+		};
+	}, [data, metric]);
 
 	const getDisplayName = (key: string): string => {
+		if (key === "Other") return "Other";
 		if (splitBy === "user_id" && userMap) {
 			return userMap[key] || `${key.substring(0, 12)}...`;
 		}
@@ -186,7 +207,7 @@ export function ErrorTrendChart({
 
 			<ResponsiveContainer width="100%" height={400}>
 				{metric === "total_errors" ? (
-					<AreaChart
+					<BarChart
 						data={chartData}
 						margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
 					>
@@ -197,6 +218,7 @@ export function ErrorTrendChart({
 							angle={-45}
 							textAnchor="end"
 							height={80}
+							tickMargin={8}
 						/>
 						<YAxis tick={{ fontSize: 12 }} />
 						<Tooltip
@@ -217,18 +239,17 @@ export function ErrorTrendChart({
 							wrapperStyle={{ fontSize: "12px" }}
 						/>
 						{seriesKeys.map((key, index) => (
-							<Area
+							<Bar
 								key={key}
-								type="monotone"
 								dataKey={key}
 								name={key}
 								stackId="1"
-								stroke={COLORS[index % COLORS.length]}
-								fill={COLORS[index % COLORS.length]}
-								fillOpacity={0.6}
+								fill={
+									key === "Other" ? OTHER_COLOR : COLORS[index % COLORS.length]
+								}
 							/>
 						))}
-					</AreaChart>
+					</BarChart>
 				) : (
 					<LineChart
 						data={chartData}
@@ -241,6 +262,7 @@ export function ErrorTrendChart({
 							angle={-45}
 							textAnchor="end"
 							height={80}
+							tickMargin={8}
 						/>
 						<YAxis tick={{ fontSize: 12 }} />
 						<Tooltip

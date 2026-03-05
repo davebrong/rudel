@@ -1,9 +1,9 @@
 import type { ProjectTrendDataPoint } from "@rudel/api-routes";
 import { Activity, Clock, TrendingUp, Zap } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-	Area,
-	AreaChart,
+	Bar,
+	BarChart,
 	CartesianGrid,
 	Legend,
 	Line,
@@ -15,9 +15,11 @@ import {
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
 
+const MAX_SERIES = 14;
+const OTHER_COLOR = "#9ca3af";
+
 interface ProjectTrendChartProps {
 	data: ProjectTrendDataPoint[];
-	maxProjects?: number;
 }
 
 type MetricType = "sessions" | "hours" | "tokens" | "success_rate";
@@ -64,56 +66,104 @@ const PROJECT_COLORS = [
 	"#f97316",
 	"#6366f1",
 	"#84cc16",
+	"#06b6d4",
+	"#a855f7",
+	"#f43f5e",
+	"#0ea5e9",
 ];
 
-export function ProjectTrendChart({
-	data,
-	maxProjects = 10,
-}: ProjectTrendChartProps) {
+export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke, axisStroke } = useChartTheme();
 	const [selectedMetric, setSelectedMetric] = useState<MetricType>("sessions");
 
 	const currentMetric = METRICS[selectedMetric];
 
-	// Get top projects by total sessions
-	const projectTotals = data.reduce((acc, d) => {
-		const current = acc.get(d.project_path) || 0;
-		acc.set(d.project_path, current + d.sessions);
-		return acc;
-	}, new Map<string, number>());
-
-	const topProjects = Array.from(projectTotals.entries())
-		.sort((a, b) => b[1] - a[1])
-		.slice(0, maxProjects)
-		.map(([path]) => path);
-
-	const filteredData = data.filter((d) => topProjects.includes(d.project_path));
-	const allDates = Array.from(new Set(filteredData.map((d) => d.date))).sort();
-
-	const chartData = allDates.map((date) => {
-		const dateObj: Record<string, string | number> = {
-			date,
-			displayDate: new Date(date).toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-			}),
-		};
-
-		for (const projectPath of topProjects) {
-			const dataPoint = filteredData.find(
-				(d) => d.date === date && d.project_path === projectPath,
+	// Rank projects by total sessions (stable ordering across metric changes)
+	const { topProjects, topProjectsSet, hasOther } = useMemo(() => {
+		const projectTotals = new Map<string, number>();
+		for (const d of data) {
+			projectTotals.set(
+				d.project_path,
+				(projectTotals.get(d.project_path) ?? 0) + d.sessions,
 			);
-			dateObj[projectPath] = dataPoint
-				? (dataPoint[
-						currentMetric.key as keyof ProjectTrendDataPoint
-					] as number)
-				: 0;
+		}
+		const sorted = Array.from(projectTotals.entries()).sort(
+			(a, b) => b[1] - a[1],
+		);
+		const top = sorted.slice(0, MAX_SERIES).map(([p]) => p);
+		return {
+			topProjects: top,
+			topProjectsSet: new Set(top),
+			hasOther: sorted.length > MAX_SERIES,
+		};
+	}, [data]);
+
+	const { chartData, seriesList } = useMemo(() => {
+		// Build full date range from all data
+		const existingDates = Array.from(new Set(data.map((d) => d.date))).sort();
+		const allDates: string[] = [];
+		if (existingDates.length > 0) {
+			const minDate = new Date(existingDates[0]);
+			const maxDate = new Date(existingDates[existingDates.length - 1]);
+			for (
+				let d = new Date(minDate);
+				d <= maxDate;
+				d.setDate(d.getDate() + 1)
+			) {
+				allDates.push(d.toISOString().split("T")[0]);
+			}
 		}
 
-		return dateObj;
-	});
+		// "Other" only applies to summable metrics, not averages
+		const showOther = hasOther && selectedMetric !== "success_rate";
+		const seriesList = showOther ? [...topProjects, "Other"] : topProjects;
+
+		const chartData = allDates.map((date) => {
+			const dateObj: Record<string, string | number> = {
+				date,
+				displayDate: new Date(date).toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+				}),
+			};
+
+			for (const projectPath of topProjects) {
+				const dp = data.find(
+					(d) => d.date === date && d.project_path === projectPath,
+				);
+				dateObj[projectPath] = dp
+					? (dp[currentMetric.key as keyof ProjectTrendDataPoint] as number)
+					: 0;
+			}
+
+			if (showOther) {
+				dateObj.Other = data
+					.filter((d) => d.date === date && !topProjectsSet.has(d.project_path))
+					.reduce(
+						(sum, d) =>
+							sum +
+							((d[
+								currentMetric.key as keyof ProjectTrendDataPoint
+							] as number) ?? 0),
+						0,
+					);
+			}
+
+			return dateObj;
+		});
+
+		return { chartData, seriesList };
+	}, [
+		data,
+		topProjects,
+		topProjectsSet,
+		hasOther,
+		selectedMetric,
+		currentMetric,
+	]);
 
 	const formatProjectName = (projectPath: string) => {
+		if (projectPath === "Other") return "Other";
 		const parts = projectPath.split("/");
 		return parts[parts.length - 1] || projectPath.substring(0, 20);
 	};
@@ -160,6 +210,7 @@ export function ProjectTrendChart({
 							angle={-45}
 							textAnchor="end"
 							height={80}
+							tickMargin={8}
 						/>
 						<YAxis
 							stroke={axisStroke}
@@ -202,7 +253,7 @@ export function ProjectTrendChart({
 						))}
 					</LineChart>
 				) : (
-					<AreaChart
+					<BarChart
 						data={chartData}
 						margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
 					>
@@ -214,6 +265,7 @@ export function ProjectTrendChart({
 							angle={-45}
 							textAnchor="end"
 							height={80}
+							tickMargin={8}
 						/>
 						<YAxis
 							stroke={axisStroke}
@@ -241,27 +293,21 @@ export function ProjectTrendChart({
 							formatter={(value) => formatProjectName(value)}
 							wrapperStyle={{ paddingTop: "20px" }}
 						/>
-						{topProjects.map((projectPath, index) => (
-							<Area
+						{seriesList.map((projectPath, index) => (
+							<Bar
 								key={projectPath}
-								type="monotone"
 								dataKey={projectPath}
 								stackId="1"
-								stroke={PROJECT_COLORS[index % PROJECT_COLORS.length]}
-								fill={PROJECT_COLORS[index % PROJECT_COLORS.length]}
-								fillOpacity={0.6}
-								strokeWidth={2}
+								fill={
+									projectPath === "Other"
+										? OTHER_COLOR
+										: PROJECT_COLORS[index % PROJECT_COLORS.length]
+								}
 							/>
 						))}
-					</AreaChart>
+					</BarChart>
 				)}
 			</ResponsiveContainer>
-
-			{projectTotals.size > maxProjects && (
-				<p className="text-sm text-muted text-center">
-					Showing top {maxProjects} of {projectTotals.size} projects
-				</p>
-			)}
 		</div>
 	);
 }

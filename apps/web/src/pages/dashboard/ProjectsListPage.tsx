@@ -229,7 +229,7 @@ export function ProjectsListPage() {
 					<p className="text-sm text-muted mb-6">
 						Activity metrics over time split by project (top 10)
 					</p>
-					<ProjectTrendChart data={trendData} maxProjects={10} />
+					<ProjectTrendChart data={trendData} />
 				</AnalyticsCard>
 			)}
 

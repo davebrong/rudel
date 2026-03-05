@@ -1,9 +1,9 @@
 import type { DeveloperTrendDataPoint } from "@rudel/api-routes";
 import { Activity, Clock, TrendingUp, Zap } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-	Area,
-	AreaChart,
+	Bar,
+	BarChart,
 	CartesianGrid,
 	Legend,
 	Line,
@@ -14,6 +14,9 @@ import {
 	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
+
+const MAX_SERIES = 14;
+const OTHER_COLOR = "#9ca3af";
 
 interface DeveloperTrendChartProps {
 	data: DeveloperTrendDataPoint[];
@@ -64,6 +67,10 @@ const DEVELOPER_COLORS = [
 	"#f97316",
 	"#6366f1",
 	"#84cc16",
+	"#06b6d4",
+	"#a855f7",
+	"#f43f5e",
+	"#0ea5e9",
 ];
 
 export function DeveloperTrendChart({
@@ -75,33 +82,84 @@ export function DeveloperTrendChart({
 
 	const currentMetric = METRICS[selectedMetric];
 
-	const developers = Array.from(new Set(data.map((d) => d.user_id)));
-	const allDates = Array.from(new Set(data.map((d) => d.date))).sort();
-
-	const chartData = allDates.map((date) => {
-		const dateObj: Record<string, string | number> = {
-			date,
-			displayDate: new Date(date).toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-			}),
+	// Rank developers by total sessions (stable ordering across metric changes)
+	const { topDevelopers, topDevelopersSet, hasOther } = useMemo(() => {
+		const devTotals = new Map<string, number>();
+		for (const d of data) {
+			devTotals.set(d.user_id, (devTotals.get(d.user_id) ?? 0) + d.sessions);
+		}
+		const sorted = Array.from(devTotals.entries()).sort((a, b) => b[1] - a[1]);
+		const top = sorted.slice(0, MAX_SERIES).map(([u]) => u);
+		return {
+			topDevelopers: top,
+			topDevelopersSet: new Set(top),
+			hasOther: sorted.length > MAX_SERIES,
 		};
+	}, [data]);
 
-		for (const userId of developers) {
-			const dataPoint = data.find(
-				(d) => d.date === date && d.user_id === userId,
-			);
-			dateObj[userId] = dataPoint
-				? (dataPoint[
-						currentMetric.key as keyof DeveloperTrendDataPoint
-					] as number)
-				: 0;
+	const { chartData, seriesList } = useMemo(() => {
+		const existingDates = Array.from(new Set(data.map((d) => d.date))).sort();
+		const allDates: string[] = [];
+		if (existingDates.length > 0) {
+			const minDate = new Date(existingDates[0]);
+			const maxDate = new Date(existingDates[existingDates.length - 1]);
+			for (
+				let d = new Date(minDate);
+				d <= maxDate;
+				d.setDate(d.getDate() + 1)
+			) {
+				allDates.push(d.toISOString().split("T")[0]);
+			}
 		}
 
-		return dateObj;
-	});
+		// "Other" only applies to summable metrics, not averages
+		const showOther = hasOther && selectedMetric !== "success_rate";
+		const seriesList = showOther ? [...topDevelopers, "Other"] : topDevelopers;
+
+		const chartData = allDates.map((date) => {
+			const dateObj: Record<string, string | number> = {
+				date,
+				displayDate: new Date(date).toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+				}),
+			};
+
+			for (const userId of topDevelopers) {
+				const dp = data.find((d) => d.date === date && d.user_id === userId);
+				dateObj[userId] = dp
+					? (dp[currentMetric.key as keyof DeveloperTrendDataPoint] as number)
+					: 0;
+			}
+
+			if (showOther) {
+				dateObj.Other = data
+					.filter((d) => d.date === date && !topDevelopersSet.has(d.user_id))
+					.reduce(
+						(sum, d) =>
+							sum +
+							((d[
+								currentMetric.key as keyof DeveloperTrendDataPoint
+							] as number) ?? 0),
+						0,
+					);
+			}
+
+			return dateObj;
+		});
+
+		return { chartData, seriesList };
+	}, [
+		data,
+		topDevelopers,
+		topDevelopersSet,
+		hasOther,
+		selectedMetric,
+		currentMetric,
+	]);
 
 	const formatUsername = (userId: string) => {
+		if (userId === "Other") return "Other";
 		return userMap[userId] || userId.substring(0, 12);
 	};
 
@@ -147,6 +205,7 @@ export function DeveloperTrendChart({
 							angle={-45}
 							textAnchor="end"
 							height={80}
+							tickMargin={8}
 						/>
 						<YAxis
 							stroke={axisStroke}
@@ -175,7 +234,7 @@ export function DeveloperTrendChart({
 							formatter={(value) => formatUsername(value)}
 							wrapperStyle={{ paddingTop: "20px" }}
 						/>
-						{developers.map((userId, index) => (
+						{topDevelopers.map((userId, index) => (
 							<Line
 								key={userId}
 								type="monotone"
@@ -189,7 +248,7 @@ export function DeveloperTrendChart({
 						))}
 					</LineChart>
 				) : (
-					<AreaChart
+					<BarChart
 						data={chartData}
 						margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
 					>
@@ -201,6 +260,7 @@ export function DeveloperTrendChart({
 							angle={-45}
 							textAnchor="end"
 							height={80}
+							tickMargin={8}
 						/>
 						<YAxis
 							stroke={axisStroke}
@@ -228,19 +288,19 @@ export function DeveloperTrendChart({
 							formatter={(value) => formatUsername(value)}
 							wrapperStyle={{ paddingTop: "20px" }}
 						/>
-						{developers.map((userId, index) => (
-							<Area
+						{seriesList.map((userId, index) => (
+							<Bar
 								key={userId}
-								type="monotone"
 								dataKey={userId}
 								stackId="1"
-								stroke={DEVELOPER_COLORS[index % DEVELOPER_COLORS.length]}
-								fill={DEVELOPER_COLORS[index % DEVELOPER_COLORS.length]}
-								fillOpacity={0.6}
-								strokeWidth={2}
+								fill={
+									userId === "Other"
+										? OTHER_COLOR
+										: DEVELOPER_COLORS[index % DEVELOPER_COLORS.length]
+								}
 							/>
 						))}
-					</AreaChart>
+					</BarChart>
 				)}
 			</ResponsiveContainer>
 		</div>

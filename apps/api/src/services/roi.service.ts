@@ -10,7 +10,11 @@ import {
 	queryClickhouse,
 } from "../clickhouse.js";
 
-// Pricing constants: input=$3/M tokens, output=$15/M tokens
+// Pricing constants based on Claude Sonnet 4 rates, used as a default approximation
+// across all models. TODO: implement per-model pricing using the model_used column.
+// Sonnet 4: input=$3/MTok, output=$15/MTok
+// Opus 4:   input=$5/MTok, output=$25/MTok
+// Haiku 4:  input=$1/MTok, output=$5/MTok
 const INPUT_PRICE_PER_MILLION = 3.0;
 const OUTPUT_PRICE_PER_MILLION = 15.0;
 const DEFAULT_DEV_HOURLY_RATE = 100;
@@ -366,7 +370,7 @@ export async function getProjectCostBreakdown(
 
 	const query = `
     SELECT
-      project_path,
+      if(git_remote != '', git_remote, if(package_name != '', package_name, arrayElement(splitByChar('/', project_path), -1))) as project_path,
       COUNT(*) as total_sessions,
       SUM(input_tokens) as total_input_tokens,
       SUM(output_tokens) as total_output_tokens,

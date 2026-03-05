@@ -7,7 +7,7 @@ const segmentLabels: Record<string, string> = {
 	dashboard: "Overview",
 	developers: "Developers",
 	projects: "Projects",
-	roi: "ROI & Business Value",
+	roi: "ROI Calculator",
 	sessions: "Sessions",
 	learnings: "Learnings",
 	errors: "Errors",

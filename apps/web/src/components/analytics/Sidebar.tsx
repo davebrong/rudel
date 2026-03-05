@@ -43,14 +43,14 @@ const navigation = [
 	{ name: "Overview", href: "/dashboard", icon: LayoutDashboard },
 	{ name: "Developers", href: "/dashboard/developers", icon: UserCircle },
 	{ name: "Projects", href: "/dashboard/projects", icon: FolderKanban },
-	{
-		name: "ROI & Business Value",
-		href: "/dashboard/roi",
-		icon: DollarSign,
-	},
 	{ name: "Sessions", href: "/dashboard/sessions", icon: Clock },
 	{ name: "Learnings", href: "/dashboard/learnings", icon: BookOpen },
 	{ name: "Errors", href: "/dashboard/errors", icon: AlertCircle },
+	{
+		name: "ROI Calculator",
+		href: "/dashboard/roi",
+		icon: DollarSign,
+	},
 ];
 
 function getInitials(name: string) {

@@ -118,7 +118,13 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 					}
 				}
 			}
-			dataKeys = Array.from(allSplitValues);
+			const rawSplitKeys = Array.from(allSplitValues);
+			// Map raw split keys to display names (e.g. user IDs → names)
+			const splitKeyDisplayMap: Record<string, string> = {};
+			for (const key of rawSplitKeys) {
+				splitKeyDisplayMap[key] = formatDimensionValue(key, split_by, userMap);
+			}
+			dataKeys = rawSplitKeys.map((key) => splitKeyDisplayMap[key]);
 
 			chartData = data.map((item) => {
 				const row: Record<string, unknown> = {
@@ -129,20 +135,23 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 				};
 				const origValues = row._originalValues as Record<string, number>;
 				let total = 0;
-				for (const key of dataKeys) {
+				for (const key of rawSplitKeys) {
+					const displayKey = splitKeyDisplayMap[key];
 					const val = item.split_values?.[key] || 0;
-					origValues[key] = val;
+					origValues[displayKey] = val;
 					total += val;
 				}
 				row._total = total;
 
 				if (showPercentage && total > 0) {
-					for (const key of dataKeys) {
-						row[key] = (origValues[key] / total) * 100;
+					for (const key of rawSplitKeys) {
+						const displayKey = splitKeyDisplayMap[key];
+						row[displayKey] = (origValues[displayKey] / total) * 100;
 					}
 				} else {
-					for (const key of dataKeys) {
-						row[key] = origValues[key];
+					for (const key of rawSplitKeys) {
+						const displayKey = splitKeyDisplayMap[key];
+						row[displayKey] = origValues[displayKey];
 					}
 				}
 

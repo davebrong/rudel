@@ -1,8 +1,8 @@
 import type { ModelTokensTrendData } from "@rudel/api-routes";
 import { useMemo } from "react";
 import {
-	Area,
-	AreaChart,
+	Bar,
+	BarChart,
 	CartesianGrid,
 	Legend,
 	ResponsiveContainer,
@@ -11,6 +11,9 @@ import {
 	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
+
+const MAX_SERIES = 14;
+const OTHER_COLOR = "#9ca3af";
 
 const MODEL_COLORS = [
 	"#3b82f6",
@@ -21,7 +24,12 @@ const MODEL_COLORS = [
 	"#06b6d4",
 	"#ec4899",
 	"#f97316",
-	"#6b7280",
+	"#84cc16",
+	"#6366f1",
+	"#14b8a6",
+	"#a855f7",
+	"#f43f5e",
+	"#0ea5e9",
 ];
 
 function formatCompactNumber(num: number): string {
@@ -32,6 +40,7 @@ function formatCompactNumber(num: number): string {
 }
 
 function shortenModelName(model: string): string {
+	if (model === "Other") return "Other";
 	return model.replace("claude-", "").replace(/-\d{8}$/, "");
 }
 
@@ -43,41 +52,66 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
 
 	const { chartData, models } = useMemo(() => {
-		const modelSet = new Set<string>();
-		const byDate = new Map<
-			string,
-			{ _sort: string } & Record<string, number | string>
-		>();
+		if (data.length === 0) return { chartData: [], models: [] };
 
+		// Compute total tokens per model to determine top 14
+		const modelTotals = new Map<string, number>();
 		for (const row of data) {
-			modelSet.add(row.model);
-			const dateLabel = new Date(row.date).toLocaleDateString("en-US", {
-				month: "short",
-				day: "numeric",
-			});
-			const entry = byDate.get(row.date) || {
-				date: dateLabel,
-				_sort: row.date,
-			};
-			entry[row.model] = row.total_tokens;
-			byDate.set(row.date, entry);
+			modelTotals.set(
+				row.model,
+				(modelTotals.get(row.model) ?? 0) + row.total_tokens,
+			);
 		}
 
-		const sorted = Array.from(byDate.values()).sort((a, b) =>
-			a._sort.localeCompare(b._sort),
+		const sortedModels = Array.from(modelTotals.entries()).sort(
+			(a, b) => b[1] - a[1],
 		);
+		const topModels = sortedModels.slice(0, MAX_SERIES).map(([m]) => m);
+		const topModelsSet = new Set(topModels);
+		const hasOther = sortedModels.length > MAX_SERIES;
+		const modelList = hasOther ? [...topModels, "Other"] : topModels;
 
-		return {
-			chartData: sorted,
-			models: Array.from(modelSet),
-		};
+		// Build per-date raw data, bucketing overflow into "Other"
+		const rawByDate = new Map<string, Record<string, number>>();
+		for (const row of data) {
+			const entry = rawByDate.get(row.date) ?? {};
+			const key = topModelsSet.has(row.model) ? row.model : "Other";
+			entry[key] = (entry[key] ?? 0) + row.total_tokens;
+			rawByDate.set(row.date, entry);
+		}
+
+		// Build full date range so zero-value days are included
+		const allDates = Array.from(new Set(data.map((r) => r.date))).sort();
+		const minDate = new Date(allDates[0]);
+		const maxDate = new Date(allDates[allDates.length - 1]);
+		const dateRange: string[] = [];
+		for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
+			dateRange.push(d.toISOString().split("T")[0]);
+		}
+
+		const sorted = dateRange.map((dateKey) => {
+			const entry: Record<string, number | string> = {
+				date: new Date(dateKey).toLocaleDateString("en-US", {
+					month: "short",
+					day: "numeric",
+				}),
+				_sort: dateKey,
+			};
+			const raw = rawByDate.get(dateKey) ?? {};
+			for (const model of modelList) {
+				entry[model] = raw[model] ?? 0;
+			}
+			return entry;
+		});
+
+		return { chartData: sorted, models: modelList };
 	}, [data]);
 
 	if (chartData.length === 0) return null;
 
 	return (
 		<ResponsiveContainer width="100%" height={400}>
-			<AreaChart
+			<BarChart
 				data={chartData}
 				margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
 			>
@@ -88,6 +122,7 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 					angle={-45}
 					textAnchor="end"
 					height={80}
+					tickMargin={8}
 				/>
 				<YAxis tick={{ fontSize: 12 }} tickFormatter={formatCompactNumber} />
 				<Tooltip
@@ -105,18 +140,19 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 				/>
 				<Legend formatter={shortenModelName} />
 				{models.map((model, i) => (
-					<Area
+					<Bar
 						key={model}
-						type="monotone"
 						dataKey={model}
 						stackId="1"
-						fill={MODEL_COLORS[i % MODEL_COLORS.length]}
-						stroke={MODEL_COLORS[i % MODEL_COLORS.length]}
-						fillOpacity={0.6}
+						fill={
+							model === "Other"
+								? OTHER_COLOR
+								: MODEL_COLORS[i % MODEL_COLORS.length]
+						}
 						name={model}
 					/>
 				))}
-			</AreaChart>
+			</BarChart>
 		</ResponsiveContainer>
 	);
 }
