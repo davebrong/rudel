@@ -1,9 +1,15 @@
 -- Local ClickHouse schema for development
--- Derived from packages/ch-schema/chx/migrations/20260220190421_auto.sql
--- Uses ReplacingMergeTree (local) instead of SharedReplacingMergeTree (cloud)
+-- Auto-generated from packages/ch-schema/chx/migrations/20260303183909_auto.sql
+-- Adapted for local: ReplacingMergeTree (not Shared), no S3 storage policy
+--
+-- IMPORTANT: Keep this file in sync with schema changes!
+-- When you modify packages/ch-schema/src/db/schema/ and generate a new migration,
+-- you MUST update this file to match. Otherwise local dev will have schema drift.
+-- See CLAUDE.md "Local init script must be kept in sync" for details.
 
 CREATE DATABASE IF NOT EXISTS rudel;
 
+-- Table: rudel.claude_sessions
 CREATE TABLE IF NOT EXISTS rudel.claude_sessions
 (
   `session_date` DateTime64(3, 'UTC') DEFAULT now64(3),
@@ -11,28 +17,24 @@ CREATE TABLE IF NOT EXISTS rudel.claude_sessions
   `session_id` String,
   `organization_id` String,
   `project_path` String,
-  `repository` Nullable(String),
+  `git_remote` String DEFAULT '',
+  `package_name` String DEFAULT '',
+  `package_type` String DEFAULT '',
   `content` String,
-  `subagents` Map(String, String) DEFAULT map(),
-  `skills` Array(String) DEFAULT [],
-  `slash_commands` Array(String) DEFAULT [],
-  `subagent_types` Array(String) DEFAULT [],
   `ingested_at` DateTime64(3, 'UTC') DEFAULT now64(3),
   `user_id` String,
   `git_branch` Nullable(String),
   `git_sha` Nullable(String),
-  `input_tokens` UInt64 DEFAULT 0,
-  `output_tokens` UInt64 DEFAULT 0,
-  `cache_read_input_tokens` UInt64 DEFAULT 0,
-  `cache_creation_input_tokens` UInt64 DEFAULT 0,
-  `total_tokens` UInt64 DEFAULT 0,
-  `tag` Nullable(String)
+  `tag` Nullable(String),
+  `subagents` Map(String, String) DEFAULT map()
 ) ENGINE = ReplacingMergeTree(ingested_at)
 PARTITION BY toYYYYMM(toDate(session_date))
+PRIMARY KEY ()
 ORDER BY (`organization_id`, `session_date`, `session_id`)
 TTL toDate(session_date) + toIntervalDay(365)
 SETTINGS index_granularity = 8192;
 
+-- Table: rudel.session_analytics
 CREATE TABLE IF NOT EXISTS rudel.session_analytics
 (
   `session_date` DateTime64(3, 'UTC') DEFAULT now64(3),
@@ -40,7 +42,9 @@ CREATE TABLE IF NOT EXISTS rudel.session_analytics
   `session_id` String,
   `organization_id` String,
   `project_path` String,
-  `repository` Nullable(String),
+  `git_remote` String DEFAULT '',
+  `package_name` String DEFAULT '',
+  `package_type` String DEFAULT '',
   `content` String,
   `subagents` Map(String, String) DEFAULT map(),
   `skills` Array(String) DEFAULT [],
@@ -56,6 +60,7 @@ CREATE TABLE IF NOT EXISTS rudel.session_analytics
   `cache_creation_input_tokens` UInt64 DEFAULT 0,
   `total_tokens` UInt64 DEFAULT 0,
   `tag` Nullable(String),
+  `source` LowCardinality(String) DEFAULT 'claude_code',
   `total_interactions` UInt32 DEFAULT 0,
   `actual_duration_min` UInt32 DEFAULT 0,
   `avg_period_sec` Float64 DEFAULT 0,
@@ -71,15 +76,18 @@ CREATE TABLE IF NOT EXISTS rudel.session_analytics
   `used_plan_mode` UInt8 DEFAULT 0,
   `inference_duration_sec` UInt32 DEFAULT 0,
   `human_duration_sec` UInt32 DEFAULT 0,
+  INDEX `idx_git_remote` (git_remote) TYPE set(0) GRANULARITY 4,
   INDEX `idx_model_used` (model_used) TYPE set(0) GRANULARITY 4,
   INDEX `idx_project_path` (project_path) TYPE set(0) GRANULARITY 4,
-  INDEX `idx_repository` (repository) TYPE set(0) GRANULARITY 4,
+  INDEX `idx_source` (source) TYPE set(0) GRANULARITY 4,
   INDEX `idx_user_id` (user_id) TYPE set(0) GRANULARITY 4
 ) ENGINE = ReplacingMergeTree(ingested_at)
 PARTITION BY toYYYYMM(toDate(session_date))
+PRIMARY KEY ()
 ORDER BY (`organization_id`, `session_date`, `session_id`)
 SETTINGS index_granularity = 8192;
 
+-- Materialized View: rudel.session_analytics_mv
 CREATE MATERIALIZED VIEW IF NOT EXISTS rudel.session_analytics_mv TO rudel.session_analytics AS
 WITH
   arrayFilter(x -> JSONExtractString(x, 'type') IN ('user', 'assistant'), splitByChar('\n', cs.content)) AS _interaction_lines,
@@ -88,10 +96,45 @@ WITH
   arrayMap(x -> JSONExtractString(x, 'type'), _ts_lines) AS _msg_types,
   if(length(_timestamps) > 1, arrayMap(i -> dateDiff('second', _timestamps[i], _timestamps[i+1]), range(1, length(_timestamps))), []) AS _prompt_periods_sec,
   if(length(_timestamps) > 1, arrayMap(i -> if(_msg_types[i] = 'user' AND _msg_types[i+1] = 'assistant', dateDiff('second', _timestamps[i], _timestamps[i+1]), 0), range(1, length(_timestamps))), []) AS _inference_gaps,
-  if(length(_timestamps) > 1, arrayMap(i -> if(_msg_types[i] = 'assistant' AND _msg_types[i+1] = 'user', dateDiff('second', _timestamps[i], _timestamps[i+1]), 0), range(1, length(_timestamps))), []) AS _human_gaps
-SELECT *,
+  if(length(_timestamps) > 1, arrayMap(i -> if(_msg_types[i] = 'assistant' AND _msg_types[i+1] = 'user', dateDiff('second', _timestamps[i], _timestamps[i+1]), 0), range(1, length(_timestamps))), []) AS _human_gaps,
+  arrayFilter(x -> JSONExtractString(x, 'type') = 'assistant' AND JSONHas(x, 'message'), splitByChar('\n', cs.content)) AS _assistant_lines,
+  arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'input_tokens')), _assistant_lines)) AS _input_tokens,
+  arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'output_tokens')), _assistant_lines)) AS _output_tokens,
+  arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'cache_read_input_tokens')), _assistant_lines)) AS _cache_read,
+  arraySum(arrayMap(x -> toUInt64OrZero(JSONExtractRaw(JSONExtractRaw(x, 'message'), 'usage', 'cache_creation_input_tokens')), _assistant_lines)) AS _cache_creation,
+  arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '"name":"Skill"[^}]*"skill":"([^"]+)"'))) AS _skills,
+  arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '"name":"Task"[^}]*"subagent_type":"([^"]+)"'))) AS _subagent_types,
+  arrayDistinct(arrayFilter(x -> x != '', extractAll(cs.content, '<command-name>/([^<]+)</command-name>'))) AS _slash_commands,
+  arrayMin(_timestamps) AS _session_date,
+  arrayMax(_timestamps) AS _last_interaction_date,
+  dateDiff('minute', _session_date, _last_interaction_date) AS _duration_min
+SELECT
+  cs.session_id,
+  cs.organization_id,
+  cs.project_path,
+  cs.git_remote,
+  cs.package_name,
+  cs.package_type,
+  cs.content,
+  cs.subagents,
+  cs.ingested_at,
+  cs.user_id,
+  cs.git_branch,
+  cs.git_sha,
+  cs.tag,
+  _session_date as session_date,
+  _last_interaction_date as last_interaction_date,
+  'claude_code' as source,
+  _input_tokens as input_tokens,
+  _output_tokens as output_tokens,
+  _cache_read as cache_read_input_tokens,
+  _cache_creation as cache_creation_input_tokens,
+  _input_tokens + _output_tokens as total_tokens,
+  _skills as skills,
+  _slash_commands as slash_commands,
+  _subagent_types as subagent_types,
   toUInt32(length(_timestamps)) as total_interactions,
-  toUInt32(dateDiff('minute', arrayMin(_timestamps), arrayMax(_timestamps))) as actual_duration_min,
+  toUInt32(_duration_min) as actual_duration_min,
   if(length(_prompt_periods_sec) > 0, round(arrayAvg(_prompt_periods_sec), 2), 0) as avg_period_sec,
   if(length(_prompt_periods_sec) > 0, toFloat64(arrayElement(arraySort(_prompt_periods_sec), toUInt64(ceil(length(_prompt_periods_sec) / 2)))), 0) as median_period_sec,
   toUInt32(arrayCount(x -> x < 5, _prompt_periods_sec)) as quick_responses,
@@ -104,20 +147,20 @@ SELECT *,
   toUInt32(arraySum(_inference_gaps)) as inference_duration_sec,
   toUInt32(arraySum(_human_gaps)) as human_duration_sec,
   CASE
-    WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) <= 10 AND cs.total_tokens < 500000 AND cs.output_tokens > 1000 THEN 'quick_win'
-    WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) > 30 AND cs.output_tokens > 50000 AND cs.git_sha IS NOT NULL AND cs.git_sha != '' THEN 'deep_work'
-    WHEN cs.total_tokens > 1000000 AND (cs.output_tokens / nullif(cs.input_tokens, 0)) < 0.3 AND dateDiff('minute', cs.session_date, cs.last_interaction_date) > 20 THEN 'struggle'
-    WHEN length(cs.skills) >= 3 AND (cs.git_sha IS NULL OR cs.git_sha = '') AND cs.total_tokens > 200000 THEN 'exploration'
-    WHEN dateDiff('minute', cs.session_date, cs.last_interaction_date) < 3 AND cs.output_tokens < 500 THEN 'abandoned'
+    WHEN _duration_min <= 10 AND (_input_tokens + _output_tokens) < 500000 AND _output_tokens > 1000 THEN 'quick_win'
+    WHEN _duration_min > 30 AND _output_tokens > 50000 AND cs.git_sha IS NOT NULL AND cs.git_sha != '' THEN 'deep_work'
+    WHEN (_input_tokens + _output_tokens) > 1000000 AND (_output_tokens / nullif(_input_tokens, 0)) < 0.3 AND _duration_min > 20 THEN 'struggle'
+    WHEN length(_skills) >= 3 AND (cs.git_sha IS NULL OR cs.git_sha = '') AND (_input_tokens + _output_tokens) > 200000 THEN 'exploration'
+    WHEN _duration_min < 3 AND _output_tokens < 500 THEN 'abandoned'
     ELSE 'standard'
   END as session_archetype,
   toUInt8(round(
     50
     + (if(cs.git_sha IS NOT NULL AND cs.git_sha != '', 20, 0))
-    + (if((cs.output_tokens / nullif(cs.input_tokens, 0)) > 0.5, 15, 0))
-    + (least(toUInt32(length(cs.skills)), 3) * 5)
-    - (if(cs.total_tokens > 1500000 AND (cs.git_sha IS NULL OR cs.git_sha = ''), 20, 0))
-    - (if(dateDiff('minute', cs.session_date, cs.last_interaction_date) < 2 AND cs.output_tokens < 200, 30, 0))
+    + (if((_output_tokens / nullif(_input_tokens, 0)) > 0.5, 15, 0))
+    + (least(toUInt32(length(_skills)), 3) * 5)
+    - (if((_input_tokens + _output_tokens) > 1500000 AND (cs.git_sha IS NULL OR cs.git_sha = ''), 20, 0))
+    - (if(_duration_min < 2 AND _output_tokens < 200, 30, 0))
     - (least(toUInt32(length(extractAll(cs.content, '"isApiErrorMessage":true')) + length(extractAll(cs.content, '"is_error":true'))), 10) * 2)
   )) as success_score
 FROM rudel.claude_sessions AS cs

@@ -244,6 +244,8 @@ To drop everything and recreate:
 
 **Codegen plugin failure.** `bun run ch:generate` may fail with `Plugin "codegen" failed in generate integration with exit code 1`. The migration file and snapshot are still created despite this error. Run `bun run ch:codegen` separately if needed.
 
+**Local init script must be kept in sync.** `scripts/init-clickhouse-local.sql` is the schema used for local Docker development (`bun run dev:local`). When you modify the schema in `packages/ch-schema/src/db/schema/` and generate a new migration, you must also update the local init script to match. Copy the relevant DDL from the latest migration in `packages/ch-schema/chx/migrations/`, adapting `SharedReplacingMergeTree` to `ReplacingMergeTree` and removing `storage_policy = 's3'`. Otherwise, local contributors will get schema drift errors.
+
 **`CLICKHOUSE_DB=default` override.** Doppler sets `CLICKHOUSE_DB=rudel`. When the `rudel` database doesn't exist yet (e.g., during initial migration), chkit fails to connect. The `ch:migrate` script overrides this with `CLICKHOUSE_DB=default` inside a bash subshell so the override happens after Doppler injects env vars.
 
 **ClickHouse Cloud silent INSERT behavior.** `INSERT ... SELECT` via the HTTP interface may silently return 200 with 0 rows written. Use `SETTINGS async_insert=0` as a workaround. Additionally, `INSERT INTO table_x SELECT ... FROM table_x` (same source and target table) silently writes 0 rows even with `async_insert=0` — you must read from a different source table. The API uses `client.command()` with `FORMAT JSONEachRow` and `async_insert=0` (see `apps/api/src/clickhouse.ts`).
