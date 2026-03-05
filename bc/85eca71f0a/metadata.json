@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "bc85eca71f0a",
+  "strategy": "manual-commit",
+  "branch": "fix-projects",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/api/src/services/project.service.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/bc/85eca71f0a/0/metadata.json",
+      "transcript": "/bc/85eca71f0a/0/full.jsonl",
+      "context": "",
+      "content_hash": "/bc/85eca71f0a/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
