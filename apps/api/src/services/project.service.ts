@@ -12,6 +12,31 @@ import {
 	queryClickhouse,
 } from "../clickhouse.js";
 
+const PROJECT_KEY_EXPR = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
+const PROJECT_DISPLAY_EXPR = `if(git_remote != '', arrayElement(splitByChar('/', git_remote), -1), arrayElement(splitByChar('/', project_path), -1))`;
+
+function buildProjectDisplaySubquery(
+	org: string,
+	escapedProjectPath: string,
+): string {
+	return `(
+    SELECT
+      if(
+        count() > 0,
+        any(${PROJECT_DISPLAY_EXPR}),
+        if(position('${escapedProjectPath}', '/') > 0, arrayElement(splitByChar('/', '${escapedProjectPath}'), -1), '${escapedProjectPath}')
+      ) as project_display
+    FROM rudel.session_analytics
+    WHERE organization_id = '${org}'
+      AND (
+        project_path = '${escapedProjectPath}'
+        OR git_remote = '${escapedProjectPath}'
+        OR ${PROJECT_KEY_EXPR} = '${escapedProjectPath}'
+      )
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
+  )`;
+}
+
 export interface KnowledgeSilo {
 	project_path: string;
 	project_name?: string;
@@ -101,12 +126,10 @@ export async function getProjectInvestment(
 		projectFilter = `AND project_path IN (${escaped})`;
 	}
 
-	const projectKeyExpr = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
-
 	const query = `
     WITH current_period AS (
       SELECT
-        ${projectKeyExpr} as project_key,
+        ${PROJECT_DISPLAY_EXPR} as project_display,
         any(git_remote) as _git_remote,
         any(project_path) as _project_path,
         COUNT(*) as sessions,
@@ -122,11 +145,11 @@ export async function getProjectInvestment(
         AND organization_id = '${org}'
         AND (git_remote != '' OR package_name != '' OR project_path != '')
         ${projectFilter}
-      GROUP BY ${projectKeyExpr}
+      GROUP BY ${PROJECT_DISPLAY_EXPR}
     ),
     previous_period AS (
       SELECT
-        ${projectKeyExpr} as project_key,
+        ${PROJECT_DISPLAY_EXPR} as project_display,
         round(AVG(success_score), 2) as prev_success_rate
       FROM rudel.session_analytics
       WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
@@ -134,10 +157,10 @@ export async function getProjectInvestment(
         AND organization_id = '${org}'
         AND (git_remote != '' OR package_name != '' OR project_path != '')
         ${projectFilter}
-      GROUP BY ${projectKeyExpr}
+      GROUP BY ${PROJECT_DISPLAY_EXPR}
     )
     SELECT
-      c.project_key as repository,
+      c.project_display as repository,
       c._git_remote as git_remote,
       c._project_path as project_path,
       c.sessions,
@@ -151,7 +174,7 @@ export async function getProjectInvestment(
       round((c.output_tokens_sum / 1000000.0) * 15.0 + (c.input_tokens_sum / 1000000.0) * 3.0, 4) as cost,
       round(c.success_rate - ifNull(p.prev_success_rate, c.success_rate), 2) as success_rate_trend
     FROM current_period c
-    LEFT JOIN previous_period p ON c.project_key = p.project_key
+    LEFT JOIN previous_period p ON c.project_display = p.project_display
     ORDER BY c.total_duration_min DESC
     LIMIT ${lim}
     OFFSET ${off}
@@ -308,16 +331,9 @@ export async function getProjectDetails(
 	const org = escapeString(orgId);
 	const pp = escapeString(projectPath);
 	const d = Number(days);
+	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
 
 	const query = `
-    WITH project_key AS (
-      SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
-      FROM rudel.session_analytics
-      WHERE project_path = '${pp}'
-        AND (git_remote != '' OR package_name != '' OR project_path != '')
-        AND organization_id = '${org}'
-      LIMIT 1
-    )
     SELECT
       any(project_path) as project_path,
       COUNT(*) as total_sessions,
@@ -330,9 +346,10 @@ export async function getProjectDetails(
       round(AVG(success_score), 2) as success_rate,
       round(SUM(actual_duration_min), 2) as total_duration_min
     FROM rudel.session_analytics
-    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
-    AND ${buildDateFilter(d)}
-    AND organization_id = '${org}'
+    WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
+      AND ${buildDateFilter(d)}
+      AND organization_id = '${org}'
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
   `;
 
 	const results = await queryClickhouse<
@@ -370,22 +387,16 @@ export async function getProjectContributors(
 	const org = escapeString(orgId);
 	const pp = escapeString(projectPath);
 	const d = Number(days);
+	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
 
 	const query = `
-    WITH project_key AS (
-      SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
-      FROM rudel.session_analytics
-      WHERE project_path = '${pp}'
-        AND (git_remote != '' OR package_name != '' OR project_path != '')
-        AND organization_id = '${org}'
-      LIMIT 1
-    ),
-    project_totals AS (
+    WITH project_totals AS (
       SELECT COUNT(*) as total_sessions
       FROM rudel.session_analytics
-      WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
+      WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
         AND ${buildDateFilter(d)}
         AND organization_id = '${org}'
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
     )
     SELECT
       user_id,
@@ -396,9 +407,10 @@ export async function getProjectContributors(
       toString(max(session_date)) as last_session,
       round(COUNT(*) * 100.0 / (SELECT total_sessions FROM project_totals), 2) as contribution_percentage
     FROM rudel.session_analytics
-    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
+    WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
     GROUP BY user_id
     ORDER BY sessions DESC
   `;
@@ -417,15 +429,7 @@ export async function getProjectFeatureUsage(
 	const org = escapeString(orgId);
 	const pp = escapeString(projectPath);
 	const d = Number(days);
-
-	const pkSubquery = `(
-    SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
-    FROM rudel.session_analytics
-    WHERE project_path = '${pp}'
-      AND (git_remote != '' OR package_name != '' OR project_path != '')
-      AND organization_id = '${org}'
-    LIMIT 1
-  )`;
+	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
 
 	const adoptionQuery = `
     SELECT
@@ -434,18 +438,20 @@ export async function getProjectFeatureUsage(
       countIf(length(skills) > 0) as skills_sessions,
       countIf(length(slash_commands) > 0) as slash_commands_sessions
     FROM rudel.session_analytics
-    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
-    AND ${buildDateFilter(d)}
-    AND organization_id = '${org}'
+    WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
+      AND ${buildDateFilter(d)}
+      AND organization_id = '${org}'
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
   `;
 
 	const topSubagentsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN subagent_types as val
-    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
+    WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
       AND val != ''
     GROUP BY val
     ORDER BY count DESC
@@ -456,9 +462,10 @@ export async function getProjectFeatureUsage(
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN skills as val
-    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
+    WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
       AND val != ''
     GROUP BY val
     ORDER BY count DESC
@@ -469,9 +476,10 @@ export async function getProjectFeatureUsage(
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
-    WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = ${pkSubquery}
+    WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
       AND ${buildDateFilter(d)}
       AND organization_id = '${org}'
+      AND (git_remote != '' OR package_name != '' OR project_path != '')
       AND val != ''
     GROUP BY val
     ORDER BY count DESC
@@ -542,17 +550,10 @@ export async function getProjectErrors(
 	const org = escapeString(orgId);
 	const pp = escapeString(projectPath);
 	const d = Number(days);
+	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
 
 	const query = `
-    WITH project_key AS (
-      SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk
-      FROM rudel.session_analytics
-      WHERE project_path = '${pp}'
-        AND (git_remote != '' OR package_name != '' OR project_path != '')
-        AND organization_id = '${org}'
-      LIMIT 1
-    ),
-    error_extracts AS (
+    WITH error_extracts AS (
       SELECT
         session_id,
         user_id,
@@ -568,9 +569,10 @@ export async function getProjectErrors(
           ELSE NULL
         END as error_pattern
       FROM rudel.session_analytics
-      WHERE if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) = (SELECT pk FROM project_key)
+      WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
         AND ${buildDateFilter(d)}
         AND organization_id = '${org}'
+        AND (git_remote != '' OR package_name != '' OR project_path != '')
         AND (content LIKE '%Error:%' OR content LIKE '%error:%')
     )
     SELECT
@@ -605,12 +607,10 @@ export async function getProjectTrends(
 			? "toMonday(toDate(session_date))"
 			: "toDate(session_date)";
 
-	const projectKeyExpr = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
-
 	const query = `
     SELECT
       toString(${dateFunc}) as date,
-      ${projectKeyExpr} as project_key,
+      ${PROJECT_DISPLAY_EXPR} as project_key,
       any(project_path) as _project_path,
       COUNT(*) as sessions,
       round(SUM(actual_duration_min) / 60, 2) as total_hours,
@@ -620,7 +620,7 @@ export async function getProjectTrends(
     WHERE ${buildDateFilter(d)}
       AND organization_id = '${org}'
       AND (git_remote != '' OR package_name != '' OR project_path != '')
-    GROUP BY date, ${projectKeyExpr}
+    GROUP BY date, ${PROJECT_DISPLAY_EXPR}
     ORDER BY date ASC, project_key ASC
   `;
 
