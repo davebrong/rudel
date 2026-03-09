@@ -222,7 +222,7 @@ export function ConversationMessage({
 							{slashCommandInfo.commandName && (
 								<div className="text-sm text-muted-foreground">
 									<span className="font-semibold">Command:</span>{" "}
-									<code className="bg-muted px-2 py-0.5 rounded">
+									<code className="bg-secondary text-foreground px-2 py-0.5 rounded">
 										{slashCommandInfo.commandName}
 									</code>
 								</div>
@@ -230,7 +230,7 @@ export function ConversationMessage({
 							{slashCommandInfo.commandArgs && (
 								<div className="text-sm text-muted-foreground">
 									<span className="font-semibold">Args:</span>{" "}
-									<code className="bg-muted px-2 py-0.5 rounded">
+									<code className="bg-secondary text-foreground px-2 py-0.5 rounded">
 										{slashCommandInfo.commandArgs}
 									</code>
 								</div>

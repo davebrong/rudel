@@ -1,5 +1,5 @@
 import type { ErrorTrendDataPoint } from "@rudel/api-routes";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -20,6 +20,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { ChartLegend } from "./ChartLegend";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -30,14 +31,14 @@ interface ErrorTrendChartProps {
 		| "avg_errors_per_interaction"
 		| "avg_errors_per_session"
 		| "total_errors";
-	splitBy: "repository" | "user_id" | "model";
+	splitBy: "project_path" | "user_id" | "model";
 	onMetricChange: (
 		metric:
 			| "avg_errors_per_interaction"
 			| "avg_errors_per_session"
 			| "total_errors",
 	) => void;
-	onSplitByChange: (splitBy: "repository" | "user_id" | "model") => void;
+	onSplitByChange: (splitBy: "project_path" | "user_id" | "model") => void;
 	userMap?: Record<string, string>;
 }
 
@@ -65,7 +66,7 @@ const METRIC_LABELS: Record<string, string> = {
 };
 
 const SPLIT_LABELS: Record<string, string> = {
-	repository: "by Repository",
+	project_path: "by Project",
 	user_id: "by Developer",
 	model: "by Model",
 };
@@ -79,6 +80,13 @@ export function ErrorTrendChart({
 	userMap,
 }: ErrorTrendChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
+	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+	const toggleSeries = (key: string) =>
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			next.has(key) ? next.delete(key) : next.add(key);
+			return next;
+		});
 
 	const { seriesKeys, chartData } = useMemo(() => {
 		if (data.length === 0) return { seriesKeys: [], chartData: [] };
@@ -150,6 +158,10 @@ export function ErrorTrendChart({
 		if (splitBy === "user_id" && userMap) {
 			return userMap[key] || `${key.substring(0, 12)}...`;
 		}
+		if (splitBy === "project_path") {
+			const parts = key.split("/");
+			return parts[parts.length - 1] || key;
+		}
 		return key;
 	};
 
@@ -209,7 +221,7 @@ export function ErrorTrendChart({
 				{metric === "total_errors" ? (
 					<BarChart
 						data={chartData}
-						margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+						margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
 					>
 						<CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 						<XAxis
@@ -235,8 +247,18 @@ export function ErrorTrendChart({
 							labelFormatter={(label) => `Date: ${label}`}
 						/>
 						<Legend
-							formatter={(value) => getDisplayName(value)}
-							wrapperStyle={{ fontSize: "12px" }}
+							layout="vertical"
+							align="right"
+							verticalAlign="top"
+							width={160}
+							content={({ payload }) => (
+								<ChartLegend
+									payload={payload}
+									formatter={getDisplayName}
+									hiddenSeries={hiddenSeries}
+									onToggle={toggleSeries}
+								/>
+							)}
 						/>
 						{seriesKeys.map((key, index) => (
 							<Bar
@@ -244,6 +266,7 @@ export function ErrorTrendChart({
 								dataKey={key}
 								name={key}
 								stackId="1"
+								hide={hiddenSeries.has(key)}
 								fill={
 									key === "Other" ? OTHER_COLOR : COLORS[index % COLORS.length]
 								}
@@ -253,7 +276,7 @@ export function ErrorTrendChart({
 				) : (
 					<LineChart
 						data={chartData}
-						margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+						margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
 					>
 						<CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 						<XAxis
@@ -279,8 +302,18 @@ export function ErrorTrendChart({
 							labelFormatter={(label) => `Date: ${label}`}
 						/>
 						<Legend
-							formatter={(value) => getDisplayName(value)}
-							wrapperStyle={{ fontSize: "12px" }}
+							layout="vertical"
+							align="right"
+							verticalAlign="top"
+							width={160}
+							content={({ payload }) => (
+								<ChartLegend
+									payload={payload}
+									formatter={getDisplayName}
+									hiddenSeries={hiddenSeries}
+									onToggle={toggleSeries}
+								/>
+							)}
 						/>
 						{seriesKeys.map((key, index) => (
 							<Line
@@ -293,6 +326,7 @@ export function ErrorTrendChart({
 								dot={{ r: 4 }}
 								activeDot={{ r: 6 }}
 								connectNulls={false}
+								hide={hiddenSeries.has(key)}
 							/>
 						))}
 					</LineChart>

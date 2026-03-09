@@ -127,7 +127,7 @@ export async function getErrorTrends(
 	params: {
 		start_date: string;
 		end_date: string;
-		split_by: "repository" | "user_id" | "model";
+		split_by: "project_path" | "user_id" | "model";
 	},
 ): Promise<ErrorTrendDataPoint[]> {
 	const { start_date, end_date, split_by } = params;
@@ -135,14 +135,16 @@ export async function getErrorTrends(
 	const sd = escapeString(start_date);
 	const ed = escapeString(end_date);
 
-	if (split_by === "model") {
+	if (split_by === "project_path" || split_by === "model") {
+		const dimensionExpr =
+			split_by === "project_path" ? "sa.project_path" : "sa.model_used";
 		const query = `
       WITH error_sessions AS (
         SELECT
           toDate(sa.session_date) as date,
           sa.session_id,
           sa.user_id,
-          sa.model_used as dimension_value,
+          ${dimensionExpr} as dimension_value,
           sa.error_count
         FROM rudel.session_analytics sa
         WHERE sa.session_date >= '${sd}'
@@ -174,11 +176,8 @@ export async function getErrorTrends(
 		return queryClickhouse<ErrorTrendDataPoint>(query);
 	}
 
-	// For repository and user_id splits
-	const dimension_field =
-		split_by === "repository"
-			? "if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))"
-			: split_by;
+	// For user_id split
+	const dimension_field = "user_id";
 
 	const query = `
     WITH error_sessions AS (

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { ConversationView } from "@/components/conversation/ConversationView";
 import {
 	type TokenDataPoint,
@@ -197,7 +198,10 @@ export function SessionDetailPage() {
 						</div>
 						{session.success_score !== undefined && (
 							<div className="text-right">
-								<p className="text-muted">Score</p>
+								<p className="text-muted flex items-center">
+									Score
+									<InfoTooltip text="Session quality score (0–100): earns points for a git commit (+20), high output ratio (+15), and skills used (+5 each, max 3); loses points for errors (−2 each) and abandoned sessions." />
+								</p>
 								<p
 									className={`font-semibold ${
 										session.success_score >= 70

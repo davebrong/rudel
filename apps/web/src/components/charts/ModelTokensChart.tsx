@@ -1,5 +1,5 @@
 import type { ModelTokensTrendData } from "@rudel/api-routes";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -11,6 +11,7 @@ import {
 	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { ChartLegend } from "./ChartLegend";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -50,6 +51,13 @@ interface ModelTokensChartProps {
 
 export function ModelTokensChart({ data }: ModelTokensChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
+	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+	const toggleSeries = (key: string) =>
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			next.has(key) ? next.delete(key) : next.add(key);
+			return next;
+		});
 
 	const { chartData, models } = useMemo(() => {
 		if (data.length === 0) return { chartData: [], models: [] };
@@ -113,7 +121,7 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 		<ResponsiveContainer width="100%" height={400}>
 			<BarChart
 				data={chartData}
-				margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+				margin={{ top: 5, right: 0, left: 20, bottom: 5 }}
 			>
 				<CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 				<XAxis
@@ -138,7 +146,20 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 					]}
 					labelFormatter={(label) => label}
 				/>
-				<Legend formatter={shortenModelName} />
+				<Legend
+					layout="vertical"
+					align="right"
+					verticalAlign="top"
+					width={160}
+					content={({ payload }) => (
+						<ChartLegend
+							payload={payload}
+							formatter={shortenModelName}
+							hiddenSeries={hiddenSeries}
+							onToggle={toggleSeries}
+						/>
+					)}
+				/>
 				{models.map((model, i) => (
 					<Bar
 						key={model}
@@ -150,6 +171,7 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 								: MODEL_COLORS[i % MODEL_COLORS.length]
 						}
 						name={model}
+						hide={hiddenSeries.has(model)}
 					/>
 				))}
 			</BarChart>

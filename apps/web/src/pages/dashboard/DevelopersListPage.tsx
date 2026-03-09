@@ -18,6 +18,7 @@ import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { DeveloperTrendChart } from "@/components/charts/DeveloperTrendChart";
 import { DataTable } from "@/components/ui/data-table";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
@@ -94,7 +95,12 @@ export function DevelopersListPage() {
 			},
 			{
 				accessorKey: "success_rate",
-				header: "Success Rate",
+				header: () => (
+					<span className="flex items-center">
+						Success Rate
+						<InfoTooltip text="Average session quality score (0–100): rewards git commits, high output ratio, and skill usage; deducts for errors and abandoned sessions." />
+					</span>
+				),
 				cell: ({ row }) => {
 					const rate = row.original.success_rate;
 					const color =

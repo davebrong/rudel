@@ -16,6 +16,7 @@ import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { ProjectTrendChart } from "@/components/charts/ProjectTrendChart";
 import { DataTable } from "@/components/ui/data-table";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
 import { encodeProjectPath } from "@/lib/format";

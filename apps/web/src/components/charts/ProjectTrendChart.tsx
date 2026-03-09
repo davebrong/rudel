@@ -1,5 +1,6 @@
 import type { ProjectTrendDataPoint } from "@rudel/api-routes";
 import { Activity, Clock, TrendingUp, Zap } from "lucide-react";
+import type React from "react";
 import { useMemo, useState } from "react";
 import {
 	Bar,
@@ -14,6 +15,8 @@ import {
 	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
+import { ChartLegend } from "./ChartLegend";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -52,6 +55,8 @@ const METRICS = {
 		label: "Success Rate",
 		icon: TrendingUp,
 		formatter: (value: number) => `${value.toFixed(0)}%`,
+		tooltip:
+			"Average session quality score (0–100): rewards git commits, high output ratio, and skill usage; deducts for errors and abandoned sessions.",
 	},
 };
 
@@ -75,6 +80,13 @@ const PROJECT_COLORS = [
 export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke, axisStroke } = useChartTheme();
 	const [selectedMetric, setSelectedMetric] = useState<MetricType>("sessions");
+	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+	const toggleSeries = (key: string) =>
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			next.has(key) ? next.delete(key) : next.add(key);
+			return next;
+		});
 
 	const currentMetric = METRICS[selectedMetric];
 
@@ -191,6 +203,11 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 						>
 							<Icon className="w-4 h-4" />
 							<span>{metric.label}</span>
+							{"tooltip" in metric && metric.tooltip && (
+								<span onClick={(e) => e.stopPropagation()}>
+									<InfoTooltip text={metric.tooltip as string} />
+								</span>
+							)}
 						</button>
 					);
 				})}
@@ -200,7 +217,7 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 				{selectedMetric === "success_rate" ? (
 					<LineChart
 						data={chartData}
-						margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+						margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
 					>
 						<CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 						<XAxis
@@ -236,8 +253,18 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 							labelFormatter={(label) => label}
 						/>
 						<Legend
-							formatter={(value) => formatProjectName(value)}
-							wrapperStyle={{ paddingTop: "20px" }}
+							layout="vertical"
+							align="right"
+							verticalAlign="top"
+							width={160}
+							content={({ payload }) => (
+								<ChartLegend
+									payload={payload}
+									formatter={formatProjectName}
+									hiddenSeries={hiddenSeries}
+									onToggle={toggleSeries}
+								/>
+							)}
 						/>
 						{topProjects.map((projectPath, index) => (
 							<Line
@@ -249,13 +276,14 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 								dot={{ r: 3 }}
 								activeDot={{ r: 5 }}
 								connectNulls
+								hide={hiddenSeries.has(projectPath)}
 							/>
 						))}
 					</LineChart>
 				) : (
 					<BarChart
 						data={chartData}
-						margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+						margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
 					>
 						<CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 						<XAxis
@@ -290,14 +318,25 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 							labelFormatter={(label) => label}
 						/>
 						<Legend
-							formatter={(value) => formatProjectName(value)}
-							wrapperStyle={{ paddingTop: "20px" }}
+							layout="vertical"
+							align="right"
+							verticalAlign="top"
+							width={160}
+							content={({ payload }) => (
+								<ChartLegend
+									payload={payload}
+									formatter={formatProjectName}
+									hiddenSeries={hiddenSeries}
+									onToggle={toggleSeries}
+								/>
+							)}
 						/>
 						{seriesList.map((projectPath, index) => (
 							<Bar
 								key={projectPath}
 								dataKey={projectPath}
 								stackId="1"
+								hide={hiddenSeries.has(projectPath)}
 								fill={
 									projectPath === "Other"
 										? OTHER_COLOR
