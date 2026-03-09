@@ -1,6 +1,5 @@
 import type { DeveloperTrendDataPoint } from "@rudel/api-routes";
 import { Activity, Clock, TrendingUp, Zap } from "lucide-react";
-import type React from "react";
 import { useMemo, useState } from "react";
 import {
 	Bar,
@@ -14,8 +13,8 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { useChartTheme } from "@/hooks/useChartTheme";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
+import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
 
 const MAX_SERIES = 14;
@@ -27,13 +26,6 @@ interface DeveloperTrendChartProps {
 }
 
 type MetricType = "sessions" | "hours" | "tokens" | "success_rate";
-type MetricConfig = {
-	key: string;
-	label: string;
-	icon: React.ComponentType<{ className?: string }>;
-	formatter: (value: number) => string;
-	tooltip?: string;
-};
 
 const METRICS = {
 	sessions: {
@@ -206,6 +198,8 @@ export function DeveloperTrendChart({
 							<Icon className="w-4 h-4" />
 							<span>{metric.label}</span>
 							{"tooltip" in metric && metric.tooltip && (
+								// biome-ignore lint/a11y/noStaticElementInteractions: tooltip stop-propagation wrapper
+								// biome-ignore lint/a11y/useKeyWithClickEvents: tooltip stop-propagation wrapper
 								<span onClick={(e) => e.stopPropagation()}>
 									<InfoTooltip text={metric.tooltip as string} />
 								</span>

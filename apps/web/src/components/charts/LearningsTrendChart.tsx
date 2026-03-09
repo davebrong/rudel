@@ -236,8 +236,18 @@ export function LearningsTrendChart({
 						labelFormatter={(label) => `Date: ${label}`}
 					/>
 					<Legend
-						formatter={(value) => getDisplayName(value)}
-						wrapperStyle={{ fontSize: "12px" }}
+						layout="vertical"
+						align="right"
+						verticalAlign="top"
+						width={160}
+						content={({ payload }) => (
+							<ChartLegend
+								payload={payload}
+								formatter={getDisplayName}
+								hiddenSeries={hiddenSeries}
+								onToggle={toggleSeries}
+							/>
+						)}
 					/>
 					{displayKeys.map((key, index) => (
 						<Bar

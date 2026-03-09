@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { ConversationView } from "@/components/conversation/ConversationView";
 import {
 	type TokenDataPoint,
@@ -20,6 +19,7 @@ import {
 	ToolActivityChart,
 	type ToolActivityPoint,
 } from "@/components/conversation/ToolActivityChart";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { useUserMap } from "@/hooks/useUserMap";
 import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";

@@ -20,13 +20,13 @@ export function ChartLegend({
 
 	return (
 		<div className="flex flex-col gap-2 max-h-[240px] overflow-y-auto pl-4 pr-1 py-1">
-			{payload.map((entry, index) => {
+			{payload.map((entry) => {
 				const isHidden = hiddenSeries?.has(entry.value) ?? false;
 				return (
-					// biome-ignore lint/suspicious/noArrayIndexKey: legend items are positionally stable
-					<div
-						key={index}
-						className="flex items-start gap-2 min-w-0 cursor-pointer select-none"
+					<button
+						key={entry.value}
+						type="button"
+						className="flex items-start gap-2 min-w-0 cursor-pointer select-none text-left bg-transparent border-none p-0"
 						onClick={() => onToggle?.(entry.value)}
 					>
 						<div
@@ -42,7 +42,7 @@ export function ChartLegend({
 						>
 							{formatter ? formatter(entry.value) : entry.value}
 						</span>
-					</div>
+					</button>
 				);
 			})}
 		</div>

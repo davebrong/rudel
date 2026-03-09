@@ -1,6 +1,5 @@
 import type { ProjectTrendDataPoint } from "@rudel/api-routes";
 import { Activity, Clock, TrendingUp, Zap } from "lucide-react";
-import type React from "react";
 import { useMemo, useState } from "react";
 import {
 	Bar,
@@ -14,8 +13,8 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { useChartTheme } from "@/hooks/useChartTheme";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
+import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
 
 const MAX_SERIES = 14;
@@ -204,6 +203,8 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 							<Icon className="w-4 h-4" />
 							<span>{metric.label}</span>
 							{"tooltip" in metric && metric.tooltip && (
+								// biome-ignore lint/a11y/noStaticElementInteractions: tooltip stop-propagation wrapper
+								// biome-ignore lint/a11y/useKeyWithClickEvents: tooltip stop-propagation wrapper
 								<span onClick={(e) => e.stopPropagation()}>
 									<InfoTooltip text={metric.tooltip as string} />
 								</span>
