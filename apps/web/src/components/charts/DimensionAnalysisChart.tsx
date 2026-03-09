@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { formatUsername } from "@/lib/format";
+import { ChartLegend } from "./ChartLegend";
 
 function formatCompactNumber(value: number): string {
 	if (value >= 1000000)

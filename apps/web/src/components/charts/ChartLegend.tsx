@@ -1,10 +1,7 @@
-interface LegendEntry {
-	value: string;
-	color?: string;
-}
+import type { LegendPayload } from "recharts/types/component/DefaultLegendContent";
 
 interface ChartLegendProps {
-	payload?: LegendEntry[];
+	payload?: readonly LegendPayload[];
 	formatter?: (value: string) => string;
 	hiddenSeries?: Set<string>;
 	onToggle?: (key: string) => void;
@@ -21,13 +18,14 @@ export function ChartLegend({
 	return (
 		<div className="flex flex-col gap-2 max-h-[240px] overflow-y-auto pl-4 pr-1 py-1">
 			{payload.map((entry) => {
-				const isHidden = hiddenSeries?.has(entry.value) ?? false;
+				const key = entry.value ?? "";
+				const isHidden = hiddenSeries?.has(key) ?? false;
 				return (
 					<button
-						key={entry.value}
+						key={key}
 						type="button"
 						className="flex items-start gap-2 min-w-0 cursor-pointer select-none text-left bg-transparent border-none p-0"
-						onClick={() => onToggle?.(entry.value)}
+						onClick={() => onToggle?.(key)}
 					>
 						<div
 							className={`w-3 h-3 rounded-sm flex-shrink-0 mt-0.5 transition-opacity ${isHidden ? "opacity-30" : ""}`}
@@ -40,7 +38,7 @@ export function ChartLegend({
 									: "text-muted-foreground"
 							}`}
 						>
-							{formatter ? formatter(entry.value) : entry.value}
+							{formatter ? formatter(key) : key}
 						</span>
 					</button>
 				);
