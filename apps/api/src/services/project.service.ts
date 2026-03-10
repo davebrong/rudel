@@ -338,7 +338,7 @@ export async function getProjectDetails(
 
 	const query = `
     SELECT
-      any(project_path) as project_path,
+      any(project_path) as raw_project_path,
       COUNT(*) as total_sessions,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       SUM(ifNull(input_tokens, 0)) as input_tokens_sum,
@@ -355,13 +355,15 @@ export async function getProjectDetails(
       AND (git_remote != '' OR package_name != '' OR project_path != '')
   `;
 
-	let results: (ProjectDetails & {
+	let results: (Omit<ProjectDetails, "project_path"> & {
+		raw_project_path: string;
 		input_tokens_sum: number;
 		output_tokens_sum: number;
 	})[];
 	try {
 		results = await queryClickhouse<
-			ProjectDetails & {
+			Omit<ProjectDetails, "project_path"> & {
+				raw_project_path: string;
 				input_tokens_sum: number;
 				output_tokens_sum: number;
 			}
@@ -379,7 +381,7 @@ export async function getProjectDetails(
 	const cost =
 		row.output_tokens_sum * 0.000015 + row.input_tokens_sum * 0.000003;
 	return {
-		project_path: row.project_path,
+		project_path: row.raw_project_path,
 		total_sessions: row.total_sessions,
 		total_tokens: row.total_tokens,
 		contributors_count: row.contributors_count,
