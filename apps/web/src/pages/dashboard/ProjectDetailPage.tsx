@@ -13,11 +13,11 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { ChartLegend } from "@/components/charts/ChartLegend";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
+import { ChartLegend } from "@/components/charts/ChartLegend";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
