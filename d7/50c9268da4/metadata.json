@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "d750c9268da4",
+  "strategy": "manual-commit",
+  "branch": "last-fixes-launch",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/charts/TaskClassificationChart.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d7/50c9268da4/0/metadata.json",
+      "transcript": "/d7/50c9268da4/0/full.jsonl",
+      "context": "/d7/50c9268da4/0/context.md",
+      "content_hash": "/d7/50c9268da4/0/content_hash.txt",
+      "prompt": "/d7/50c9268da4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 48154,
+    "cache_read_tokens": 561688,
+    "output_tokens": 5898,
+    "api_call_count": 14
+  }
+}
