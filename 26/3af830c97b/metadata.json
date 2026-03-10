@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "263af830c97b",
+  "strategy": "manual-commit",
+  "branch": "fix/open-source-project-details",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/reupload-with-org.sh"
+  ],
+  "sessions": [
+    {
+      "metadata": "/26/3af830c97b/0/metadata.json",
+      "transcript": "/26/3af830c97b/0/full.jsonl",
+      "context": "/26/3af830c97b/0/context.md",
+      "content_hash": "/26/3af830c97b/0/content_hash.txt",
+      "prompt": "/26/3af830c97b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 15,
+    "cache_creation_tokens": 30305,
+    "cache_read_tokens": 170344,
+    "output_tokens": 2385,
+    "api_call_count": 7
+  }
+}
