@@ -94,7 +94,7 @@ export const SubagentFileSchema = z.object({
 export const IngestSessionInputSchema = z.object({
 	source: SourceSchema.default("claude_code"),
 	sessionId: z.string(),
-	projectPath: z.string(),
+	projectPath: z.string().transform((p) => p.replace(/\\/g, "/")),
 	gitRemote: z.string().optional(),
 	packageName: z.string().optional(),
 	packageType: z.string().optional(),
