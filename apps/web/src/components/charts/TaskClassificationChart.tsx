@@ -148,7 +148,7 @@ export function TaskClassificationChart({
 						}}
 						cursor="pointer"
 					>
-						{chartData.map((entry, index) => (
+						{visibleData.map((entry, index) => (
 							<Cell
 								// biome-ignore lint/suspicious/noArrayIndexKey: static pie chart segments
 								key={`cell-${index}`}
