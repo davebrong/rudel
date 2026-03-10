@@ -1,3 +1,4 @@
+import { getLogger } from "@logtape/logtape";
 import type {
 	ProjectContributor as ProjectContributorBase,
 	ProjectDetailData,
@@ -11,6 +12,8 @@ import {
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
+
+const logger = getLogger(["rudel", "api", "project-service"]);
 
 const PROJECT_KEY_EXPR = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
 const PROJECT_DISPLAY_EXPR = `if(git_remote != '', arrayElement(splitByChar('/', git_remote), -1), arrayElement(splitByChar('/', project_path), -1))`;
@@ -352,12 +355,24 @@ export async function getProjectDetails(
       AND (git_remote != '' OR package_name != '' OR project_path != '')
   `;
 
-	const results = await queryClickhouse<
-		ProjectDetails & {
-			input_tokens_sum: number;
-			output_tokens_sum: number;
-		}
-	>(query);
+	let results: (ProjectDetails & {
+		input_tokens_sum: number;
+		output_tokens_sum: number;
+	})[];
+	try {
+		results = await queryClickhouse<
+			ProjectDetails & {
+				input_tokens_sum: number;
+				output_tokens_sum: number;
+			}
+		>(query);
+	} catch (err) {
+		logger.error(
+			"getProjectDetails ClickHouse query failed for org={org} path={path}: {error}",
+			{ org: orgId, path: projectPath, error: String(err) },
+		);
+		throw err;
+	}
 
 	const [row] = results;
 	if (!row || row.total_sessions === 0) return null;

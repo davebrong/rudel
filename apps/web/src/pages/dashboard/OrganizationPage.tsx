@@ -44,6 +44,7 @@ export function OrganizationPage() {
 	const [inviteRole, setInviteRole] = useState("member");
 	const [inviting, setInviting] = useState(false);
 	const [inviteLink, setInviteLink] = useState<string | null>(null);
+	const [invitedEmail, setInvitedEmail] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [editing, setEditing] = useState(false);
@@ -100,13 +101,15 @@ export function OrganizationPage() {
 		e.preventDefault();
 		if (!inviteEmail.trim()) return;
 		setInviting(true);
+		const email = inviteEmail.trim();
 		const res = await authClient.organization.inviteMember({
-			email: inviteEmail.trim(),
+			email,
 			role: inviteRole as "member" | "admin",
 		});
 		if (res.data) {
 			const link = `${window.location.origin}/invitation/${res.data.id}`;
 			setInviteLink(link);
+			setInvitedEmail(email);
 			setInviteEmail("");
 			invalidate();
 		}
@@ -229,6 +232,11 @@ export function OrganizationPage() {
 						Invite Members
 					</h2>
 
+					{!canEdit && (
+						<p className="text-sm text-muted mb-3">
+							Only owners and admins can invite members.
+						</p>
+					)}
 					<form onSubmit={handleInvite} className="flex gap-2 mb-3">
 						<Input
 							type="email"
@@ -236,11 +244,19 @@ export function OrganizationPage() {
 							value={inviteEmail}
 							onChange={(e) => {
 								setInviteEmail(e.target.value);
-								if (inviteLink) setInviteLink(null);
+								if (inviteLink) {
+									setInviteLink(null);
+									setInvitedEmail(null);
+								}
 							}}
 							className="flex-1"
+							disabled={!canEdit}
 						/>
-						<Select value={inviteRole} onValueChange={setInviteRole}>
+						<Select
+							value={inviteRole}
+							onValueChange={setInviteRole}
+							disabled={!canEdit}
+						>
 							<SelectTrigger className="w-auto">
 								<SelectValue />
 							</SelectTrigger>
@@ -252,7 +268,7 @@ export function OrganizationPage() {
 						<Button
 							type="submit"
 							size="sm"
-							disabled={inviting || !inviteEmail.trim()}
+							disabled={!canEdit || inviting || !inviteEmail.trim()}
 						>
 							{inviting ? (
 								<Loader2 className="h-4 w-4 animate-spin" />
@@ -264,22 +280,35 @@ export function OrganizationPage() {
 					</form>
 
 					{inviteLink && (
-						<div className="flex items-center gap-2 rounded-lg border border-border bg-hover/50 px-3 py-2 text-sm">
-							<span className="flex-1 truncate text-muted">{inviteLink}</span>
-							<Button variant="outline" size="xs" onClick={handleCopyLink}>
-								{copied ? (
-									<Check className="h-3.5 w-3.5 text-status-success-icon" />
-								) : (
-									<Copy className="h-3.5 w-3.5" />
-								)}
-							</Button>
-							<Button
-								variant="outline"
-								size="xs"
-								onClick={() => setInviteLink(null)}
-							>
-								<X className="h-3.5 w-3.5" />
-							</Button>
+						<div className="rounded-lg border border-border bg-hover/50 px-3 py-2 text-sm">
+							{invitedEmail && (
+								<p className="text-xs text-muted mb-2">
+									Share this link with{" "}
+									<span className="font-medium text-foreground">
+										{invitedEmail}
+									</span>
+								</p>
+							)}
+							<div className="flex items-center gap-2">
+								<span className="flex-1 truncate text-muted">{inviteLink}</span>
+								<Button variant="outline" size="xs" onClick={handleCopyLink}>
+									{copied ? (
+										<Check className="h-3.5 w-3.5 text-status-success-icon" />
+									) : (
+										<Copy className="h-3.5 w-3.5" />
+									)}
+								</Button>
+								<Button
+									variant="outline"
+									size="xs"
+									onClick={() => {
+										setInviteLink(null);
+										setInvitedEmail(null);
+									}}
+								>
+									<X className="h-3.5 w-3.5" />
+								</Button>
+							</div>
 						</div>
 					)}
 				</AnalyticsCard>

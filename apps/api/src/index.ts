@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { getLogger, withContext } from "@logtape/logtape";
+import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { createAuth } from "./auth.js";
 import { db } from "./db.js";
@@ -40,7 +41,16 @@ const auth = createAuth(db, {
 	slackWebhookUrl: process.env.SLACK_WEBHOOK_URL,
 });
 
-const rpcHandler = new RPCHandler(router);
+const rpcHandler = new RPCHandler(router, {
+	interceptors: [
+		onError((error) => {
+			logger.error("RPC unhandled exception: {error} {stack}", {
+				error: String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+		}),
+	],
+});
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "http://localhost:4011";
 const STATIC_DIR = join(
