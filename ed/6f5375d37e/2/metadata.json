@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "ed6f5375d37e",
+  "session_id": "556ed7a5-85ab-4309-b3e0-a65650cda8ae",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-05T15:17:04.870648Z",
+  "branch": "fix/dashboard-issues",
+  "checkpoints_count": 8,
+  "files_touched": [
+    "apps/api/src/services/roi.service.ts",
+    "apps/api/src/services/session-analytics.service.ts",
+    "apps/web/src/components/analytics/Breadcrumb.tsx",
+    "apps/web/src/components/analytics/PageHeader.tsx",
+    "apps/web/src/components/analytics/Sidebar.tsx",
+    "apps/web/src/components/charts/DeveloperTrendChart.tsx",
+    "apps/web/src/components/charts/ErrorTrendChart.tsx",
+    "apps/web/src/components/charts/LearningsTrendChart.tsx",
+    "apps/web/src/components/charts/ProjectTrendChart.tsx",
+    "apps/web/src/lib/format.ts",
+    "apps/web/src/pages/dashboard/ProjectsListPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "804ebc86-0161-4081-a1ee-f0f555e55920",
+  "token_usage": {
+    "input_tokens": 112,
+    "cache_creation_tokens": 92392,
+    "cache_read_tokens": 4498857,
+    "output_tokens": 22645,
+    "api_call_count": 88
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-05T15:17:04.359494Z",
+    "agent_lines": 422,
+    "human_added": 89,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 511,
+    "agent_percentage": 82.58317025440313
+  },
+  "transcript_path": ".claude/projects/-Users-rafa-Obsession-rudel/556ed7a5-85ab-4309-b3e0-a65650cda8ae.jsonl"
+}
