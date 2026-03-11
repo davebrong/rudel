@@ -16,6 +16,7 @@ import {
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
+import { ChartTooltip } from "./ChartTooltip";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -81,7 +82,7 @@ export function DeveloperTrendChart({
 	data,
 	userMap,
 }: DeveloperTrendChartProps) {
-	const { tooltipBg, tooltipBorder, gridStroke, axisStroke } = useChartTheme();
+	const { gridStroke, axisStroke } = useChartTheme();
 	const [selectedMetric, setSelectedMetric] = useState<MetricType>("sessions");
 	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 	const toggleSeries = (key: string) =>
@@ -107,6 +108,15 @@ export function DeveloperTrendChart({
 			hasOther: sorted.length > MAX_SERIES,
 		};
 	}, [data]);
+
+	const colorMap = useMemo(() => {
+		const map = new Map<string, string>();
+		for (let i = 0; i < topDevelopers.length; i++) {
+			map.set(topDevelopers[i], DEVELOPER_COLORS[i % DEVELOPER_COLORS.length]);
+		}
+		map.set("Other", OTHER_COLOR);
+		return map;
+	}, [topDevelopers]);
 
 	const { chartData, seriesList } = useMemo(() => {
 		const existingDates = Array.from(new Set(data.map((d) => d.date))).sort();
@@ -168,6 +178,22 @@ export function DeveloperTrendChart({
 		selectedMetric,
 		currentMetric,
 	]);
+
+	const sortedLegendPayload = useMemo(() => {
+		const totals = new Map<string, number>();
+		for (const row of chartData) {
+			for (const key of seriesList) {
+				totals.set(key, (totals.get(key) ?? 0) + ((row[key] as number) ?? 0));
+			}
+		}
+		return [...seriesList]
+			.sort((a, b) => (totals.get(b) ?? 0) - (totals.get(a) ?? 0))
+			.map((key) => ({
+				value: key,
+				color: colorMap.get(key) ?? OTHER_COLOR,
+				type: "square" as const,
+			}));
+	}, [chartData, seriesList, colorMap]);
 
 	const formatUsername = (userId: string) => {
 		if (userId === "Other") return "Other";
@@ -232,42 +258,35 @@ export function DeveloperTrendChart({
 							domain={[0, 100]}
 						/>
 						<Tooltip
-							contentStyle={{
-								backgroundColor: tooltipBg,
-								border: `1px solid ${tooltipBorder}`,
-								borderRadius: "8px",
-								padding: "12px",
-							}}
-							formatter={(value, name) => {
-								if (!name || name === "date" || name === "displayDate")
-									return null;
-								return [
-									currentMetric.formatter((value as number) ?? 0),
-									formatUsername(String(name)),
-								];
-							}}
-							labelFormatter={(label) => label}
+							content={(props) => (
+								<ChartTooltip
+									{...props}
+									nameFormatter={formatUsername}
+									valueFormatter={(v) => currentMetric.formatter(v)}
+									showTotal={false}
+								/>
+							)}
 						/>
 						<Legend
 							layout="vertical"
 							align="right"
 							verticalAlign="top"
 							width={160}
-							content={({ payload }) => (
+							content={() => (
 								<ChartLegend
-									payload={payload}
+									payload={sortedLegendPayload}
 									formatter={formatUsername}
 									hiddenSeries={hiddenSeries}
 									onToggle={toggleSeries}
 								/>
 							)}
 						/>
-						{topDevelopers.map((userId, index) => (
+						{topDevelopers.map((userId) => (
 							<Line
 								key={userId}
 								type="monotone"
 								dataKey={userId}
-								stroke={DEVELOPER_COLORS[index % DEVELOPER_COLORS.length]}
+								stroke={colorMap.get(userId) ?? OTHER_COLOR}
 								strokeWidth={2}
 								dot={{ r: 3 }}
 								activeDot={{ r: 5 }}
@@ -297,47 +316,36 @@ export function DeveloperTrendChart({
 							tickFormatter={currentMetric.formatter}
 						/>
 						<Tooltip
-							contentStyle={{
-								backgroundColor: tooltipBg,
-								border: `1px solid ${tooltipBorder}`,
-								borderRadius: "8px",
-								padding: "12px",
-							}}
-							formatter={(value, name) => {
-								if (!name || name === "date" || name === "displayDate")
-									return null;
-								return [
-									currentMetric.formatter((value as number) ?? 0),
-									formatUsername(String(name)),
-								];
-							}}
-							labelFormatter={(label) => label}
+							content={(props) => (
+								<ChartTooltip
+									{...props}
+									nameFormatter={formatUsername}
+									valueFormatter={(v) => currentMetric.formatter(v)}
+									showTotal
+								/>
+							)}
 						/>
 						<Legend
 							layout="vertical"
 							align="right"
 							verticalAlign="top"
 							width={160}
-							content={({ payload }) => (
+							content={() => (
 								<ChartLegend
-									payload={payload}
+									payload={sortedLegendPayload}
 									formatter={formatUsername}
 									hiddenSeries={hiddenSeries}
 									onToggle={toggleSeries}
 								/>
 							)}
 						/>
-						{seriesList.map((userId, index) => (
+						{seriesList.map((userId) => (
 							<Bar
 								key={userId}
 								dataKey={userId}
 								stackId="1"
 								hide={hiddenSeries.has(userId)}
-								fill={
-									userId === "Other"
-										? OTHER_COLOR
-										: DEVELOPER_COLORS[index % DEVELOPER_COLORS.length]
-								}
+								fill={colorMap.get(userId) ?? OTHER_COLOR}
 							/>
 						))}
 					</BarChart>

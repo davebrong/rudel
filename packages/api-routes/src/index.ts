@@ -99,17 +99,20 @@ export const SubagentFileSchema = z.object({
 
 export const IngestSessionInputSchema = z.object({
 	source: SourceSchema.default("claude_code"),
-	sessionId: z.string(),
-	projectPath: z.string(),
-	gitRemote: z.string().optional(),
-	packageName: z.string().optional(),
-	packageType: z.string().optional(),
-	gitBranch: z.string().optional(),
-	gitSha: z.string().optional(),
+	sessionId: z.string().max(200),
+	projectPath: z
+		.string()
+		.max(200)
+		.transform((p) => p.replace(/\\/g, "/")),
+	gitRemote: z.string().max(200).optional(),
+	packageName: z.string().max(200).optional(),
+	packageType: z.string().max(200).optional(),
+	gitBranch: z.string().max(200).optional(),
+	gitSha: z.string().max(200).optional(),
 	tag: SessionTagSchema.optional(),
 	content: z.string(),
 	subagents: z.array(SubagentFileSchema).optional(),
-	organizationId: z.string().optional(),
+	organizationId: z.string().max(200).optional(),
 });
 
 export const IngestSessionOutputSchema = z.object({

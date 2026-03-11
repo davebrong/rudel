@@ -13,6 +13,7 @@ import {
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { formatUsername } from "@/lib/format";
 import { ChartLegend } from "./ChartLegend";
+import { ChartTooltip } from "./ChartTooltip";
 
 function formatCompactNumber(value: number): string {
 	if (value >= 1000000)
@@ -127,6 +128,19 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 				}
 			}
 			const rawSplitKeys = Array.from(allSplitValues);
+			// Sort split keys by total raw value descending
+			const splitKeyTotals = new Map<string, number>();
+			for (const item of data) {
+				for (const key of rawSplitKeys) {
+					splitKeyTotals.set(
+						key,
+						(splitKeyTotals.get(key) ?? 0) + (item.split_values?.[key] || 0),
+					);
+				}
+			}
+			rawSplitKeys.sort(
+				(a, b) => (splitKeyTotals.get(b) ?? 0) - (splitKeyTotals.get(a) ?? 0),
+			);
 			// Map raw split keys to display names (e.g. user IDs → names)
 			const splitKeyDisplayMap: Record<string, string> = {};
 			for (const key of rawSplitKeys) {
@@ -193,57 +207,52 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 		);
 	}
 
-	const CustomTooltip = ({
-		active,
-		payload,
-		label,
-	}: Record<string, unknown>) => {
-		if (active && payload && Array.isArray(payload) && payload.length) {
-			const payloadData = (payload[0] as Record<string, unknown>)?.payload as
-				| Record<string, unknown>
-				| undefined;
-			const fullName = payloadData?._fullName || label;
-			const originalValues = payloadData?._originalValues as
-				| Record<string, number>
-				| undefined;
+	const renderTooltip = (props: Record<string, unknown>) => {
+		const { active, payload, label } = props;
+		if (!active || !Array.isArray(payload) || payload.length === 0) return null;
 
-			return (
-				<div className="bg-input p-3 border border-border rounded shadow-lg">
-					<p className="font-semibold mb-2 text-foreground">
-						{fullName as string}
-					</p>
-					{(payload as Record<string, unknown>[]).map(
-						(entry, index: number) => {
-							const displayValue =
-								originalValues &&
-								originalValues[entry.name as string] !== undefined
-									? formatNumberWithCommas(originalValues[entry.name as string])
-									: typeof entry.value === "number"
-										? formatNumberWithCommas(entry.value)
-										: entry.value;
+		const payloadData = (payload[0] as Record<string, unknown>)?.payload as
+			| Record<string, unknown>
+			| undefined;
+		const fullName = (payloadData?._fullName || label) as string | undefined;
+		const originalValues = payloadData?._originalValues as
+			| Record<string, number>
+			| undefined;
 
-							return (
-								<p
-									// biome-ignore lint/suspicious/noArrayIndexKey: tooltip payload items
-									key={index}
-									style={{ color: entry.color as string }}
-								>
-									{entry.name as string}: {displayValue as string}
-									{showPercentage &&
-										originalValues &&
-										originalValues[entry.name as string] !== undefined && (
-											<span className="text-muted ml-1">
-												({(entry.value as number).toFixed(1)}%)
-											</span>
-										)}
-								</p>
-							);
-						},
-					)}
-				</div>
-			);
-		}
-		return null;
+		// Build normalized items for ChartTooltip using raw values
+		const normalizedPayload = payload
+			.filter((entry: Record<string, unknown>) => {
+				const rawVal =
+					originalValues?.[entry.name as string] ?? (entry.value as number);
+				return rawVal !== 0;
+			})
+			.map((entry: Record<string, unknown>) => ({
+				name: entry.name as string,
+				value:
+					originalValues?.[entry.name as string] ?? (entry.value as number),
+				color: (entry.color ?? entry.fill) as string,
+			}));
+
+		const valueFormatter =
+			showPercentage && originalValues
+				? (v: number, name: string) => {
+						const pct = payload.find(
+							(e: Record<string, unknown>) => e.name === name,
+						);
+						const pctVal = pct ? (pct.value as number) : 0;
+						return `${formatNumberWithCommas(v)} (${pctVal.toFixed(1)}%)`;
+					}
+				: (v: number) => formatNumberWithCommas(v);
+
+		return (
+			<ChartTooltip
+				active={true}
+				payload={normalizedPayload}
+				label={fullName}
+				valueFormatter={valueFormatter}
+				showTotal={!showPercentage}
+			/>
+		);
 	};
 
 	return (
@@ -283,7 +292,9 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 						tick={{ fill: axisStroke, fontSize: 12 }}
 						interval={0}
 					/>
-					<Tooltip content={<CustomTooltip />} />
+					<Tooltip
+						content={(props) => renderTooltip(props as Record<string, unknown>)}
+					/>
 					{split_by && (
 						<Legend
 							layout="vertical"

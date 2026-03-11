@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
+import { ChartTooltip } from "./ChartTooltip";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -79,7 +80,7 @@ export function ErrorTrendChart({
 	onSplitByChange,
 	userMap,
 }: ErrorTrendChartProps) {
-	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
+	const { gridStroke } = useChartTheme();
 	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 	const toggleSeries = (key: string) =>
 		setHiddenSeries((prev) => {
@@ -87,6 +88,30 @@ export function ErrorTrendChart({
 			next.has(key) ? next.delete(key) : next.add(key);
 			return next;
 		});
+
+	const stableColorOrder = useMemo(() => {
+		if (data.length === 0) return [];
+		const totals = new Map<string, number>();
+		for (const item of data) {
+			totals.set(
+				item.dimension,
+				(totals.get(item.dimension) ?? 0) + item.total_errors,
+			);
+		}
+		return [...totals.entries()]
+			.sort((a, b) => b[1] - a[1])
+			.slice(0, MAX_SERIES)
+			.map(([k]) => k);
+	}, [data]);
+
+	const colorMap = useMemo(() => {
+		const map = new Map<string, string>();
+		for (let i = 0; i < stableColorOrder.length; i++) {
+			map.set(stableColorOrder[i], COLORS[i % COLORS.length]);
+		}
+		map.set("Other", OTHER_COLOR);
+		return map;
+	}, [stableColorOrder]);
 
 	const { seriesKeys, chartData } = useMemo(() => {
 		if (data.length === 0) return { seriesKeys: [], chartData: [] };
@@ -152,6 +177,14 @@ export function ErrorTrendChart({
 			),
 		};
 	}, [data, metric]);
+
+	const sortedLegendPayload = useMemo(() => {
+		return seriesKeys.map((key) => ({
+			value: key,
+			color: colorMap.get(key) ?? COLORS[0],
+			type: "square" as const,
+		}));
+	}, [seriesKeys, colorMap]);
 
 	const getDisplayName = (key: string): string => {
 		if (key === "Other") return "Other";
@@ -234,42 +267,36 @@ export function ErrorTrendChart({
 						/>
 						<YAxis tick={{ fontSize: 12 }} />
 						<Tooltip
-							contentStyle={{
-								backgroundColor: tooltipBg,
-								border: `1px solid ${tooltipBorder}`,
-								borderRadius: "8px",
-								padding: "12px",
-							}}
-							formatter={(value, name) => {
-								const displayName = name ? getDisplayName(String(name)) : "";
-								return [((value as number) ?? 0).toLocaleString(), displayName];
-							}}
-							labelFormatter={(label) => `Date: ${label}`}
+							content={(props) => (
+								<ChartTooltip
+									{...props}
+									nameFormatter={getDisplayName}
+									valueFormatter={(v) => v.toLocaleString()}
+								/>
+							)}
 						/>
 						<Legend
 							layout="vertical"
 							align="right"
 							verticalAlign="top"
 							width={160}
-							content={({ payload }) => (
+							content={() => (
 								<ChartLegend
-									payload={payload}
+									payload={sortedLegendPayload}
 									formatter={getDisplayName}
 									hiddenSeries={hiddenSeries}
 									onToggle={toggleSeries}
 								/>
 							)}
 						/>
-						{seriesKeys.map((key, index) => (
+						{seriesKeys.map((key) => (
 							<Bar
 								key={key}
 								dataKey={key}
 								name={key}
 								stackId="1"
 								hide={hiddenSeries.has(key)}
-								fill={
-									key === "Other" ? OTHER_COLOR : COLORS[index % COLORS.length]
-								}
+								fill={colorMap.get(key) ?? COLORS[0]}
 							/>
 						))}
 					</BarChart>
@@ -289,39 +316,36 @@ export function ErrorTrendChart({
 						/>
 						<YAxis tick={{ fontSize: 12 }} />
 						<Tooltip
-							contentStyle={{
-								backgroundColor: tooltipBg,
-								border: `1px solid ${tooltipBorder}`,
-								borderRadius: "8px",
-								padding: "12px",
-							}}
-							formatter={(value, name) => {
-								const displayName = name ? getDisplayName(String(name)) : "";
-								return [((value as number) ?? 0).toFixed(2), displayName];
-							}}
-							labelFormatter={(label) => `Date: ${label}`}
+							content={(props) => (
+								<ChartTooltip
+									{...props}
+									nameFormatter={getDisplayName}
+									valueFormatter={(v) => v.toFixed(2)}
+									showTotal={false}
+								/>
+							)}
 						/>
 						<Legend
 							layout="vertical"
 							align="right"
 							verticalAlign="top"
 							width={160}
-							content={({ payload }) => (
+							content={() => (
 								<ChartLegend
-									payload={payload}
+									payload={sortedLegendPayload}
 									formatter={getDisplayName}
 									hiddenSeries={hiddenSeries}
 									onToggle={toggleSeries}
 								/>
 							)}
 						/>
-						{seriesKeys.map((key, index) => (
+						{seriesKeys.map((key) => (
 							<Line
 								key={key}
 								type="monotone"
 								dataKey={key}
 								name={key}
-								stroke={COLORS[index % COLORS.length]}
+								stroke={colorMap.get(key) ?? COLORS[0]}
 								strokeWidth={2}
 								dot={{ r: 4 }}
 								activeDot={{ r: 6 }}

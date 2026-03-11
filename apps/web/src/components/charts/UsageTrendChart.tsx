@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
+import { ChartTooltip } from "./ChartTooltip";
 
 interface UsageTrendChartProps {
 	data: UsageTrendData[];
@@ -59,7 +60,7 @@ export function UsageTrendChart({
 	data,
 	showRollingAverage: _showRollingAverage = false,
 }: UsageTrendChartProps) {
-	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
+	const { gridStroke } = useChartTheme();
 	const [selectedPair, setSelectedPair] =
 		useState<MetricPair>("sessions-tokens");
 	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
@@ -79,6 +80,12 @@ export function UsageTrendChart({
 			day: "numeric",
 		}),
 	}));
+
+	const formatValue = (v: number, name: string): string => {
+		if (name === "Hours Spent") return `${v.toFixed(1)}h`;
+		if (name === "Total Tokens") return formatCompactNumber(v);
+		return v.toLocaleString();
+	};
 
 	return (
 		<div className="space-y-4">
@@ -155,19 +162,13 @@ export function UsageTrendChart({
 						tickFormatter={formatCompactNumber}
 					/>
 					<Tooltip
-						contentStyle={{
-							backgroundColor: tooltipBg,
-							border: `1px solid ${tooltipBorder}`,
-							borderRadius: "8px",
-							padding: "12px",
-						}}
-						formatter={(value, name) => {
-							const v = (value as number) ?? 0;
-							if (name === "Hours Spent") return [`${v.toFixed(1)}`, "Hours"];
-							if (name === "Total Tokens")
-								return [`${formatCompactNumber(v)}`, "Tokens"];
-							return [v.toLocaleString(), name || ""];
-						}}
+						content={(props) => (
+							<ChartTooltip
+								{...props}
+								valueFormatter={formatValue}
+								showTotal={false}
+							/>
+						)}
 					/>
 					<Legend
 						layout="vertical"

@@ -242,6 +242,7 @@ export const ProjectErrorSchema = z.object({
 export const ProjectTrendDataPointSchema = z.object({
 	date: z.string(),
 	project_path: z.string(),
+	project_name: z.string(),
 	sessions: z.number(),
 	total_hours: z.number(),
 	total_tokens: z.number(),

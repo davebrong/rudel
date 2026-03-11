@@ -6,6 +6,7 @@ import { getClickhouse } from "./clickhouse.js";
 import { db } from "./db.js";
 import { analyticsRouter } from "./handlers/analytics/index.js";
 import { authMiddleware, ingestAuthMiddleware, os } from "./middleware.js";
+import { checkIngestRateLimit } from "./rate-limit.js";
 import {
 	deleteOrgSessions,
 	getOrgSessionCount,
@@ -74,8 +75,9 @@ const ingestSessionHandler = os.ingestSession
 						.activeOrganizationId as string)
 				: null;
 
-		const orgId =
-			input.organizationId ?? activeOrgId ?? context.user.id;
+		await checkIngestRateLimit(context.user.id);
+
+		const orgId = input.organizationId ?? activeOrgId ?? context.user.id;
 
 		// Verify membership for any org that isn't the user's personal workspace
 		if (orgId !== context.user.id) {

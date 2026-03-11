@@ -19,6 +19,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
+import { ChartTooltip } from "./ChartTooltip";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -53,7 +54,7 @@ export function LearningsTrendChart({
 	onSplitByChange,
 	userMap,
 }: LearningsTrendChartProps) {
-	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
+	const { gridStroke } = useChartTheme();
 	const [isCumulative, setIsCumulative] = useState(true);
 	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 	const toggleSeries = (key: string) =>
@@ -223,17 +224,13 @@ export function LearningsTrendChart({
 					/>
 					<YAxis tick={{ fontSize: 12 }} />
 					<Tooltip
-						contentStyle={{
-							backgroundColor: tooltipBg,
-							border: `1px solid ${tooltipBorder}`,
-							borderRadius: "8px",
-							padding: "12px",
-						}}
-						formatter={(value, name) => {
-							const displayName = name ? getDisplayName(String(name)) : "";
-							return [((value as number) ?? 0).toLocaleString(), displayName];
-						}}
-						labelFormatter={(label) => `Date: ${label}`}
+						content={(props) => (
+							<ChartTooltip
+								{...props}
+								nameFormatter={getDisplayName}
+								valueFormatter={(v) => v.toLocaleString()}
+							/>
+						)}
 					/>
 					<Legend
 						layout="vertical"
