@@ -59,9 +59,9 @@ export function LearningsTimeline({
 	// Timeline with learnings
 	return (
 		<div className="space-y-0">
-			{learnings.map((learning, index) => (
+			{learnings.map((learning) => (
 				<TimelineItem
-					key={`${learning.session_id}-${learning.created_at}-${index}`}
+					key={`${learning.session_id}-${learning.created_at}`}
 					learning={learning}
 					userMap={userMap}
 				/>
