@@ -7,6 +7,7 @@ interface TaskClassification {
 	avg_confidence: number;
 }
 
+import { useState } from "react";
 import {
 	Cell,
 	Legend,
@@ -15,6 +16,7 @@ import {
 	ResponsiveContainer,
 	Tooltip,
 } from "recharts";
+import { ChartLegend } from "./ChartLegend";
 
 interface TaskClassificationChartProps {
 	data: TaskClassification[];
@@ -45,6 +47,14 @@ export function TaskClassificationChart({
 	data,
 	onTaskTypeClick,
 }: TaskClassificationChartProps) {
+	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+	const toggleSeries = (key: string) =>
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			next.has(key) ? next.delete(key) : next.add(key);
+			return next;
+		});
+
 	const chartData = data.map((item) => ({
 		name: LABELS[item.task_type] || item.task_type,
 		value: item.count,
@@ -116,12 +126,14 @@ export function TaskClassificationChart({
 		return null;
 	};
 
+	const visibleData = chartData.filter((d) => !hiddenSeries.has(d.name));
+
 	return (
 		<div className="w-full h-[400px]">
 			<ResponsiveContainer width="100%" height="100%">
 				<PieChart>
 					<Pie
-						data={chartData}
+						data={visibleData}
 						cx="50%"
 						cy="50%"
 						labelLine={false}
@@ -136,7 +148,7 @@ export function TaskClassificationChart({
 						}}
 						cursor="pointer"
 					>
-						{chartData.map((entry, index) => (
+						{visibleData.map((entry, index) => (
 							<Cell
 								// biome-ignore lint/suspicious/noArrayIndexKey: static pie chart segments
 								key={`cell-${index}`}
@@ -147,12 +159,21 @@ export function TaskClassificationChart({
 					</Pie>
 					<Tooltip content={<CustomTooltip />} />
 					<Legend
-						verticalAlign="bottom"
-						height={36}
-						formatter={(value) => {
-							const match = chartData.find((item) => item.name === value);
-							return `${value} (${match?.value || 0})`;
-						}}
+						layout="vertical"
+						align="right"
+						verticalAlign="top"
+						width={160}
+						content={({ payload }) => (
+							<ChartLegend
+								payload={payload}
+								formatter={(value) => {
+									const match = chartData.find((item) => item.name === value);
+									return `${value} (${match?.value || 0})`;
+								}}
+								hiddenSeries={hiddenSeries}
+								onToggle={toggleSeries}
+							/>
+						)}
 					/>
 				</PieChart>
 			</ResponsiveContainer>

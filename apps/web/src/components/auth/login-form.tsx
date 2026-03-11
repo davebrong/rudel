@@ -129,6 +129,15 @@ export function LoginForm({
 						className="underline underline-offset-4 hover:text-primary"
 					>
 						Terms of Service
+					</a>{" "}
+					and{" "}
+					<a
+						href="https://obsessiondb.com/privacy"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="underline underline-offset-4 hover:text-primary"
+					>
+						Privacy Policy
 					</a>
 				</p>
 

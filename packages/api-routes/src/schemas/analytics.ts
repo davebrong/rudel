@@ -464,7 +464,7 @@ export const ErrorTrendDataPointSchema = z.object({
 });
 
 export const ErrorTrendsInputSchema = DateRangeInputSchema.extend({
-	splitBy: z.enum(["repository", "user_id", "model"]).default("repository"),
+	splitBy: z.enum(["project_path", "user_id", "model"]).default("project_path"),
 });
 
 export const RecurringErrorsInputSchema = DaysInputSchema.extend({

@@ -31,22 +31,53 @@ export async function getOverviewKPIs(
 	const org = escapeString(orgId);
 	const dateFilter = buildAbsoluteDateFilter(startDate, endDate);
 
-	const query = `
-    SELECT
-      uniq(user_id) as distinct_users,
-      count() as distinct_sessions,
-      uniq(if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))) as distinct_projects,
-      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN subagent_types as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_subagents,
-      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN skills as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_skills,
-      (SELECT uniqExact(val) FROM rudel.session_analytics ARRAY JOIN slash_commands as val WHERE ${buildAbsoluteDateFilter(startDate, endDate)} AND organization_id = '${org}' AND val != '') as distinct_slash_commands,
-      (SELECT count() FROM rudel.session_analytics WHERE organization_id = '${org}') as total_sessions
-    FROM rudel.session_analytics
-    WHERE ${dateFilter}
-      AND organization_id = '${org}'
-  `;
+	const [mainResult, subagentsResult, skillsResult, slashResult, totalResult] =
+		await Promise.all([
+			queryClickhouse<{
+				distinct_users: number;
+				distinct_sessions: number;
+				distinct_projects: number;
+			}>(`
+        SELECT
+          uniq(user_id) as distinct_users,
+          count() as distinct_sessions,
+          uniq(if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))) as distinct_projects
+        FROM rudel.session_analytics
+        WHERE ${dateFilter}
+          AND organization_id = '${org}'
+      `),
+			queryClickhouse<{ count: number }>(`
+        SELECT uniqExact(val) as count
+        FROM rudel.session_analytics
+        ARRAY JOIN subagent_types as val
+        WHERE ${dateFilter}
+          AND organization_id = '${org}'
+          AND val != ''
+      `),
+			queryClickhouse<{ count: number }>(`
+        SELECT uniqExact(val) as count
+        FROM rudel.session_analytics
+        ARRAY JOIN skills as val
+        WHERE ${dateFilter}
+          AND organization_id = '${org}'
+          AND val != ''
+      `),
+			queryClickhouse<{ count: number }>(`
+        SELECT uniqExact(val) as count
+        FROM rudel.session_analytics
+        ARRAY JOIN slash_commands as val
+        WHERE ${dateFilter}
+          AND organization_id = '${org}'
+          AND val != ''
+      `),
+			queryClickhouse<{ count: number }>(`
+        SELECT count() as count
+        FROM rudel.session_analytics
+        WHERE organization_id = '${org}'
+      `),
+		]);
 
-	const result = await queryClickhouse<OverviewKPIs>(query);
-	const row = result[0];
+	const row = mainResult[0];
 	if (!row) {
 		return {
 			distinct_users: 0,
@@ -63,10 +94,10 @@ export async function getOverviewKPIs(
 		distinct_users: Number(row.distinct_users),
 		distinct_sessions: Number(row.distinct_sessions),
 		distinct_projects: Number(row.distinct_projects),
-		distinct_subagents: Number(row.distinct_subagents),
-		distinct_skills: Number(row.distinct_skills),
-		distinct_slash_commands: Number(row.distinct_slash_commands),
-		total_sessions: Number(row.total_sessions),
+		distinct_subagents: Number(subagentsResult[0]?.count ?? 0),
+		distinct_skills: Number(skillsResult[0]?.count ?? 0),
+		distinct_slash_commands: Number(slashResult[0]?.count ?? 0),
+		total_sessions: Number(totalResult[0]?.count ?? 0),
 	};
 }
 
@@ -144,36 +175,65 @@ export async function getOverviewInsights(
 	const prevStartStr = prevStart.toISOString().slice(0, 10);
 	const prevEndStr = prevEnd.toISOString().slice(0, 10);
 
-	const currentPeriodQuery = `
-    SELECT
-      count() as total_sessions,
-      uniq(user_id) as total_users,
-      round(avg(actual_duration_min), 2) as avg_duration_min
-    FROM rudel.session_analytics
-    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
-      AND organization_id = '${org}'
-  `;
-
-	const previousPeriodQuery = `
-    SELECT
-      count() as total_sessions,
-      uniq(user_id) as total_users,
-      round(avg(actual_duration_min), 2) as avg_duration_min
-    FROM rudel.session_analytics
-    WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
-      AND organization_id = '${org}'
-  `;
-
 	interface PeriodStats {
 		total_sessions: number;
 		total_users: number;
 		avg_duration_min: number;
 	}
 
-	const [currentData, previousData] = await Promise.all([
-		queryClickhouse<PeriodStats>(currentPeriodQuery),
-		queryClickhouse<PeriodStats>(previousPeriodQuery),
-	]);
+	const [currentData, previousData, topPerformerData, silos] =
+		await Promise.all([
+			queryClickhouse<PeriodStats>(`
+      SELECT
+        count() as total_sessions,
+        uniq(user_id) as total_users,
+        round(avg(actual_duration_min), 2) as avg_duration_min
+      FROM rudel.session_analytics
+      WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
+        AND organization_id = '${org}'
+    `),
+			queryClickhouse<PeriodStats>(`
+      SELECT
+        count() as total_sessions,
+        uniq(user_id) as total_users,
+        round(avg(actual_duration_min), 2) as avg_duration_min
+      FROM rudel.session_analytics
+      WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
+        AND organization_id = '${org}'
+    `),
+			queryClickhouse<{
+				user_id: string;
+				sessions: number;
+				total_hours: number;
+			}>(`
+      SELECT
+        user_id,
+        count() as sessions,
+        round(sum(actual_duration_min) / 60, 1) as total_hours
+      FROM rudel.session_analytics
+      WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
+        AND organization_id = '${org}'
+      GROUP BY user_id
+      ORDER BY sessions DESC
+      LIMIT 1
+    `),
+			queryClickhouse<{
+				project_path: string;
+				unique_users: number;
+				sessions: number;
+			}>(`
+      SELECT
+        project_path,
+        uniq(user_id) as unique_users,
+        count() as sessions
+      FROM rudel.session_analytics
+      WHERE ${buildDateFilter(30)}
+        AND organization_id = '${org}'
+      GROUP BY project_path
+      HAVING unique_users = 1 AND sessions >= 5
+      ORDER BY sessions DESC
+    `),
+		]);
 
 	const current = currentData[0];
 	const previous = previousData[0] || { total_sessions: 0 };
@@ -200,26 +260,8 @@ export async function getOverviewInsights(
 	}
 
 	// Insight 2: Top performer identification
-	const topPerformerQuery = `
-    SELECT
-      user_id,
-      count() as sessions,
-      round(sum(actual_duration_min) / 60, 1) as total_hours
-    FROM rudel.session_analytics
-    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
-      AND organization_id = '${org}'
-    GROUP BY user_id
-    ORDER BY sessions DESC
-    LIMIT 1
-  `;
-
-	const topPerformer = await queryClickhouse<{
-		user_id: string;
-		sessions: number;
-		total_hours: number;
-	}>(topPerformerQuery);
-	if (topPerformer.length > 0 && topPerformer[0]) {
-		const performer = topPerformer[0];
+	if (topPerformerData.length > 0 && topPerformerData[0]) {
+		const performer = topPerformerData[0];
 		const [userData] = await db
 			.select({ name: user.name })
 			.from(user)
@@ -237,24 +279,6 @@ export async function getOverviewInsights(
 	}
 
 	// Insight 3: Knowledge silos detection (uses a wider 30-day window)
-	const knowledgeSilosQuery = `
-    SELECT
-      project_path,
-      uniq(user_id) as unique_users,
-      count() as sessions
-    FROM rudel.session_analytics
-    WHERE ${buildDateFilter(30)}
-      AND organization_id = '${org}'
-    GROUP BY project_path
-    HAVING unique_users = 1 AND sessions >= 5
-    ORDER BY sessions DESC
-  `;
-
-	const silos = await queryClickhouse<{
-		project_path: string;
-		unique_users: number;
-		sessions: number;
-	}>(knowledgeSilosQuery);
 	if (silos.length > 0) {
 		insights.push({
 			type: "alert",

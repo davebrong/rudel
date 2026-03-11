@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { ChartLegend } from "./ChartLegend";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -54,6 +55,13 @@ export function LearningsTrendChart({
 }: LearningsTrendChartProps) {
 	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
 	const [isCumulative, setIsCumulative] = useState(true);
+	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+	const toggleSeries = (key: string) =>
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			next.has(key) ? next.delete(key) : next.add(key);
+			return next;
+		});
 
 	// All series keys from the data
 	const allSeriesKeys = useMemo(() => {
@@ -202,7 +210,7 @@ export function LearningsTrendChart({
 			<ResponsiveContainer width="100%" height={400}>
 				<BarChart
 					data={chartData}
-					margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+					margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
 				>
 					<CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 					<XAxis
@@ -228,8 +236,18 @@ export function LearningsTrendChart({
 						labelFormatter={(label) => `Date: ${label}`}
 					/>
 					<Legend
-						formatter={(value) => getDisplayName(value)}
-						wrapperStyle={{ fontSize: "12px" }}
+						layout="vertical"
+						align="right"
+						verticalAlign="top"
+						width={160}
+						content={({ payload }) => (
+							<ChartLegend
+								payload={payload}
+								formatter={getDisplayName}
+								hiddenSeries={hiddenSeries}
+								onToggle={toggleSeries}
+							/>
+						)}
 					/>
 					{displayKeys.map((key, index) => (
 						<Bar
@@ -237,6 +255,7 @@ export function LearningsTrendChart({
 							dataKey={key}
 							name={key}
 							stackId="1"
+							hide={hiddenSeries.has(key)}
 							fill={
 								key === "Other" ? OTHER_COLOR : COLORS[index % COLORS.length]
 							}

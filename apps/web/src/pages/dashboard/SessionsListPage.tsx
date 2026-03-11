@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
 import { DimensionAnalysisChart } from "@/components/charts/DimensionAnalysisChart";
 import { DataTable } from "@/components/ui/data-table";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import {
 	Select,
 	SelectContent,
@@ -159,7 +160,12 @@ export function SessionsListPage() {
 			},
 			{
 				accessorKey: "success_score",
-				header: "Success Score",
+				header: () => (
+					<span className="flex items-center">
+						Success Score
+						<InfoTooltip text="Session quality score (0–100): earns points for a git commit (+20), high output ratio (+15), and skills used (+5 each, max 3); loses points for errors (−2 each) and abandoned sessions." />
+					</span>
+				),
 				cell: ({ row }) => {
 					const score = row.original.success_score;
 					const color =

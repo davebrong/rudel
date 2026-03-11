@@ -1,6 +1,6 @@
 -- chkit-migration-format: v1
--- generated-at: 2026-03-03T18:39:09.935Z
--- cli-version: 0.1.0-beta.15
+-- generated-at: 2026-03-11T08:46:57.490Z
+-- cli-version: 0.1.0-beta.16
 -- definition-count: 5
 -- operation-count: 6
 -- rename-suggestion-count: 0
@@ -32,7 +32,7 @@ PARTITION BY toYYYYMM(toDate(session_date))
 PRIMARY KEY ()
 ORDER BY (`organization_id`, `session_date`, `session_id`)
 TTL toDate(session_date) + toIntervalDay(365)
-SETTINGS index_granularity = 8192, storage_policy = 's3';
+SETTINGS index_granularity = 8192;
 
 -- operation: create_table key=table:rudel.codex_sessions risk=safe
 CREATE TABLE IF NOT EXISTS rudel.codex_sessions
@@ -56,7 +56,7 @@ PARTITION BY toYYYYMM(toDate(session_date))
 PRIMARY KEY ()
 ORDER BY (`organization_id`, `session_date`, `session_id`)
 TTL toDate(session_date) + toIntervalDay(365)
-SETTINGS index_granularity = 8192, storage_policy = 's3';
+SETTINGS index_granularity = 8192;
 
 -- operation: create_table key=table:rudel.session_analytics risk=safe
 CREATE TABLE IF NOT EXISTS rudel.session_analytics

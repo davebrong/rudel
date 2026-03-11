@@ -11,6 +11,7 @@ import {
 	YAxis,
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
+import { ChartLegend } from "./ChartLegend";
 
 interface UsageTrendChartProps {
 	data: UsageTrendData[];
@@ -61,6 +62,13 @@ export function UsageTrendChart({
 	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
 	const [selectedPair, setSelectedPair] =
 		useState<MetricPair>("sessions-tokens");
+	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+	const toggleSeries = (key: string) =>
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			next.has(key) ? next.delete(key) : next.add(key);
+			return next;
+		});
 
 	const currentPair = METRIC_PAIRS[selectedPair];
 
@@ -121,7 +129,7 @@ export function UsageTrendChart({
 			<ResponsiveContainer width="100%" height={400}>
 				<LineChart
 					data={chartData}
-					margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+					margin={{ top: 5, right: 0, left: 20, bottom: 5 }}
 				>
 					<CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 					<XAxis
@@ -161,7 +169,19 @@ export function UsageTrendChart({
 							return [v.toLocaleString(), name || ""];
 						}}
 					/>
-					<Legend />
+					<Legend
+						layout="vertical"
+						align="right"
+						verticalAlign="top"
+						width={140}
+						content={({ payload }) => (
+							<ChartLegend
+								payload={payload}
+								hiddenSeries={hiddenSeries}
+								onToggle={toggleSeries}
+							/>
+						)}
+					/>
 					<Line
 						yAxisId="left"
 						type="monotone"
@@ -171,6 +191,7 @@ export function UsageTrendChart({
 						dot={{ r: 4 }}
 						activeDot={{ r: 6 }}
 						name={currentPair.left.label}
+						hide={hiddenSeries.has(currentPair.left.label)}
 					/>
 					<Line
 						yAxisId="right"
@@ -181,6 +202,7 @@ export function UsageTrendChart({
 						dot={{ r: 4 }}
 						activeDot={{ r: 6 }}
 						name={currentPair.right.label}
+						hide={hiddenSeries.has(currentPair.right.label)}
 					/>
 				</LineChart>
 			</ResponsiveContainer>

@@ -17,6 +17,7 @@ import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
+import { ChartLegend } from "@/components/charts/ChartLegend";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useDateRange } from "@/contexts/DateRangeContext";
@@ -277,18 +278,22 @@ export function ProjectDetailPage() {
 				<AnalyticsCard className="mb-8">
 					<h2 className="text-xl font-bold text-heading mb-6">Contributors</h2>
 					<ResponsiveContainer width="100%" height={350}>
-						<BarChart data={contributorChartData} margin={{ bottom: 60 }}>
+						<BarChart
+							data={contributorChartData}
+							margin={{ top: 5, right: 0, left: 20, bottom: 5 }}
+						>
 							<CartesianGrid
 								strokeDasharray="3 3"
 								stroke={chartTheme.gridStroke}
 							/>
 							<XAxis
 								dataKey="name"
-								angle={-45}
-								textAnchor="end"
-								height={80}
 								interval={0}
 								stroke={chartTheme.axisStroke}
+								tick={{ fontSize: 12 }}
+								tickFormatter={(v: string) =>
+									v.length > 12 ? `${v.slice(0, 12)}…` : v
+								}
 							/>
 							<YAxis yAxisId="left" stroke={chartTheme.axisStroke} />
 							<YAxis
@@ -302,7 +307,13 @@ export function ProjectDetailPage() {
 									borderColor: chartTheme.tooltipBorder,
 								}}
 							/>
-							<Legend />
+							<Legend
+								layout="vertical"
+								align="right"
+								verticalAlign="top"
+								width={140}
+								content={({ payload }) => <ChartLegend payload={payload} />}
+							/>
 							<Bar
 								yAxisId="left"
 								dataKey="sessions"

@@ -32,8 +32,8 @@ export function ErrorsPage() {
 		"avg_errors_per_interaction" | "avg_errors_per_session" | "total_errors"
 	>("total_errors");
 	const [trendSplitBy, setTrendSplitBy] = useState<
-		"repository" | "user_id" | "model"
-	>("repository");
+		"project_path" | "user_id" | "model"
+	>("project_path");
 
 	const { data: errors, isLoading } = useAnalyticsQuery(
 		orpc.analytics.errors.topRecurring.queryOptions({

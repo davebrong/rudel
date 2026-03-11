@@ -34,14 +34,14 @@
 		"packages/*"
 	],
 	"overrides": {
-		"chkit": "0.1.0-beta.15",
-		"@chkit/core": "0.1.0-beta.15",
-		"@chkit/clickhouse": "0.1.0-beta.15",
-		"@chkit/codegen": "0.1.0-beta.15",
-		"@chkit/plugin-backfill": "0.1.0-beta.15",
-		"@chkit/plugin-codegen": "0.1.0-beta.15",
-		"@chkit/plugin-obsessiondb": "0.1.0-beta.15",
-		"@chkit/plugin-pull": "0.1.0-beta.15"
+		"chkit": "0.1.0-beta.16",
+		"@chkit/core": "0.1.0-beta.16",
+		"@chkit/clickhouse": "0.1.0-beta.16",
+		"@chkit/codegen": "0.1.0-beta.16",
+		"@chkit/plugin-backfill": "0.1.0-beta.16",
+		"@chkit/plugin-codegen": "0.1.0-beta.16",
+		"@chkit/plugin-obsessiondb": "0.1.0-beta.16",
+		"@chkit/plugin-pull": "0.1.0-beta.16"
 	},
 	"dependencies": {
 		"postgres": "^3.4.8"

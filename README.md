@@ -18,6 +18,8 @@ rudel login     # authenticate via your browser
 rudel enable    # auto-upload sessions when Claude Code exits
 ```
 
+3. Invite teammates (optional): go to **Settings → Organization** in the dashboard, enter their email, and share the generated invite link with them.
+
 That's it. Your Claude Code sessions will now be uploaded automatically.
 
 Already have past sessions? Upload them in one go:

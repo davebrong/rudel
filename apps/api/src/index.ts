@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { getLogger, withContext } from "@logtape/logtape";
+import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { user as userTable } from "@rudel/sql-schema";
 import { eq } from "drizzle-orm";
@@ -47,7 +48,16 @@ const auth = createAuth(db, {
 	slackWebhookUrl: process.env.SLACK_WEBHOOK_URL,
 });
 
-const rpcHandler = new RPCHandler(router);
+const rpcHandler = new RPCHandler(router, {
+	interceptors: [
+		onError((error) => {
+			logger.error("RPC unhandled exception: {error} {stack}", {
+				error: String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+		}),
+	],
+});
 
 const STATIC_DIR = join(
 	import.meta.dir,
@@ -109,6 +119,31 @@ async function handleRequest(
 	url: URL,
 	cors: Record<string, string>,
 ): Promise<Response> {
+<<<<<<< HEAD
+=======
+	if (url.pathname === "/api/cli-token") {
+		const session = await auth.api.getSession({
+			headers: request.headers,
+		});
+		if (!session) {
+			return new Response(JSON.stringify({ error: "Not authenticated" }), {
+				status: 401,
+				headers: { ...cors, "Content-Type": "application/json" },
+			});
+		}
+		return new Response(JSON.stringify({ token: session.session.token }), {
+			status: 200,
+			headers: { ...cors, "Content-Type": "application/json" },
+		});
+	}
+
+	// Defense in depth: block Better Auth's built-in org deletion route.
+	// Rudel has its own guarded deletion path via the RPC router.
+	if (url.pathname === "/api/auth/organization/delete") {
+		return new Response("Not Found", { status: 404, headers: cors });
+	}
+
+>>>>>>> origin/main
 	if (url.pathname.startsWith("/api/auth")) {
 		const response = await auth.handler(request);
 		for (const [key, value] of Object.entries(cors)) {

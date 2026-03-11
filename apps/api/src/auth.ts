@@ -58,6 +58,7 @@ export function createAuth(db: object, config: AuthConfig) {
 			organization({
 				allowUserToCreateOrganization: true,
 				creatorRole: "owner",
+				disableOrganizationDeletion: true,
 			}),
 		],
 		session: {

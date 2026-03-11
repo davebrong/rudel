@@ -1,5 +1,5 @@
 import type { DimensionAnalysisDataPoint } from "@rudel/api-routes";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { formatUsername } from "@/lib/format";
+import { ChartLegend } from "./ChartLegend";
 
 function formatCompactNumber(value: number): string {
 	if (value >= 1000000)
@@ -100,6 +101,13 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 	userMap,
 }: DimensionAnalysisChartProps) {
 	const { gridStroke, axisStroke } = useChartTheme();
+	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
+	const toggleSeries = (key: string) =>
+		setHiddenSeries((prev) => {
+			const next = new Set(prev);
+			next.has(key) ? next.delete(key) : next.add(key);
+			return next;
+		});
 
 	const { chartData, dataKeys } = useMemo(() => {
 		if (!data || data.length === 0) {
@@ -276,13 +284,28 @@ export const DimensionAnalysisChart = memo(function DimensionAnalysisChart({
 						interval={0}
 					/>
 					<Tooltip content={<CustomTooltip />} />
-					{split_by && <Legend wrapperStyle={{ paddingTop: "20px" }} />}
+					{split_by && (
+						<Legend
+							layout="vertical"
+							align="right"
+							verticalAlign="top"
+							width={160}
+							content={({ payload }) => (
+								<ChartLegend
+									payload={payload}
+									hiddenSeries={hiddenSeries}
+									onToggle={toggleSeries}
+								/>
+							)}
+						/>
+					)}
 					{split_by ? (
 						dataKeys.map((key, index) => (
 							<Bar
 								key={key}
 								dataKey={key}
 								stackId="stack"
+								hide={hiddenSeries.has(key)}
 								fill={CHART_COLORS[index % CHART_COLORS.length]}
 							/>
 						))

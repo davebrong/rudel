@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { calculateCost } from "@/lib/format";
 import { formatRelativeTime } from "@/lib/time-utils";
 
@@ -169,6 +170,7 @@ export function SessionHeader({ session }: SessionHeaderProps) {
 							}`}
 						>
 							Score: {session.success_score.toFixed(0)}/100
+							<InfoTooltip text="Session quality score (0–100): earns points for a git commit (+20), high output ratio (+15), and skills used (+5 each, max 3); loses points for errors (−2 each) and abandoned sessions." />
 						</span>
 					)}
 				</div>

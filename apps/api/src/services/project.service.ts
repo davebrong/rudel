@@ -1,3 +1,4 @@
+import { getLogger } from "@logtape/logtape";
 import type {
 	ProjectContributor as ProjectContributorBase,
 	ProjectDetailData,
@@ -11,6 +12,8 @@ import {
 	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
+
+const logger = getLogger(["rudel", "api", "project-service"]);
 
 const PROJECT_KEY_EXPR = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
 const PROJECT_DISPLAY_EXPR = `if(git_remote != '', arrayElement(splitByChar('/', git_remote), -1), arrayElement(splitByChar('/', project_path), -1))`;
@@ -335,15 +338,15 @@ export async function getProjectDetails(
 
 	const query = `
     SELECT
-      any(project_path) as project_path,
+      any(project_path) as raw_project_path,
       COUNT(*) as total_sessions,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       SUM(ifNull(input_tokens, 0)) as input_tokens_sum,
       SUM(ifNull(output_tokens, 0)) as output_tokens_sum,
       COUNT(DISTINCT user_id) as contributors_count,
       countIf(success_score < 40) as errors_count,
-      round(AVG(actual_duration_min), 2) as avg_session_duration_min,
-      round(AVG(success_score), 2) as success_rate,
+      ifNull(round(avgOrNull(actual_duration_min), 2), 0) as avg_session_duration_min,
+      ifNull(round(avgOrNull(success_score), 2), 0) as success_rate,
       round(SUM(actual_duration_min), 2) as total_duration_min
     FROM rudel.session_analytics
     WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
@@ -352,19 +355,33 @@ export async function getProjectDetails(
       AND (git_remote != '' OR package_name != '' OR project_path != '')
   `;
 
-	const results = await queryClickhouse<
-		ProjectDetails & {
-			input_tokens_sum: number;
-			output_tokens_sum: number;
-		}
-	>(query);
+	let results: (Omit<ProjectDetails, "project_path"> & {
+		raw_project_path: string;
+		input_tokens_sum: number;
+		output_tokens_sum: number;
+	})[];
+	try {
+		results = await queryClickhouse<
+			Omit<ProjectDetails, "project_path"> & {
+				raw_project_path: string;
+				input_tokens_sum: number;
+				output_tokens_sum: number;
+			}
+		>(query);
+	} catch (err) {
+		logger.error(
+			"getProjectDetails ClickHouse query failed for org={org} path={path}: {error}",
+			{ org: orgId, path: projectPath, error: String(err) },
+		);
+		throw err;
+	}
 
 	const [row] = results;
-	if (!row) return null;
+	if (!row || row.total_sessions === 0) return null;
 	const cost =
 		row.output_tokens_sum * 0.000015 + row.input_tokens_sum * 0.000003;
 	return {
-		project_path: row.project_path,
+		project_path: row.raw_project_path,
 		total_sessions: row.total_sessions,
 		total_tokens: row.total_tokens,
 		contributors_count: row.contributors_count,
