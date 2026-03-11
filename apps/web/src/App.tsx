@@ -61,9 +61,10 @@ function App() {
 				body: JSON.stringify({ userCode: deviceUserCode }),
 			});
 			if (!response.ok) {
-				const body = (await response.json().catch(() => null)) as
-					| { error_description?: string; message?: string }
-					| null;
+				const body = (await response.json().catch(() => null)) as {
+					error_description?: string;
+					message?: string;
+				} | null;
 				throw new Error(
 					body?.error_description ??
 						body?.message ??
@@ -150,7 +151,9 @@ function App() {
 					</p>
 				)}
 				<div className="flex gap-2">
-					<Button onClick={() => submitDeviceDecision("approve")}>Approve</Button>
+					<Button onClick={() => submitDeviceDecision("approve")}>
+						Approve
+					</Button>
 					<Button
 						variant="outline"
 						onClick={() => submitDeviceDecision("deny")}
