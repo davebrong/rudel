@@ -1,0 +1,100 @@
+Implement the following plan:
+
+# Plan: Redesign Chart Hover Tooltips
+
+## Context
+Chart tooltips are currently too large and visually noisy. The recharts default renders item names in colored text, which is hard to read. The desired design (per screenshot) shows:
+- Date header at the top (bold)
+- Colored circle dot per item + label in black + value right-aligned
+- Smaller font and tighter line spacing
+- Total row at the bottom separated by a divider
+
+## Approach
+
+### 1. Create shared `ChartTooltip` component
+
+**File:** `apps/web/src/components/charts/ChartTooltip.tsx` (new file)
+
+```tsx
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color: string }>;
+  label?: string;
+  nameFormatter?: (name: string) => string;
+  valueFormatter?: (value: number, name: string) => string;
+  showTotal?: boolean; // default true
+}
+```
+
+Render layout:
+- Container: `bg-white border border-[tooltipBorder] rounded-lg shadow-lg p-3 min-w-[180px]`
+- Header: `text-xs font-semibold text-foreground mb-2` (label/date)
+- Item rows: `flex items-center gap-2 py-0.5`
+  - Dot: `w-2 h-2 rounded-full flex-shrink-0` with inline `backgroundColor: color`
+  - Name: `text-xs text-foreground flex-1`
+  - Value: `text-xs font-semibold text-foreground`
+- Divider + total row: `pt-1.5 mt-1.5 border-t border-border flex justify-between text-xs font-semibold`
+
+Filter out zero-value entries from payload. Sum all values for total.
+
+Use `useChartTheme()` for `tooltipBg` and `tooltipBorder` inside the component.
+
+### 2. Update all chart files to use the custom component
+
+Replace `<Tooltip contentStyle={...} formatter={...} labelFormatter={...} />` with:
+```tsx
+<Tooltip
+  content={(props) => (
+    <ChartTooltip
+      {...props}
+      nameFormatter={formatProjectName}
+      valueFormatter={(v) => currentMetric.formatter(v)}
+      showTotal={selectedMetric !== "success_rate"}
+    />
+  )}
+/>
+```
+
+**Files to update:**
+- `apps/web/src/components/charts/ProjectTrendChart.tsx` (2 tooltips: LineChart + BarChart)
+- `apps/web/src/components/charts/DeveloperTrendChart.tsx` (2 tooltips: LineChart + BarChart)
+- `apps/web/src/components/charts/ModelTokensChart.tsx` (1 tooltip)
+- `apps/web/src/components/charts/LearningsTrendChart.tsx` (2 tooltips: BarChart + LineChart)
+- `apps/web/src/components/charts/ErrorTrendChart.tsx` (2 tooltips: BarChart + LineChart)
+- `apps/web/src/components/charts/UsageTrendChart.tsx` (1 tooltip — dual-axis, `showTotal={false}` since units differ)
+
+**Do NOT touch:**
+- `DimensionAnalysisChart.tsx` — already uses a custom `content` component (different design)
+- `TaskClassificationChart.tsx` — already uses a custom `content` component (pie chart)
+
+### Key details
+- Items with `value === 0` should be hidden from the tooltip (avoids clutter on sparse data)
+- For `success_rate` metric: `showTotal={false}` (average of rates is meaningless)
+- For `UsageTrendChart`: `showTotal={false}` (different units per series)
+- The `nameFormatter` prop handles series key → display name conversion (project path → basename, user ID → username, model name shortening, etc.)
+
+## Verification
+1. Run `bun run --cwd apps/web dev` with local infra
+2. Hover over bars/lines in Projects, Developers, Models, Learnings, Errors charts
+3. Confirm: date header, colored dots, black labels, values right-aligned, total at bottom
+4. Confirm tooltip is compact (smaller text, tighter spacing)
+5. Run `bun run verify` to check types/lint pass
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/rafa/.claude/projects/-Users-rafa-Obsession-rudel/e5d03032-51e7-4d05-bd6a-d17da6e75619.jsonl
+
+---
+
+What is the logic for sorting the legend on the right of the charts with dimensional splits?
+
+---
+
+ok thanks for the info before we change anything there we need to also add the new hover format we just implemtend to the chart in the Multi-Dimensional Analysis - if you select a 2nd dimension/split i can still see the old format when hovering.
+
+---
+
+Ok now i would like to make the sorting of the legend on the right side always consistent across the whole app. At the top we should have the item with the highest sum of the metric that is picked. Make sure this is the case across all charts and it's consistent. Also make sure that the colors remain the same when a new metric is picked.
+
+---
+
+[Request interrupted by user for tool use]
