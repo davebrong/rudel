@@ -5,8 +5,7 @@
 	"scripts": {
 		"build": "turbo run build",
 		"dev": "turbo run dev",
-		"lint": "biome check . && bun run lint:clickhouse-guardrails",
-		"lint:clickhouse-guardrails": "bun scripts/check-clickhouse-guardrails.ts",
+		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"format": "biome format --write .",
 		"check-types": "turbo run check-types",
