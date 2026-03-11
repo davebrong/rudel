@@ -361,12 +361,12 @@ async function runRetryUpload(flags: UploadFlags): Promise<void> {
 				organizationId,
 			});
 
-				return uploadSession(request, {
-					endpoint,
-					token: credentials.token,
-					authType: credentials.authType,
-					onRetry,
-				});
+			return uploadSession(request, {
+				endpoint,
+				token: credentials.token,
+				authType: credentials.authType,
+				onRetry,
+			});
 		},
 	});
 
