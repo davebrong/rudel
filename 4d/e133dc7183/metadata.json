@@ -3,7 +3,7 @@
   "checkpoint_id": "4de133dc7183",
   "strategy": "manual-commit",
   "branch": "ux/chart-hover",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     ".claude/learnings/feedback/2026-02-25-offer-single-or-batch-upload.md",
     "apps/cli/reupload-with-org.sh",
@@ -24,13 +24,20 @@
       "context": "/4d/e133dc7183/0/context.md",
       "content_hash": "/4d/e133dc7183/0/content_hash.txt",
       "prompt": "/4d/e133dc7183/0/prompt.txt"
+    },
+    {
+      "metadata": "/4d/e133dc7183/1/metadata.json",
+      "transcript": "/4d/e133dc7183/1/full.jsonl",
+      "context": "/4d/e133dc7183/1/context.md",
+      "content_hash": "/4d/e133dc7183/1/content_hash.txt",
+      "prompt": "/4d/e133dc7183/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 74,
-    "cache_creation_tokens": 95522,
-    "cache_read_tokens": 4440010,
-    "output_tokens": 35211,
-    "api_call_count": 66
+    "input_tokens": 127,
+    "cache_creation_tokens": 170189,
+    "cache_read_tokens": 7525166,
+    "output_tokens": 62977,
+    "api_call_count": 114
   }
 }
