@@ -191,16 +191,12 @@ function saveCredentialsToDir(
 	);
 }
 
-function loadCredentialsFromDir(
-	dir: string,
-):
-	| {
-			token: string;
-			apiBaseUrl: string;
-			authType?: string;
-			apiKeyId?: string;
-	  }
-	| null {
+function loadCredentialsFromDir(dir: string): {
+	token: string;
+	apiBaseUrl: string;
+	authType?: string;
+	apiKeyId?: string;
+} | null {
 	const path = join(dir, "credentials.json");
 	try {
 		const { readFileSync } = require("node:fs");
