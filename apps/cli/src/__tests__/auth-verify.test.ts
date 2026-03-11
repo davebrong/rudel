@@ -59,7 +59,7 @@ beforeEach(async () => {
 function writeCredentials(token: string, apiBaseUrl: string): void {
 	writeFileSync(
 		join(configDir, "credentials.json"),
-		JSON.stringify({ token, apiBaseUrl }, null, 2),
+		JSON.stringify({ token, apiBaseUrl, authType: "bearer" }, null, 2),
 		{ mode: 0o600 },
 	);
 }

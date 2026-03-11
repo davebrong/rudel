@@ -24,14 +24,18 @@ async function runEnable(): Promise<void> {
 	const { credentials } = auth;
 
 	// Fetch user's organizations
-	const client = createApiClient(credentials);
 	let orgs: { id: string; name: string; slug: string }[];
-	try {
-		orgs = await client.listMyOrganizations();
-	} catch {
-		p.log.error("Failed to fetch organizations. Check your connection.");
-		process.exitCode = 1;
-		return;
+	if (credentials.authType === "api-key") {
+		orgs = credentials.organizations ?? [];
+	} else {
+		const client = createApiClient(credentials);
+		try {
+			orgs = await client.listMyOrganizations();
+		} catch {
+			p.log.error("Failed to fetch organizations. Check your connection.");
+			process.exitCode = 1;
+			return;
+		}
 	}
 
 	if (orgs.length === 0) {
@@ -161,6 +165,7 @@ async function runEnable(): Promise<void> {
 				return uploadSession(request, {
 					endpoint,
 					token: credentials.token,
+					authType: credentials.authType,
 					onRetry,
 				});
 			},

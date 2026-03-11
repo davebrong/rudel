@@ -7,6 +7,7 @@ import type { UploadResult } from "./types.js";
 export interface UploadConfig {
 	endpoint: string;
 	token: string;
+	authType?: "bearer" | "api-key";
 	onRetry?: (attempt: number, maxAttempts: number, error: string) => void;
 }
 
@@ -44,9 +45,10 @@ export async function uploadSession(
 ): Promise<UploadResult> {
 	const link = new RPCLink({
 		url: config.endpoint,
-		headers: {
-			Authorization: `Bearer ${config.token}`,
-		},
+		headers:
+			config.authType === "api-key"
+				? { "x-api-key": config.token }
+				: { Authorization: `Bearer ${config.token}` },
 	});
 
 	const client: ContractRouterClient<typeof contract> = createORPCClient(link);

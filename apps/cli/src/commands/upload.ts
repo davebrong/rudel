@@ -99,6 +99,7 @@ async function runInteractiveUpload(flags: UploadFlags): Promise<void> {
 	const uploadConfig: UploadConfig = {
 		endpoint: flags.endpoint,
 		token: credentials?.token ?? "",
+		authType: credentials?.authType,
 	};
 
 	// Flatten all sessions with their project context for concurrent upload
@@ -274,6 +275,7 @@ async function runSingleUpload(
 		endpoint: flags.endpoint,
 		// biome-ignore lint/style/noNonNullAssertion: validated above with early return
 		token: credentials!.token,
+		authType: credentials?.authType,
 	});
 
 	if (result.success) {
@@ -362,6 +364,7 @@ async function runRetryUpload(flags: UploadFlags): Promise<void> {
 			return uploadSession(request, {
 				endpoint,
 				token: credentials.token,
+				authType: credentials.authType,
 				onRetry,
 			});
 		},

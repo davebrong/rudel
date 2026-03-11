@@ -1,18 +1,171 @@
 import { spawn } from "node:child_process";
-import { randomBytes } from "node:crypto";
-import {
-	createServer,
-	type IncomingMessage,
-	type ServerResponse,
-} from "node:http";
-import type { AddressInfo } from "node:net";
 import * as p from "@clack/prompts";
 import { buildCommand } from "@stricli/core";
+import { createApiClient } from "../lib/api-client.js";
 import { loadCredentials, saveCredentials } from "../lib/credentials.js";
 
 const DEFAULT_API_BASE = "https://app.rudel.ai";
 const DEFAULT_WEB_URL = "https://app.rudel.ai";
-const CALLBACK_TIMEOUT_MS = 120_000;
+const DEVICE_CLIENT_ID = "rudel-cli";
+const POLL_SAFETY_TIMEOUT_MS = 120_000;
+
+type DeviceCodeResponse = {
+	device_code: string;
+	user_code: string;
+	verification_uri: string;
+	verification_uri_complete?: string;
+	expires_in: number;
+	interval: number;
+};
+
+type DeviceTokenResponse = {
+	access_token: string;
+	token_type: string;
+	expires_in: number;
+	scope: string;
+};
+
+type ApiKeyCreateResponse = {
+	id: string;
+	key: string;
+};
+
+async function sleep(ms: number): Promise<void> {
+	await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function openUrl(url: string): void {
+	if (process.platform === "win32") {
+		const child = spawn("cmd", ["/c", "start", "", url], {
+			detached: true,
+			stdio: "ignore",
+		});
+		child.unref();
+		return;
+	}
+
+	const opener = process.platform === "darwin" ? "open" : "xdg-open";
+	const child = spawn(opener, [url], {
+		detached: true,
+		stdio: "ignore",
+	});
+	child.unref();
+}
+
+async function requestDeviceCode(apiBase: string): Promise<DeviceCodeResponse> {
+	const response = await fetch(`${apiBase}/api/auth/device/code`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			client_id: DEVICE_CLIENT_ID,
+			scope: "ingest:write",
+		}),
+	});
+
+	const body = (await response.json().catch(() => null)) as
+		| DeviceCodeResponse
+		| { error_description?: string; message?: string }
+		| null;
+
+	if (!response.ok || !body || !("device_code" in body)) {
+		throw new Error(
+			(body && "error_description" in body && body.error_description) ||
+				(body && "message" in body && body.message) ||
+				`Failed to start device authorization (${response.status})`,
+		);
+	}
+
+	return body;
+}
+
+async function pollForAccessToken(
+	apiBase: string,
+	device: DeviceCodeResponse,
+): Promise<string> {
+	const hardDeadline = Date.now() + POLL_SAFETY_TIMEOUT_MS;
+	const deviceDeadline = Date.now() + device.expires_in * 1000;
+	const deadline = Math.min(hardDeadline, deviceDeadline);
+	let intervalMs = Math.max(1_000, device.interval * 1000);
+
+	while (Date.now() < deadline) {
+		const response = await fetch(`${apiBase}/api/auth/device/token`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+				device_code: device.device_code,
+				client_id: DEVICE_CLIENT_ID,
+			}),
+		});
+
+		const body = (await response.json().catch(() => null)) as
+			| DeviceTokenResponse
+			| { error?: string; error_description?: string }
+			| null;
+
+		if (response.ok && body && "access_token" in body) {
+			return body.access_token;
+		}
+
+		const errorCode =
+			body && "error" in body && typeof body.error === "string"
+				? body.error
+				: "";
+		const errorDescription =
+			body &&
+			"error_description" in body &&
+			typeof body.error_description === "string"
+				? body.error_description
+				: "Device authorization failed";
+
+		if (errorCode === "authorization_pending") {
+			await sleep(intervalMs);
+			continue;
+		}
+
+		if (errorCode === "slow_down") {
+			intervalMs += 1_000;
+			await sleep(intervalMs);
+			continue;
+		}
+
+		throw new Error(errorDescription);
+	}
+
+	throw new Error("Device authorization timed out");
+}
+
+async function createIngestApiKey(
+	apiBase: string,
+	accessToken: string,
+): Promise<ApiKeyCreateResponse> {
+	const response = await fetch(`${apiBase}/api/auth/api-key/create`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${accessToken}`,
+		},
+		body: JSON.stringify({
+			name: "rudel-cli-ingest",
+			expiresIn: null,
+		}),
+	});
+
+	const body = (await response.json().catch(() => null)) as
+		| ApiKeyCreateResponse
+		| { error_description?: string; message?: string }
+		| null;
+
+	if (!response.ok || !body || !("key" in body) || !("id" in body)) {
+		throw new Error(
+			(body && "error_description" in body && body.error_description) ||
+				(body && "message" in body && body.message) ||
+				`Failed to create CLI API key (${response.status})`,
+		);
+	}
+
+	return body;
+}
 
 async function runLogin(flags: {
 	apiBase: string;
@@ -28,127 +181,84 @@ async function runLogin(flags: {
 		return;
 	}
 
-	const state = randomBytes(16).toString("hex");
-
-	let resolveCallback: (token: string) => void;
-	let rejectCallback: (error: Error) => void;
-	const tokenPromise = new Promise<string>((resolve, reject) => {
-		resolveCallback = resolve;
-		rejectCallback = reject;
-	});
-
-	const server = createServer((req: IncomingMessage, res: ServerResponse) => {
-		const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
-		if (url.pathname !== "/callback") {
-			res.writeHead(404, { "Content-Type": "text/plain" });
-			res.end("Not found");
-			return;
-		}
-
-		const receivedToken = url.searchParams.get("token");
-		const receivedState = url.searchParams.get("state");
-
-		if (receivedState !== state) {
-			rejectCallback(new Error("State mismatch — possible CSRF attack"));
-			res.writeHead(200, { "Content-Type": "text/html" });
-			res.end(
-				"<html><body><h1>Login failed</h1><p>State mismatch. Please try again.</p></body></html>",
-			);
-			return;
-		}
-
-		if (!receivedToken) {
-			rejectCallback(new Error("No token received"));
-			res.writeHead(200, { "Content-Type": "text/html" });
-			res.end(
-				"<html><body><h1>Login failed</h1><p>No token received.</p></body></html>",
-			);
-			return;
-		}
-
-		resolveCallback(receivedToken);
-		res.writeHead(200, { "Content-Type": "text/html" });
-		res.end(
-			"<html><body><h1>Login successful!</h1><p>You can close this tab and return to the terminal.</p></body></html>",
-		);
-	});
-
-	await new Promise<void>((resolve) => {
-		server.listen(0, "127.0.0.1", resolve);
-	});
-
-	const port = (server.address() as AddressInfo).port;
-	const callbackUrl = `http://127.0.0.1:${port}/callback`;
-	const loginUrl = `${flags.webUrl}?cli_callback=${encodeURIComponent(callbackUrl)}&state=${state}`;
-
-	p.log.info(`If the browser doesn't open, visit:\n${loginUrl}`);
-
-	// Open browser
-	if (!flags.noBrowser) {
-		if (process.platform === "win32") {
-			const child = spawn("cmd", ["/c", "start", "", loginUrl], {
-				detached: true,
-				stdio: "ignore",
-			});
-			child.unref();
-		} else {
-			const opener = process.platform === "darwin" ? "open" : "xdg-open";
-			const child = spawn(opener, [loginUrl], {
-				detached: true,
-				stdio: "ignore",
-			});
-			child.unref();
-		}
+	let deviceCode: DeviceCodeResponse;
+	try {
+		deviceCode = await requestDeviceCode(flags.apiBase);
+	} catch (error) {
+		p.log.error(error instanceof Error ? error.message : String(error));
+		process.exitCode = 1;
+		return;
 	}
+	const verifyUrl =
+		deviceCode.verification_uri_complete ??
+		`${deviceCode.verification_uri}?user_code=${encodeURIComponent(deviceCode.user_code)}`;
+	p.log.info(`If the browser doesn't open, visit:\n${verifyUrl}`);
+	p.log.info(`User code: ${deviceCode.user_code}`);
 
-	// Wait for callback with timeout
-	const timeout = setTimeout(() => {
-		rejectCallback(new Error("Login timed out after 120 seconds"));
-	}, CALLBACK_TIMEOUT_MS);
+	if (!flags.noBrowser) {
+		openUrl(verifyUrl);
+	}
 
 	const spin = p.spinner();
 	spin.start("Waiting for browser authentication...");
 
-	let token: string;
+	let accessToken: string;
 	try {
-		token = await tokenPromise;
+		accessToken = await pollForAccessToken(flags.apiBase, deviceCode);
 	} catch (error) {
-		clearTimeout(timeout);
-		server.close();
 		spin.stop("Authentication failed");
 		p.log.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 		return;
 	}
-	clearTimeout(timeout);
-	server.close();
 
-	spin.message("Validating token...");
-
-	// Validate token via /rpc/me
-	const meResponse = await fetch(`${flags.apiBase}/rpc/me`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
-		},
-		body: JSON.stringify({}),
-	});
-
-	if (!meResponse.ok) {
-		spin.stop("Token validation failed");
-		p.log.error("Login failed: token validation failed");
+	spin.message("Creating ingest token...");
+	let ingestKey: ApiKeyCreateResponse;
+	try {
+		ingestKey = await createIngestApiKey(flags.apiBase, accessToken);
+	} catch (error) {
+		spin.stop("Authentication failed");
+		p.log.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 		return;
 	}
 
-	const body = (await meResponse.json()) as {
-		json: { id: string; email: string; name: string };
-	};
+	const client = createApiClient({
+		apiBaseUrl: flags.apiBase,
+		token: accessToken,
+		authType: "bearer",
+	});
 
-	saveCredentials(token, flags.apiBase);
+	let user: { id: string; email: string; name: string };
+	let organizations: Array<{ id: string; name: string; slug: string }>;
+	try {
+		const [me, orgs] = await Promise.all([
+			client.me(),
+			client.listMyOrganizations(),
+		]);
+		user = { id: me.id, email: me.email, name: me.name };
+		organizations = orgs.map((org) => ({
+			id: org.id,
+			name: org.name,
+			slug: org.slug,
+		}));
+	} catch {
+		spin.stop("Authentication failed");
+		p.log.error("Login failed: unable to fetch account details");
+		process.exitCode = 1;
+		return;
+	}
+
+	saveCredentials({
+		token: ingestKey.key,
+		apiBaseUrl: flags.apiBase,
+		authType: "api-key",
+		apiKeyId: ingestKey.id,
+		user,
+		organizations,
+	});
 	spin.stop("Authenticated");
-	p.log.success(`Logged in as ${body.json.name} (${body.json.email})`);
+	p.log.success(`Logged in as ${user.name} (${user.email})`);
 	p.outro("Done!");
 }
 

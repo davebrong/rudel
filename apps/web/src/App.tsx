@@ -1,8 +1,9 @@
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginForm } from "./components/auth/login-form";
 import { SignupForm } from "./components/auth/signup-form";
+import { Button } from "./components/ui/button";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { authClient } from "./lib/auth-client";
 import { AcceptInvitationPage } from "./pages/AcceptInvitationPage";
@@ -23,18 +24,9 @@ import { SessionsListPage } from "./pages/dashboard/SessionsListPage";
 
 type Page = "login" | "signup";
 
-function getCliParams(): { cliCallback: string; state: string } | null {
+function getDeviceUserCode(): string | null {
 	const params = new URLSearchParams(window.location.search);
-	const cliCallback = params.get("cli_callback");
-	const state = params.get("state");
-	if (!cliCallback || !state) return null;
-	try {
-		const url = new URL(cliCallback);
-		if (url.hostname !== "127.0.0.1") return null;
-	} catch {
-		return null;
-	}
-	return { cliCallback, state };
+	return params.get("user_code");
 }
 
 function getValidRedirect(): string | null {
@@ -48,23 +40,50 @@ function getValidRedirect(): string | null {
 function App() {
 	const { data: session, isPending } = authClient.useSession();
 	const [page, setPage] = useState<Page>("login");
-	const [cliRedirecting, setCliRedirecting] = useState(false);
-	const cliParams = getCliParams();
+	const [deviceProcessing, setDeviceProcessing] = useState(false);
+	const [deviceApproved, setDeviceApproved] = useState(false);
+	const [deviceDenied, setDeviceDenied] = useState(false);
+	const [deviceError, setDeviceError] = useState<string | null>(null);
+	const deviceUserCode = getDeviceUserCode();
 	const { resolvedTheme } = useTheme();
 	const logoSrc =
 		resolvedTheme === "dark" ? "/logo-light.svg" : "/logo-dark.svg";
 
-	useEffect(() => {
-		if (!session || !cliParams || cliRedirecting) return;
-		setCliRedirecting(true);
-
-		fetch("/api/cli-token", { credentials: "include" })
-			.then((res) => res.json())
-			.then((data: { token: string }) => {
-				const redirectUrl = `${cliParams.cliCallback}?token=${encodeURIComponent(data.token)}&state=${encodeURIComponent(cliParams.state)}`;
-				window.location.href = redirectUrl;
+	async function submitDeviceDecision(action: "approve" | "deny") {
+		if (!deviceUserCode || deviceProcessing) return;
+		setDeviceProcessing(true);
+		setDeviceError(null);
+		try {
+			const response = await fetch(`/api/auth/device/${action}`, {
+				method: "POST",
+				credentials: "include",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ userCode: deviceUserCode }),
 			});
-	}, [session, cliParams, cliRedirecting]);
+			if (!response.ok) {
+				const body = (await response.json().catch(() => null)) as {
+					error_description?: string;
+					message?: string;
+				} | null;
+				throw new Error(
+					body?.error_description ??
+						body?.message ??
+						`Failed to ${action} CLI device login`,
+				);
+			}
+			if (action === "approve") {
+				setDeviceApproved(true);
+			} else {
+				setDeviceDenied(true);
+			}
+		} catch (err) {
+			setDeviceError(
+				err instanceof Error ? err.message : "Failed to process device login",
+			);
+		} finally {
+			setDeviceProcessing(false);
+		}
+	}
 
 	if (isPending) {
 		return (
@@ -74,10 +93,74 @@ function App() {
 		);
 	}
 
-	if (cliRedirecting) {
+	if (deviceUserCode) {
+		if (deviceProcessing) {
+			return (
+				<div className="flex min-h-screen items-center justify-center">
+					<p className="text-muted-foreground">Processing CLI login...</p>
+				</div>
+			);
+		}
+
+		if (deviceApproved) {
+			return (
+				<div className="flex min-h-screen flex-col items-center justify-center gap-2">
+					<p className="text-xl font-semibold">CLI login approved</p>
+					<p className="text-muted-foreground">
+						Return to your terminal to continue.
+					</p>
+				</div>
+			);
+		}
+
+		if (deviceDenied) {
+			return (
+				<div className="flex min-h-screen flex-col items-center justify-center gap-2">
+					<p className="text-xl font-semibold">CLI login denied</p>
+					<p className="text-muted-foreground">
+						This authorization request was not approved.
+					</p>
+				</div>
+			);
+		}
+
+		if (!session) {
+			return (
+				<div className="flex min-h-screen flex-col items-center justify-center gap-6">
+					<img src={logoSrc} alt="Rudel" className="h-10 w-10" />
+					{page === "login" ? (
+						<LoginForm onSwitchToSignup={() => setPage("signup")} />
+					) : (
+						<SignupForm onSwitchToLogin={() => setPage("login")} />
+					)}
+				</div>
+			);
+		}
+
 		return (
-			<div className="flex min-h-screen items-center justify-center">
-				<p className="text-muted-foreground">Completing CLI login...</p>
+			<div className="flex min-h-screen flex-col items-center justify-center gap-4">
+				<p className="text-xl font-semibold">Authorize CLI login</p>
+				<p className="text-muted-foreground">
+					User code: <span className="font-mono">{deviceUserCode}</span>
+				</p>
+				{deviceError ? (
+					<p className="text-destructive">{deviceError}</p>
+				) : (
+					<p className="text-muted-foreground">
+						Approve this request only if it was initiated by you from the CLI.
+					</p>
+				)}
+				<div className="flex gap-2">
+					<Button onClick={() => submitDeviceDecision("approve")}>
+						Approve
+					</Button>
+					<Button
+						variant="outline"
+						onClick={() => submitDeviceDecision("deny")}
+					>
+						Deny
+					</Button>
+				</div>
 			</div>
 		);
 	}

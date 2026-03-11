@@ -16,6 +16,7 @@ import {
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
+import { ChartTooltip } from "./ChartTooltip";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -77,7 +78,7 @@ const PROJECT_COLORS = [
 ];
 
 export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
-	const { tooltipBg, tooltipBorder, gridStroke, axisStroke } = useChartTheme();
+	const { gridStroke, axisStroke } = useChartTheme();
 	const [selectedMetric, setSelectedMetric] = useState<MetricType>("sessions");
 	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 	const toggleSeries = (key: string) =>
@@ -94,8 +95,8 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 		const projectTotals = new Map<string, number>();
 		for (const d of data) {
 			projectTotals.set(
-				d.project_path,
-				(projectTotals.get(d.project_path) ?? 0) + d.sessions,
+				d.project_name,
+				(projectTotals.get(d.project_name) ?? 0) + d.sessions,
 			);
 		}
 		const sorted = Array.from(projectTotals.entries()).sort(
@@ -108,6 +109,15 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 			hasOther: sorted.length > MAX_SERIES,
 		};
 	}, [data]);
+
+	const colorMap = useMemo(() => {
+		const map = new Map<string, string>();
+		for (let i = 0; i < topProjects.length; i++) {
+			map.set(topProjects[i], PROJECT_COLORS[i % PROJECT_COLORS.length]);
+		}
+		map.set("Other", OTHER_COLOR);
+		return map;
+	}, [topProjects]);
 
 	const { chartData, seriesList } = useMemo(() => {
 		// Build full date range from all data
@@ -140,7 +150,7 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 
 			for (const projectPath of topProjects) {
 				const dp = data.find(
-					(d) => d.date === date && d.project_path === projectPath,
+					(d) => d.date === date && d.project_name === projectPath,
 				);
 				dateObj[projectPath] = dp
 					? (dp[currentMetric.key as keyof ProjectTrendDataPoint] as number)
@@ -149,7 +159,7 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 
 			if (showOther) {
 				dateObj.Other = data
-					.filter((d) => d.date === date && !topProjectsSet.has(d.project_path))
+					.filter((d) => d.date === date && !topProjectsSet.has(d.project_name))
 					.reduce(
 						(sum, d) =>
 							sum +
@@ -173,11 +183,23 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 		currentMetric,
 	]);
 
-	const formatProjectName = (projectPath: string) => {
-		if (projectPath === "Other") return "Other";
-		const parts = projectPath.split("/");
-		return parts[parts.length - 1] || projectPath.substring(0, 20);
-	};
+	const sortedLegendPayload = useMemo(() => {
+		const totals = new Map<string, number>();
+		for (const row of chartData) {
+			for (const key of seriesList) {
+				totals.set(key, (totals.get(key) ?? 0) + ((row[key] as number) ?? 0));
+			}
+		}
+		return [...seriesList]
+			.sort((a, b) => (totals.get(b) ?? 0) - (totals.get(a) ?? 0))
+			.map((key) => ({
+				value: key,
+				color: colorMap.get(key) ?? OTHER_COLOR,
+				type: "square" as const,
+			}));
+	}, [chartData, seriesList, colorMap]);
+
+	const formatProjectName = (name: string) => name;
 
 	return (
 		<div className="space-y-4">
@@ -237,42 +259,35 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 							domain={[0, 100]}
 						/>
 						<Tooltip
-							contentStyle={{
-								backgroundColor: tooltipBg,
-								border: `1px solid ${tooltipBorder}`,
-								borderRadius: "8px",
-								padding: "12px",
-							}}
-							formatter={(value, name) => {
-								if (!name || name === "date" || name === "displayDate")
-									return null;
-								return [
-									currentMetric.formatter((value as number) ?? 0),
-									formatProjectName(String(name)),
-								];
-							}}
-							labelFormatter={(label) => label}
+							content={(props) => (
+								<ChartTooltip
+									{...props}
+									nameFormatter={formatProjectName}
+									valueFormatter={(v) => currentMetric.formatter(v)}
+									showTotal={false}
+								/>
+							)}
 						/>
 						<Legend
 							layout="vertical"
 							align="right"
 							verticalAlign="top"
 							width={160}
-							content={({ payload }) => (
+							content={() => (
 								<ChartLegend
-									payload={payload}
+									payload={sortedLegendPayload}
 									formatter={formatProjectName}
 									hiddenSeries={hiddenSeries}
 									onToggle={toggleSeries}
 								/>
 							)}
 						/>
-						{topProjects.map((projectPath, index) => (
+						{topProjects.map((projectPath) => (
 							<Line
 								key={projectPath}
 								type="monotone"
 								dataKey={projectPath}
-								stroke={PROJECT_COLORS[index % PROJECT_COLORS.length]}
+								stroke={colorMap.get(projectPath) ?? OTHER_COLOR}
 								strokeWidth={2}
 								dot={{ r: 3 }}
 								activeDot={{ r: 5 }}
@@ -302,47 +317,36 @@ export function ProjectTrendChart({ data }: ProjectTrendChartProps) {
 							tickFormatter={currentMetric.formatter}
 						/>
 						<Tooltip
-							contentStyle={{
-								backgroundColor: tooltipBg,
-								border: `1px solid ${tooltipBorder}`,
-								borderRadius: "8px",
-								padding: "12px",
-							}}
-							formatter={(value, name) => {
-								if (!name || name === "date" || name === "displayDate")
-									return null;
-								return [
-									currentMetric.formatter((value as number) ?? 0),
-									formatProjectName(String(name)),
-								];
-							}}
-							labelFormatter={(label) => label}
+							content={(props) => (
+								<ChartTooltip
+									{...props}
+									nameFormatter={formatProjectName}
+									valueFormatter={(v) => currentMetric.formatter(v)}
+									showTotal
+								/>
+							)}
 						/>
 						<Legend
 							layout="vertical"
 							align="right"
 							verticalAlign="top"
 							width={160}
-							content={({ payload }) => (
+							content={() => (
 								<ChartLegend
-									payload={payload}
+									payload={sortedLegendPayload}
 									formatter={formatProjectName}
 									hiddenSeries={hiddenSeries}
 									onToggle={toggleSeries}
 								/>
 							)}
 						/>
-						{seriesList.map((projectPath, index) => (
+						{seriesList.map((projectPath) => (
 							<Bar
 								key={projectPath}
 								dataKey={projectPath}
 								stackId="1"
 								hide={hiddenSeries.has(projectPath)}
-								fill={
-									projectPath === "Other"
-										? OTHER_COLOR
-										: PROJECT_COLORS[index % PROJECT_COLORS.length]
-								}
+								fill={colorMap.get(projectPath) ?? OTHER_COLOR}
 							/>
 						))}
 					</BarChart>

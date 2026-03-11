@@ -14,18 +14,18 @@ import { Separator } from "../ui/separator";
 
 function getCallbackURL(): string {
 	const params = new URLSearchParams(window.location.search);
-	const cliCallback = params.get("cli_callback");
-	const state = params.get("state");
-	if (cliCallback && state) {
-		return `/?cli_callback=${encodeURIComponent(cliCallback)}&state=${encodeURIComponent(state)}`;
+	const userCode = params.get("user_code");
+	if (userCode) {
+		return `/?user_code=${encodeURIComponent(userCode)}`;
 	}
 	const redirect = params.get("redirect");
 	if (redirect) {
 		return `/?redirect=${encodeURIComponent(redirect)}`;
 	}
 	const path = window.location.pathname;
+	const search = window.location.search;
 	if (path !== "/" && path !== "") {
-		return `/?redirect=${encodeURIComponent(path)}`;
+		return `/?redirect=${encodeURIComponent(`${path}${search}`)}`;
 	}
 	return "/";
 }

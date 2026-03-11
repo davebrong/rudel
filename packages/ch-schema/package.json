@@ -30,14 +30,14 @@
 		"chcli:prd": "doppler run --project rudel --config prd -- bash -c 'CLICKHOUSE_HOST=${CLICKHOUSE_URL#https://} CLICKHOUSE_USER=$CLICKHOUSE_USERNAME CLICKHOUSE_SECURE=true CLICKHOUSE_PORT=443 chcli \"$@\"' --"
 	},
 	"dependencies": {
-		"@chkit/clickhouse": "0.1.0-beta.15",
-		"@chkit/codegen": "0.1.0-beta.15",
-		"@chkit/core": "0.1.0-beta.15",
-		"@chkit/plugin-backfill": "0.1.0-beta.15",
-		"@chkit/plugin-codegen": "0.1.0-beta.15",
-		"@chkit/plugin-obsessiondb": "0.1.0-beta.15",
-		"@chkit/plugin-pull": "0.1.0-beta.15",
-		"chkit": "0.1.0-beta.15",
+		"@chkit/clickhouse": "0.1.0-beta.16",
+		"@chkit/codegen": "0.1.0-beta.16",
+		"@chkit/core": "0.1.0-beta.16",
+		"@chkit/plugin-backfill": "0.1.0-beta.16",
+		"@chkit/plugin-codegen": "0.1.0-beta.16",
+		"@chkit/plugin-obsessiondb": "0.1.0-beta.16",
+		"@chkit/plugin-pull": "0.1.0-beta.16",
+		"chkit": "0.1.0-beta.16",
 		"zod": "^3.24.0"
 	},
 	"devDependencies": {

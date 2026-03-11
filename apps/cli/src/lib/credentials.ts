@@ -11,6 +11,18 @@ import { join } from "node:path";
 export interface Credentials {
 	token: string;
 	apiBaseUrl: string;
+	authType?: "bearer" | "api-key";
+	apiKeyId?: string;
+	user?: {
+		id: string;
+		email: string;
+		name: string;
+	};
+	organizations?: Array<{
+		id: string;
+		name: string;
+		slug: string;
+	}>;
 }
 
 function getConfigDir(): string {
@@ -21,13 +33,12 @@ function getCredentialsPath(): string {
 	return join(getConfigDir(), "credentials.json");
 }
 
-export function saveCredentials(token: string, apiBaseUrl: string): void {
+export function saveCredentials(credentials: Credentials): void {
 	const dir = getConfigDir();
 	if (!existsSync(dir)) {
 		mkdirSync(dir, { recursive: true, mode: 0o700 });
 	}
-	const data: Credentials = { token, apiBaseUrl };
-	writeFileSync(getCredentialsPath(), JSON.stringify(data, null, 2), {
+	writeFileSync(getCredentialsPath(), JSON.stringify(credentials, null, 2), {
 		mode: 0o600,
 	});
 }

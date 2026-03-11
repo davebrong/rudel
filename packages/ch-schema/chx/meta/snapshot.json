@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"generatedAt": "2026-03-03T18:39:09.935Z",
+	"generatedAt": "2026-03-11T08:46:57.492Z",
 	"definitions": [
 		{
 			"database": "rudel",
@@ -83,8 +83,7 @@
 			"partitionBy": "toYYYYMM(toDate(session_date))",
 			"ttl": "toDate(session_date) + toIntervalDay(365)",
 			"settings": {
-				"index_granularity": "8192",
-				"storage_policy": "'s3'"
+				"index_granularity": "8192"
 			},
 			"kind": "table"
 		},
@@ -164,8 +163,7 @@
 			"partitionBy": "toYYYYMM(toDate(session_date))",
 			"ttl": "toDate(session_date) + toIntervalDay(365)",
 			"settings": {
-				"index_granularity": "8192",
-				"storage_policy": "'s3'"
+				"index_granularity": "8192"
 			},
 			"kind": "table"
 		},
@@ -376,30 +374,35 @@
 					"name": "idx_git_remote",
 					"expression": "git_remote",
 					"type": "set",
+					"typeArgs": "0",
 					"granularity": 4
 				},
 				{
 					"name": "idx_model_used",
 					"expression": "model_used",
 					"type": "set",
+					"typeArgs": "0",
 					"granularity": 4
 				},
 				{
 					"name": "idx_project_path",
 					"expression": "project_path",
 					"type": "set",
+					"typeArgs": "0",
 					"granularity": 4
 				},
 				{
 					"name": "idx_source",
 					"expression": "source",
 					"type": "set",
+					"typeArgs": "0",
 					"granularity": 4
 				},
 				{
 					"name": "idx_user_id",
 					"expression": "user_id",
 					"type": "set",
+					"typeArgs": "0",
 					"granularity": 4
 				}
 			],

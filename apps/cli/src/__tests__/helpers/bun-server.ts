@@ -169,11 +169,7 @@ export async function signUpTestUser(baseUrl: string): Promise<string> {
 		throw new Error(`Sign-up failed (${res.status}): ${body}`);
 	}
 
-	const data = (await res.json()) as { token?: string };
-
-	if (data.token) return data.token;
-
-	// Fallback: extract session token from set-cookie header
+	// Extract session token from set-cookie header (preferred)
 	const cookies = res.headers.getSetCookie();
 	const sessionCookie = cookies
 		.find((c) => c.startsWith("better-auth.session_token="))
@@ -181,6 +177,14 @@ export async function signUpTestUser(baseUrl: string): Promise<string> {
 		?.split(";")[0];
 
 	if (sessionCookie) return sessionCookie;
+
+	// Fallback: try response body
+	const data = (await res.json()) as {
+		token?: string;
+		session?: { token?: string };
+	};
+	if (data.session?.token) return data.session.token;
+	if (data.token) return data.token;
 
 	throw new Error("Could not extract token from sign-up response");
 }

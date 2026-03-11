@@ -17,7 +17,7 @@ import {
 const logger = getLogger(["rudel", "api", "project-service"]);
 
 const PROJECT_KEY_EXPR = `if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))`;
-const PROJECT_DISPLAY_EXPR = `if(git_remote != '', arrayElement(splitByChar('/', git_remote), -1), arrayElement(splitByChar('/', project_path), -1))`;
+const PROJECT_DISPLAY_EXPR = `if(git_remote != '', arrayElement(splitByChar('/', git_remote), -1), arrayElement(splitByChar('/', replaceAll(project_path, '\\\\', '/')), -1))`;
 
 function buildProjectDisplaySubquery(
 	orgParamName: string,
@@ -81,9 +81,7 @@ export interface ProjectError extends ProjectErrorBase {
 	first_seen: string;
 }
 
-export interface ProjectTrendDataPoint extends ProjectTrendDataPointBase {
-	project_name?: string;
-}
+export type ProjectTrendDataPoint = ProjectTrendDataPointBase;
 
 /**
  * Extract project name from path (last segment)

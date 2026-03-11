@@ -143,7 +143,9 @@ export function TaskClassificationChart({
 						dataKey="value"
 						onClick={(d) => {
 							if (onTaskTypeClick) {
-								onTaskTypeClick(d.task_type);
+								onTaskTypeClick(
+									(d as unknown as { task_type: string }).task_type,
+								);
 							}
 						}}
 						cursor="pointer"

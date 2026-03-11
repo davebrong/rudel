@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { ChartLegend } from "./ChartLegend";
+import { ChartTooltip } from "./ChartTooltip";
 
 const MAX_SERIES = 14;
 const OTHER_COLOR = "#9ca3af";
@@ -50,7 +51,7 @@ interface ModelTokensChartProps {
 }
 
 export function ModelTokensChart({ data }: ModelTokensChartProps) {
-	const { tooltipBg, tooltipBorder, gridStroke } = useChartTheme();
+	const { gridStroke } = useChartTheme();
 	const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 	const toggleSeries = (key: string) =>
 		setHiddenSeries((prev) => {
@@ -134,17 +135,13 @@ export function ModelTokensChart({ data }: ModelTokensChartProps) {
 				/>
 				<YAxis tick={{ fontSize: 12 }} tickFormatter={formatCompactNumber} />
 				<Tooltip
-					contentStyle={{
-						backgroundColor: tooltipBg,
-						border: `1px solid ${tooltipBorder}`,
-						borderRadius: "2px",
-						padding: "12px",
-					}}
-					formatter={(value, name) => [
-						formatCompactNumber((value as number) ?? 0),
-						shortenModelName(String(name ?? "")),
-					]}
-					labelFormatter={(label) => label}
+					content={(props) => (
+						<ChartTooltip
+							{...props}
+							nameFormatter={shortenModelName}
+							valueFormatter={(v) => formatCompactNumber(v)}
+						/>
+					)}
 				/>
 				<Legend
 					layout="vertical"

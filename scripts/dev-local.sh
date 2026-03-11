@@ -8,7 +8,11 @@ docker compose up -d --wait
 PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/rudel \
   bun run --cwd packages/sql-schema migrate
 
-# 3. Start API + Web in parallel with local env vars
+# 3. Run ClickHouse migrations (idempotent — skips already-applied)
+(cd packages/ch-schema && CLICKHOUSE_URL=http://localhost:8123 CLICKHOUSE_PASSWORD=clickhouse CLICKHOUSE_DB=default \
+  bun --bun chkit migrate --apply)
+
+# 4. Start API + Web in parallel with local env vars
 export PG_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/rudel
 export BETTER_AUTH_SECRET=local-dev-secret-that-is-at-least-32-chars-long
 export CLICKHOUSE_URL=http://localhost:8123

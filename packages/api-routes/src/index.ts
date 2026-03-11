@@ -64,6 +64,12 @@ export const UserSchema = z.object({
 	activeOrganizationId: z.string().nullable(),
 });
 
+export const CliUserSchema = z.object({
+	id: z.string(),
+	email: z.string(),
+	name: z.string(),
+});
+
 export const OrganizationSchema = z.object({
 	id: z.string(),
 	name: z.string(),
@@ -93,17 +99,20 @@ export const SubagentFileSchema = z.object({
 
 export const IngestSessionInputSchema = z.object({
 	source: SourceSchema.default("claude_code"),
-	sessionId: z.string(),
-	projectPath: z.string(),
-	gitRemote: z.string().optional(),
-	packageName: z.string().optional(),
-	packageType: z.string().optional(),
-	gitBranch: z.string().optional(),
-	gitSha: z.string().optional(),
+	sessionId: z.string().max(200),
+	projectPath: z
+		.string()
+		.max(200)
+		.transform((p) => p.replace(/\\/g, "/")),
+	gitRemote: z.string().max(200).optional(),
+	packageName: z.string().max(200).optional(),
+	packageType: z.string().max(200).optional(),
+	gitBranch: z.string().max(200).optional(),
+	gitSha: z.string().max(200).optional(),
 	tag: SessionTagSchema.optional(),
 	content: z.string(),
 	subagents: z.array(SubagentFileSchema).optional(),
-	organizationId: z.string().optional(),
+	organizationId: z.string().max(200).optional(),
 });
 
 export const IngestSessionOutputSchema = z.object({
@@ -116,6 +125,10 @@ export type IngestSessionInput = z.infer<typeof IngestSessionInputSchema>;
 export const contract = {
 	health: oc.output(HealthSchema),
 	me: oc.output(UserSchema),
+	cli: {
+		authStatus: oc.output(CliUserSchema),
+		revokeToken: oc.output(z.object({ success: z.literal(true) })),
+	},
 	listMyOrganizations: oc.output(z.array(OrganizationSchema)),
 	ingestSession: oc
 		.input(IngestSessionInputSchema)

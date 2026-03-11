@@ -2,6 +2,9 @@ import { join } from "node:path";
 import { getLogger, withContext } from "@logtape/logtape";
 import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
+import { user as userTable } from "@rudel/sql-schema";
+import { eq } from "drizzle-orm";
+import type { Session as AuthSession } from "./auth.js";
 import { createAuth } from "./auth.js";
 import { db } from "./db.js";
 import { setupLogging } from "./logging.js";
@@ -10,6 +13,7 @@ import { router } from "./router.js";
 await setupLogging();
 
 const logger = getLogger(["rudel", "api", "http"]);
+type AuthUser = AuthSession["user"];
 
 const socialProviders: Record<
 	string,
@@ -29,15 +33,18 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 }
 
 const appURL = process.env.APP_URL ?? "http://localhost:4010";
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "http://localhost:4011";
 const trustedOrigins = process.env.TRUSTED_ORIGINS
 	? process.env.TRUSTED_ORIGINS.split(",").map((o) => o.trim())
-	: ["http://localhost:4011"];
+	: [ALLOWED_ORIGIN];
 
 const auth = createAuth(db, {
 	appURL,
 	secret: process.env.BETTER_AUTH_SECRET,
 	socialProviders,
 	trustedOrigins,
+	cliDeviceVerificationUrl:
+		process.env.CLI_DEVICE_VERIFICATION_URL ?? `${ALLOWED_ORIGIN}/device`,
 	slackWebhookUrl: process.env.SLACK_WEBHOOK_URL,
 });
 
@@ -52,7 +59,6 @@ const rpcHandler = new RPCHandler(router, {
 	],
 });
 
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "http://localhost:4011";
 const STATIC_DIR = join(
 	import.meta.dir,
 	"..",
@@ -65,11 +71,14 @@ function corsHeaders(origin: string | null): Record<string, string> {
 		"Access-Control-Allow-Origin": ALLOWED_ORIGIN,
 		"Access-Control-Allow-Credentials": "true",
 		"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-		"Access-Control-Allow-Headers": "Content-Type, Authorization",
+		"Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
 	};
 }
 
 const port = process.env.PORT ?? 4010;
+const MAX_REQUEST_BODY_BYTES = Number(
+	process.env.MAX_REQUEST_BODY_BYTES ?? 500 * 1024 * 1024, // 500 MB
+);
 
 const server = Bun.serve({
 	port,
@@ -79,6 +88,19 @@ const server = Bun.serve({
 
 		if (request.method === "OPTIONS") {
 			return new Response(null, { status: 204, headers: cors });
+		}
+
+		const contentLength = request.headers.get("Content-Length");
+		if (contentLength && Number(contentLength) > MAX_REQUEST_BODY_BYTES) {
+			return new Response(
+				JSON.stringify({
+					error: `Request body too large. Maximum size is ${Math.round(MAX_REQUEST_BODY_BYTES / (1024 * 1024))} MB.`,
+				}),
+				{
+					status: 413,
+					headers: { ...cors, "Content-Type": "application/json" },
+				},
+			);
 		}
 
 		const url = new URL(request.url);
@@ -113,22 +135,11 @@ async function handleRequest(
 	url: URL,
 	cors: Record<string, string>,
 ): Promise<Response> {
-	if (url.pathname === "/api/cli-token") {
-		const session = await auth.api.getSession({
-			headers: request.headers,
-		});
-		if (!session) {
-			return new Response(JSON.stringify({ error: "Not authenticated" }), {
-				status: 401,
-				headers: { ...cors, "Content-Type": "application/json" },
-			});
-		}
-		return new Response(JSON.stringify({ token: session.session.token }), {
-			status: 200,
-			headers: { ...cors, "Content-Type": "application/json" },
-		});
+	// Defense in depth: block Better Auth's built-in org deletion route.
+	// Rudel has its own guarded deletion path via the RPC router.
+	if (url.pathname === "/api/auth/organization/delete") {
+		return new Response("Not Found", { status: 404, headers: cors });
 	}
-
 	if (url.pathname.startsWith("/api/auth")) {
 		const response = await auth.handler(request);
 		for (const [key, value] of Object.entries(cors)) {
@@ -186,9 +197,52 @@ async function getContext(request: Request) {
 	const session = await auth.api.getSession({
 		headers: request.headers,
 	});
+
+	let apiKeyId: string | null = null;
+	const apiKey =
+		request.headers.get("x-api-key") ??
+		request.headers.get("X-API-Key") ??
+		null;
+
+	let apiKeyUser: AuthUser | null = null;
+	if (apiKey) {
+		try {
+			const verification = await auth.api.verifyApiKey({
+				body: {
+					key: apiKey,
+					permissions: { ingest: ["write"] },
+				},
+			});
+
+			if (verification.valid && verification.key) {
+				const [foundUser] = await db
+					.select({
+						id: userTable.id,
+						name: userTable.name,
+						email: userTable.email,
+						emailVerified: userTable.emailVerified,
+						image: userTable.image,
+						createdAt: userTable.createdAt,
+						updatedAt: userTable.updatedAt,
+					})
+					.from(userTable)
+					.where(eq(userTable.id, verification.key.referenceId))
+					.limit(1);
+
+				if (foundUser) {
+					apiKeyUser = foundUser as AuthUser;
+					apiKeyId = verification.key.id;
+				}
+			}
+		} catch {
+			// Invalid API key is treated as unauthenticated for key-based auth.
+		}
+	}
+
 	return {
-		user: session?.user ?? null,
+		user: session?.user ?? apiKeyUser ?? null,
 		session: session?.session ?? null,
+		apiKeyId,
 	};
 }
 

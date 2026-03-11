@@ -38,7 +38,7 @@ afterAll(async () => {
 });
 
 describe("auth e2e", () => {
-	test("login: callback server receives token and stores credentials", async () => {
+	test("login: device flow stores ingest API key credentials", async () => {
 		// Clear any existing credentials first
 		clearCredentialsFromDir(configDir);
 
@@ -50,7 +50,7 @@ describe("auth e2e", () => {
 			[
 				"bash",
 				"-c",
-				`bun "${cliPath}" login --api-base="${server.baseUrl}" --web-url=http://localhost:9999 --no-browser 2>&1 | tee "${stdoutLogPath}"`,
+				`set -o pipefail; bun "${cliPath}" login --api-base="${server.baseUrl}" --web-url=http://localhost:9999 --no-browser 2>&1 | tee "${stdoutLogPath}"`,
 			],
 			{
 				env: {
@@ -62,7 +62,7 @@ describe("auth e2e", () => {
 			},
 		);
 
-		// Poll the log file for the "Opening browser" message
+		// Poll the log file for the device code prompt
 		const { readFileSync, existsSync } = require("node:fs");
 		let output = "";
 		const deadline = Date.now() + 10_000;
@@ -70,28 +70,29 @@ describe("auth e2e", () => {
 		while (Date.now() < deadline) {
 			if (existsSync(stdoutLogPath)) {
 				output = readFileSync(stdoutLogPath, "utf-8");
-				if (output.includes("Opening browser")) break;
+				if (output.includes("User code:")) break;
 			}
 			await Bun.sleep(100);
 		}
 
-		// Extract the callback URL from the output
-		const callbackMatch = output.match(/cli_callback=([^&]+)/);
-		expect(callbackMatch).not.toBeNull();
-		const callbackUrl = decodeURIComponent(callbackMatch?.[1] ?? "");
+		// Extract user code and approve the device flow as the test user
+		const userCodeMatch = output.match(/User code:\s*([A-Z0-9_-]+)/i);
+		expect(userCodeMatch).not.toBeNull();
+		const userCode = userCodeMatch?.[1] ?? "";
 
-		// Extract the state
-		const stateMatch = output.match(/state=([a-f0-9]+)/);
-		expect(stateMatch).not.toBeNull();
-		const state = stateMatch?.[1] ?? "";
-
-		// Simulate what the web app does: hit the callback with token + state
-		const callbackResponse = await fetch(
-			`${callbackUrl}?token=${sessionToken}&state=${state}`,
+		const approveResponse = await fetch(
+			`${server.baseUrl}/api/auth/device/approve`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${sessionToken}`,
+					Cookie: `better-auth.session_token=${sessionToken}`,
+				},
+				body: JSON.stringify({ userCode }),
+			},
 		);
-		expect(callbackResponse.ok).toBe(true);
-		const callbackBody = await callbackResponse.text();
-		expect(callbackBody).toContain("Login successful");
+		expect(approveResponse.ok).toBe(true);
 
 		// Wait for the process to finish
 		const exitCode = await loginProcess.exited;
@@ -100,8 +101,10 @@ describe("auth e2e", () => {
 		// Verify credentials were stored
 		const savedCredentials = loadCredentialsFromDir(configDir);
 		expect(savedCredentials).not.toBeNull();
-		expect(savedCredentials?.token).toBe(sessionToken);
+		expect(savedCredentials?.token).not.toBe(sessionToken);
 		expect(savedCredentials?.apiBaseUrl).toBe(server.baseUrl);
+		expect(savedCredentials?.authType).toBe("api-key");
+		expect(savedCredentials?.apiKeyId).toBeDefined();
 	});
 
 	test("whoami: shows user info with valid credentials", async () => {
@@ -184,14 +187,17 @@ function saveCredentialsToDir(
 	const { writeFileSync } = require("node:fs");
 	writeFileSync(
 		join(dir, "credentials.json"),
-		JSON.stringify({ token, apiBaseUrl }, null, 2),
+		JSON.stringify({ token, apiBaseUrl, authType: "bearer" }, null, 2),
 		{ mode: 0o600 },
 	);
 }
 
-function loadCredentialsFromDir(
-	dir: string,
-): { token: string; apiBaseUrl: string } | null {
+function loadCredentialsFromDir(dir: string): {
+	token: string;
+	apiBaseUrl: string;
+	authType?: string;
+	apiKeyId?: string;
+} | null {
 	const path = join(dir, "credentials.json");
 	try {
 		const { readFileSync } = require("node:fs");
