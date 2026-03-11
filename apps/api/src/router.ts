@@ -69,8 +69,8 @@ const ingestSessionHandler = os.ingestSession
 	.handler(async ({ input, context }) => {
 		const activeOrgId =
 			context.session &&
-			typeof (context.session as Record<string, unknown>).activeOrganizationId ===
-				"string"
+			typeof (context.session as Record<string, unknown>)
+				.activeOrganizationId === "string"
 				? ((context.session as Record<string, unknown>)
 						.activeOrganizationId as string)
 				: null;
