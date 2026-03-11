@@ -62,6 +62,7 @@ async function runSessionEnd(): Promise<void> {
 		const result = await uploadSession(request, {
 			endpoint,
 			token: credentials.token,
+			authType: credentials.authType,
 			onRetry: (attempt, maxAttempts, error) => {
 				logger.warn(
 					"Retrying upload for {sessionId} ({attempt}/{maxAttempts}): {error}",

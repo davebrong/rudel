@@ -64,6 +64,12 @@ export const UserSchema = z.object({
 	activeOrganizationId: z.string().nullable(),
 });
 
+export const CliUserSchema = z.object({
+	id: z.string(),
+	email: z.string(),
+	name: z.string(),
+});
+
 export const OrganizationSchema = z.object({
 	id: z.string(),
 	name: z.string(),
@@ -116,6 +122,10 @@ export type IngestSessionInput = z.infer<typeof IngestSessionInputSchema>;
 export const contract = {
 	health: oc.output(HealthSchema),
 	me: oc.output(UserSchema),
+	cli: {
+		authStatus: oc.output(CliUserSchema),
+		revokeToken: oc.output(z.object({ success: z.literal(true) })),
+	},
 	listMyOrganizations: oc.output(z.array(OrganizationSchema)),
 	ingestSession: oc
 		.input(IngestSessionInputSchema)

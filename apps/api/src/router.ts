@@ -1,11 +1,11 @@
 import { ORPCError } from "@orpc/server";
 import { getAdapter } from "@rudel/agent-adapters";
-import { member, organization, session } from "@rudel/sql-schema";
+import { apikey, member, organization, session } from "@rudel/sql-schema";
 import { and, eq } from "drizzle-orm";
 import { getClickhouse } from "./clickhouse.js";
 import { db } from "./db.js";
 import { analyticsRouter } from "./handlers/analytics/index.js";
-import { authMiddleware, os } from "./middleware.js";
+import { authMiddleware, ingestAuthMiddleware, os } from "./middleware.js";
 import {
 	deleteOrgSessions,
 	getOrgSessionCount,
@@ -31,6 +31,16 @@ const me = os.me.use(authMiddleware).handler(({ context }) => {
 	};
 });
 
+const cliAuthStatus = os.cli.authStatus
+	.use(ingestAuthMiddleware)
+	.handler(({ context }) => {
+		return {
+			id: context.user.id,
+			email: context.user.email,
+			name: context.user.name,
+		};
+	});
+
 const listMyOrganizations = os.listMyOrganizations
 	.use(authMiddleware)
 	.handler(async ({ context }) => {
@@ -54,14 +64,18 @@ const listMyOrganizations = os.listMyOrganizations
 	});
 
 const ingestSessionHandler = os.ingestSession
-	.use(authMiddleware)
+	.use(ingestAuthMiddleware)
 	.handler(async ({ input, context }) => {
+		const activeOrgId =
+			context.session &&
+			typeof (context.session as Record<string, unknown>).activeOrganizationId ===
+				"string"
+				? ((context.session as Record<string, unknown>)
+						.activeOrganizationId as string)
+				: null;
+
 		const orgId =
-			input.organizationId ??
-			((context.session as Record<string, unknown>).activeOrganizationId as
-				| string
-				| null) ??
-			context.user.id;
+			input.organizationId ?? activeOrgId ?? context.user.id;
 
 		if (input.organizationId) {
 			const membership = await db
@@ -92,6 +106,28 @@ const ingestSessionHandler = os.ingestSession
 			success: true as const,
 			sessionId: input.sessionId,
 		};
+	});
+
+const revokeCliToken = os.cli.revokeToken
+	.use(ingestAuthMiddleware)
+	.handler(async ({ context }) => {
+		if (!context.apiKeyId) {
+			throw new ORPCError("BAD_REQUEST", {
+				message: "No API key in current authentication context",
+			});
+		}
+
+		await db
+			.update(apikey)
+			.set({ enabled: false, updatedAt: new Date() })
+			.where(
+				and(
+					eq(apikey.id, context.apiKeyId),
+					eq(apikey.userId, context.user.id),
+				),
+			);
+
+		return { success: true as const };
 	});
 
 const getOrganizationSessionCount = os.getOrganizationSessionCount
@@ -191,6 +227,10 @@ const deleteOrganization = os.deleteOrganization
 export const router = os.router({
 	health,
 	me,
+	cli: {
+		authStatus: cliAuthStatus,
+		revokeToken: revokeCliToken,
+	},
 	listMyOrganizations,
 	ingestSession: ingestSessionHandler,
 	getOrganizationSessionCount,

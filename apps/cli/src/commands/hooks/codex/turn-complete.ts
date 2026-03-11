@@ -63,6 +63,7 @@ async function runTurnComplete(): Promise<void> {
 		const result = await uploadSession(request, {
 			endpoint,
 			token: credentials.token,
+			authType: credentials.authType,
 		});
 
 		if (result.success) {

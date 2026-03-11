@@ -1,6 +1,10 @@
 export type {
 	AccountInsert,
 	AccountSelect,
+	ApiKeyInsert,
+	ApiKeySelect,
+	DeviceCodeInsert,
+	DeviceCodeSelect,
 	InvitationInsert,
 	InvitationSelect,
 	MemberInsert,
@@ -16,6 +20,8 @@ export type {
 } from "./schema.js";
 export {
 	account,
+	apikey,
+	deviceCode,
 	invitation,
 	member,
 	organization,

@@ -31,7 +31,10 @@ export async function verifyAuth(): Promise<AuthResult> {
 
 	const client = createApiClient(credentials);
 	try {
-		const user = await client.me();
+		const user =
+			credentials.authType === "api-key"
+				? await client.cli.authStatus()
+				: await client.me();
 		return { authenticated: true, credentials, user };
 	} catch (error) {
 		const message = String(error);

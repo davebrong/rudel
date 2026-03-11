@@ -99,10 +99,14 @@ describe("CLI upload to local API", () => {
 		// Write credentials file using the current server URL (port may have changed)
 		const credDir = join(tempDir, "cli-creds");
 		await mkdir(credDir, { recursive: true });
-		await writeFile(
-			join(credDir, "credentials.json"),
-			JSON.stringify({ token: bearerToken, apiBaseUrl: server.baseUrl }),
-		);
+			await writeFile(
+				join(credDir, "credentials.json"),
+				JSON.stringify({
+					token: bearerToken,
+					apiBaseUrl: server.baseUrl,
+					authType: "bearer",
+				}),
+			);
 
 		const sessionFile = join(projectDir, "e2e-test-session.jsonl");
 		await writeFile(

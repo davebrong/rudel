@@ -2,7 +2,12 @@ import { getLogger } from "@logtape/logtape";
 import * as schema from "@rudel/sql-schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer, organization } from "better-auth/plugins";
+import {
+	apiKey,
+	bearer,
+	deviceAuthorization,
+	organization,
+} from "better-auth/plugins";
 import { fetchGitHubHandle, notifySignup } from "./slack.js";
 
 const logger = getLogger(["rudel", "api", "auth"]);
@@ -12,6 +17,7 @@ export interface AuthConfig {
 	secret?: string;
 	socialProviders?: Record<string, { clientId: string; clientSecret: string }>;
 	trustedOrigins?: string[];
+	cliDeviceVerificationUrl?: string;
 	slackWebhookUrl?: string;
 }
 
@@ -35,6 +41,20 @@ export function createAuth(db: object, config: AuthConfig) {
 		socialProviders: config.socialProviders,
 		plugins: [
 			bearer(),
+			apiKey({
+				keyExpiration: {
+					defaultExpiresIn: null,
+				},
+				permissions: {
+					defaultPermissions: {
+						ingest: ["write"],
+					},
+				},
+			}),
+			deviceAuthorization({
+				validateClient: async (clientId) => clientId === "rudel-cli",
+				verificationUri: config.cliDeviceVerificationUrl,
+			}),
 			organization({
 				allowUserToCreateOrganization: true,
 				creatorRole: "owner",
