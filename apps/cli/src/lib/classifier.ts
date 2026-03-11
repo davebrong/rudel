@@ -1,7 +1,4 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { exec } from "./exec.js";
+import { spawn } from "node:child_process";
 import { SESSION_TAGS, type SessionTag } from "./types.js";
 
 const SYSTEM_PROMPT = `You are a session classifier. Analyze the Claude Code session transcript and classify it into exactly ONE of these categories:
@@ -18,31 +15,30 @@ CRITICAL: Respond with ONLY the tag name. Nothing else. No explanation, no punct
 /**
  * Classify a session transcript using Claude CLI.
  * Returns one of the predefined tags based on the session content.
+ *
+ * Passes transcript content via stdin to avoid needing file-read permissions.
  */
 export async function classifySession(
 	content: string,
 ): Promise<SessionTag | undefined> {
-	// Truncate content to avoid excessive API costs
 	const truncatedContent = content.slice(0, 50000);
-
-	const tempDir = join(homedir(), ".claude", "temp");
-	const tempFile = join(tempDir, `classify-${Date.now()}.txt`);
+	const prompt = `Classify this session transcript:\n\n${truncatedContent}`;
 
 	try {
-		await mkdir(tempDir, { recursive: true });
-		await writeFile(
-			tempFile,
-			`Classify this session transcript:\n\n${truncatedContent}`,
+		const result = await execWithStdin(
+			"claude",
+			[
+				"--output-format",
+				"text",
+				"--print",
+				"--model",
+				"haiku",
+				"--no-session-persistence",
+				"--system-prompt",
+				SYSTEM_PROMPT,
+			],
+			prompt,
 		);
-
-		const prompt = `Read and classify the session transcript in this file: ${tempFile}`;
-		const escapedPrompt = prompt.replace(/'/g, "'\\''");
-		const escapedSystemPrompt = SYSTEM_PROMPT.replace(/'/g, "'\\''");
-
-		const result = await exec("sh", [
-			"-c",
-			`echo '${escapedPrompt}' | claude --output-format text --print --model haiku --no-session-persistence --dangerously-skip-permissions --system-prompt '${escapedSystemPrompt}'`,
-		]);
 
 		if (result.exitCode !== 0) {
 			return "other";
@@ -50,12 +46,10 @@ export async function classifySession(
 
 		const output = result.stdout.trim().toLowerCase();
 
-		// Exact match
 		if (SESSION_TAGS.includes(output as SessionTag)) {
 			return output as SessionTag;
 		}
 
-		// Search for valid tags in verbose output
 		for (const tag of SESSION_TAGS) {
 			if (new RegExp(`\\b${tag}\\b`).test(output)) {
 				return tag;
@@ -65,11 +59,33 @@ export async function classifySession(
 		return "other";
 	} catch {
 		return undefined;
-	} finally {
-		try {
-			await unlink(tempFile);
-		} catch {
-			// Ignore cleanup errors
-		}
 	}
+}
+
+function execWithStdin(
+	cmd: string,
+	args: string[],
+	stdin: string,
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+	return new Promise((resolve) => {
+		const child = spawn(cmd, args, { stdio: ["pipe", "pipe", "pipe"] });
+		let stdout = "";
+		let stderr = "";
+
+		child.stdout.on("data", (data: Buffer) => {
+			stdout += data.toString();
+		});
+		child.stderr.on("data", (data: Buffer) => {
+			stderr += data.toString();
+		});
+		child.on("close", (code) => {
+			resolve({ exitCode: code ?? 1, stdout, stderr });
+		});
+		child.on("error", () => {
+			resolve({ exitCode: 1, stdout, stderr });
+		});
+
+		child.stdin.write(stdin);
+		child.stdin.end();
+	});
 }
