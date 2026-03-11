@@ -9,8 +9,8 @@ import type {
 	DeveloperTrendDataPoint,
 } from "@rudel/api-routes";
 import {
+	addOptionalStringEqFilter,
 	buildDateFilter,
-	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
 
@@ -44,8 +44,12 @@ export async function getDeveloperList(
 	orgId: string,
 	days = 30,
 ): Promise<DeveloperSummary[]> {
-	const org = escapeString(orgId);
 	const d = Number(days);
+	const query_params = {
+		currentDays: d,
+		previousDays: d * 2,
+		orgId,
+	};
 
 	const query = `
     WITH current_period AS (
@@ -61,8 +65,8 @@ export async function getDeveloperList(
         toString(max(session_date)) as last_active_date,
         round(AVG(success_score), 2) as success_rate
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+      WHERE ${buildDateFilter("currentDays")}
+        AND organization_id = {orgId:String}
       GROUP BY user_id
     ),
     previous_period AS (
@@ -70,9 +74,9 @@ export async function getDeveloperList(
         user_id,
         round(AVG(success_score), 2) as prev_success_rate
       FROM rudel.session_analytics
-      WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
-        AND session_date < now64(3) - INTERVAL ${d} DAY
-        AND organization_id = '${org}'
+      WHERE session_date >= now64(3) - toIntervalDay({previousDays:UInt32})
+        AND session_date < now64(3) - toIntervalDay({currentDays:UInt32})
+        AND organization_id = {orgId:String}
       GROUP BY user_id
     )
     SELECT
@@ -93,7 +97,10 @@ export async function getDeveloperList(
     ORDER BY c.total_sessions DESC
   `;
 
-	return queryClickhouse<DeveloperSummary>(query);
+	return queryClickhouse<DeveloperSummary>({
+		query,
+		query_params,
+	});
 }
 
 /**
@@ -104,9 +111,13 @@ export async function getDeveloperDetails(
 	userId: string,
 	days = 30,
 ): Promise<DeveloperDetails | null> {
-	const org = escapeString(orgId);
-	const uid = escapeString(userId);
 	const d = Number(days);
+	const query_params = {
+		currentDays: d,
+		previousDays: d * 2,
+		orgId,
+		userId,
+	};
 
 	const query = `
     WITH current_period AS (
@@ -124,9 +135,9 @@ export async function getDeveloperDetails(
         COUNT(DISTINCT project_path) as distinct_projects,
         SUM(error_count) as error_count
       FROM rudel.session_analytics
-      WHERE user_id = '${uid}'
-        AND ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+      WHERE user_id = {userId:String}
+        AND ${buildDateFilter("currentDays")}
+        AND organization_id = {orgId:String}
       GROUP BY user_id
     ),
     previous_period AS (
@@ -134,10 +145,10 @@ export async function getDeveloperDetails(
         user_id,
         round(AVG(success_score), 2) as prev_success_rate
       FROM rudel.session_analytics
-      WHERE user_id = '${uid}'
-        AND session_date >= now64(3) - INTERVAL ${d * 2} DAY
-        AND session_date < now64(3) - INTERVAL ${d} DAY
-        AND organization_id = '${org}'
+      WHERE user_id = {userId:String}
+        AND session_date >= now64(3) - toIntervalDay({previousDays:UInt32})
+        AND session_date < now64(3) - toIntervalDay({currentDays:UInt32})
+        AND organization_id = {orgId:String}
       GROUP BY user_id
     )
     SELECT
@@ -159,7 +170,10 @@ export async function getDeveloperDetails(
     LEFT JOIN previous_period p ON c.user_id = p.user_id
   `;
 
-	const results = await queryClickhouse<DeveloperDetails>(query);
+	const results = await queryClickhouse<DeveloperDetails>({
+		query,
+		query_params,
+	});
 	const [first] = results;
 	if (!first) return null;
 
@@ -192,18 +206,24 @@ export async function getDeveloperSessions(
 		sort_order = "desc",
 	} = params;
 
-	const org = escapeString(orgId);
-	const uid = escapeString(userId);
 	const d = Number(days);
-	const lim = Number(limit);
-	const off = Number(offset);
-
-	let filters = "";
-	if (project_path) {
-		filters += ` AND project_path = '${escapeString(project_path)}'`;
-	}
+	const query_params: Record<string, unknown> = {
+		days: d,
+		limit: Number(limit),
+		offset: Number(offset),
+		orgId,
+		userId,
+	};
+	const filters: string[] = [];
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
 	if (outcome === "success") {
-		filters += ` AND actual_duration_min BETWEEN 5 AND 240`;
+		filters.push("actual_duration_min BETWEEN 5 AND 240");
 	}
 
 	const sortColumn =
@@ -231,16 +251,19 @@ export async function getDeveloperSessions(
       error_count > 0 as has_errors,
       actual_duration_min BETWEEN 5 AND 240 as likely_success
     FROM rudel.session_analytics
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
-      ${filters}
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
+      ${filters.length > 0 ? `AND ${filters.join("\n      AND ")}` : ""}
     ORDER BY ${sortColumn} ${sortDirection}
-    LIMIT ${lim}
-    OFFSET ${off}
+    LIMIT {limit:UInt32}
+    OFFSET {offset:UInt32}
   `;
 
-	const results = await queryClickhouse<DeveloperSession>(query);
+	const results = await queryClickhouse<DeveloperSession>({
+		query,
+		query_params,
+	});
 
 	return results.map((session) => ({
 		...session,
@@ -260,8 +283,6 @@ export async function getDeveloperProjects(
 	userId: string,
 	days = 30,
 ): Promise<DeveloperProject[]> {
-	const org = escapeString(orgId);
-	const uid = escapeString(userId);
 	const d = Number(days);
 
 	const query = `
@@ -275,15 +296,22 @@ export async function getDeveloperProjects(
       toString(min(session_date)) as first_session,
       toString(max(session_date)) as last_session
     FROM rudel.session_analytics
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND project_path != ''
     GROUP BY project_path
     ORDER BY sessions DESC
   `;
 
-	return queryClickhouse<DeveloperProject>(query);
+	return queryClickhouse<DeveloperProject>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+			userId,
+		},
+	});
 }
 
 /**
@@ -294,8 +322,6 @@ export async function getDeveloperErrors(
 	userId: string,
 	days = 30,
 ): Promise<DeveloperError[]> {
-	const org = escapeString(orgId);
-	const uid = escapeString(userId);
 	const d = Number(days);
 
 	const query = `
@@ -314,9 +340,9 @@ export async function getDeveloperErrors(
           ELSE NULL
         END as error_pattern
       FROM rudel.session_analytics
-      WHERE user_id = '${uid}'
-        AND ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+      WHERE user_id = {userId:String}
+        AND ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
         AND (content LIKE '%Error:%' OR content LIKE '%error:%')
     )
     SELECT
@@ -332,7 +358,14 @@ export async function getDeveloperErrors(
     LIMIT 20
   `;
 
-	return queryClickhouse<DeveloperError>(query);
+	return queryClickhouse<DeveloperError>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+			userId,
+		},
+	});
 }
 
 /**
@@ -343,8 +376,6 @@ export async function getDeveloperTimeline(
 	userId: string,
 	days = 30,
 ): Promise<DeveloperTimeline[]> {
-	const org = escapeString(orgId);
-	const uid = escapeString(userId);
 	const d = Number(days);
 
 	const query = `
@@ -356,14 +387,21 @@ export async function getDeveloperTimeline(
       COUNT(DISTINCT project_path) as projects_worked,
       round(AVG(success_score), 2) as avg_success_rate
     FROM rudel.session_analytics
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
     GROUP BY toDate(session_date)
     ORDER BY date ASC
   `;
 
-	return queryClickhouse<DeveloperTimeline>(query);
+	return queryClickhouse<DeveloperTimeline>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+			userId,
+		},
+	});
 }
 
 /**
@@ -374,9 +412,12 @@ export async function getDeveloperFeatureUsage(
 	userId: string,
 	days = 30,
 ): Promise<DeveloperFeatureUsage> {
-	const org = escapeString(orgId);
-	const uid = escapeString(userId);
 	const d = Number(days);
+	const query_params = {
+		days: d,
+		orgId,
+		userId,
+	};
 
 	const adoptionQuery = `
     SELECT
@@ -385,18 +426,18 @@ export async function getDeveloperFeatureUsage(
       countIf(length(skills) > 0) as skills_sessions,
       countIf(length(slash_commands) > 0) as slash_commands_sessions
     FROM rudel.session_analytics
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
   `;
 
 	const topSubagentsQuery = `
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN subagent_types as val
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND val != ''
     GROUP BY val
     ORDER BY count DESC
@@ -407,9 +448,9 @@ export async function getDeveloperFeatureUsage(
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN skills as val
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND val != ''
     GROUP BY val
     ORDER BY count DESC
@@ -420,9 +461,9 @@ export async function getDeveloperFeatureUsage(
     SELECT val as name, count() as count
     FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND val != ''
     GROUP BY val
     ORDER BY count DESC
@@ -436,10 +477,22 @@ export async function getDeveloperFeatureUsage(
 				subagents_sessions: number;
 				skills_sessions: number;
 				slash_commands_sessions: number;
-			}>(adoptionQuery),
-			queryClickhouse<{ name: string; count: number }>(topSubagentsQuery),
-			queryClickhouse<{ name: string; count: number }>(topSkillsQuery),
-			queryClickhouse<{ name: string; count: number }>(topSlashCommandsQuery),
+			}>({
+				query: adoptionQuery,
+				query_params,
+			}),
+			queryClickhouse<{ name: string; count: number }>({
+				query: topSubagentsQuery,
+				query_params,
+			}),
+			queryClickhouse<{ name: string; count: number }>({
+				query: topSkillsQuery,
+				query_params,
+			}),
+			queryClickhouse<{ name: string; count: number }>({
+				query: topSlashCommandsQuery,
+				query_params,
+			}),
 		]);
 
 	if (adoptionResults.length === 0) {
@@ -490,7 +543,6 @@ export async function getDeveloperTrends(
 	days = 30,
 	groupBy: "day" | "week" = "day",
 ): Promise<DeveloperTrendDataPoint[]> {
-	const org = escapeString(orgId);
 	const d = Number(days);
 
 	const dateFunc =
@@ -507,13 +559,19 @@ export async function getDeveloperTrends(
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       round(AVG(success_score), 2) as avg_success_rate
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
     GROUP BY date, user_id
     ORDER BY date ASC, user_id ASC
   `;
 
-	return queryClickhouse<DeveloperTrendDataPoint>(query);
+	return queryClickhouse<DeveloperTrendDataPoint>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+		},
+	});
 }
 
 /**
@@ -524,8 +582,6 @@ export async function getDeveloperProjectTimeline(
 	userId: string,
 	days = 30,
 ): Promise<DeveloperProjectTimeline[]> {
-	const org = escapeString(orgId);
-	const uid = escapeString(userId);
 	const d = Number(days);
 
 	const query = `
@@ -536,13 +592,20 @@ export async function getDeveloperProjectTimeline(
       round(SUM(actual_duration_min), 2) as total_duration_min,
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens
     FROM rudel.session_analytics
-    WHERE user_id = '${uid}'
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE user_id = {userId:String}
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND project_path != ''
     GROUP BY toDate(session_date), project_path
     ORDER BY date ASC, project_path ASC
   `;
 
-	return queryClickhouse<DeveloperProjectTimeline>(query);
+	return queryClickhouse<DeveloperProjectTimeline>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+			userId,
+		},
+	});
 }

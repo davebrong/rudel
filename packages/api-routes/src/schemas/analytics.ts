@@ -17,6 +17,9 @@ export const DateRangeInputSchema = z.object({
 	endDate: z.string().date(),
 });
 
+const MAX_ID_FILTER_LENGTH = 512;
+const MAX_PATH_FILTER_LENGTH = 4096;
+
 // ── Overview ───────────────────────────────────────────────────────
 
 export const OverviewKPIsSchema = z.object({
@@ -173,12 +176,12 @@ export const DeveloperErrorSchema = z.object({
 // ── Developer input schemas ────────────────────────────────────────
 
 export const DeveloperDetailsInputSchema = DaysInputSchema.extend({
-	userId: z.string(),
+	userId: z.string().max(MAX_ID_FILTER_LENGTH),
 });
 
 export const DeveloperSessionsInputSchema = DaysInputSchema.extend({
-	userId: z.string(),
-	projectPath: z.string().optional(),
+	userId: z.string().max(MAX_ID_FILTER_LENGTH),
+	projectPath: z.string().max(MAX_PATH_FILTER_LENGTH).optional(),
 	outcome: z.enum(["all", "success"]).default("all"),
 	limit: z.number().int().positive().default(100),
 	offset: z.number().int().nonnegative().default(0),
@@ -249,7 +252,7 @@ export const ProjectTrendDataPointSchema = z.object({
 });
 
 export const ProjectDetailsInputSchema = DaysInputSchema.extend({
-	projectPath: z.string(),
+	projectPath: z.string().max(MAX_PATH_FILTER_LENGTH),
 });
 
 // ── Sessions ───────────────────────────────────────────────────────
@@ -298,9 +301,9 @@ export const SessionAnalyticsSummaryComparisonSchema = z.object({
 });
 
 export const SessionListInputSchema = DaysInputSchema.extend({
-	userId: z.string().optional(),
-	projectPath: z.string().optional(),
-	repository: z.string().optional(),
+	userId: z.string().max(MAX_ID_FILTER_LENGTH).optional(),
+	projectPath: z.string().max(MAX_PATH_FILTER_LENGTH).optional(),
+	repository: z.string().max(MAX_PATH_FILTER_LENGTH).optional(),
 	source: SourceSchema.optional(),
 	limit: z.number().int().positive().default(100),
 	offset: z.number().int().nonnegative().default(0),
@@ -343,8 +346,8 @@ export const DimensionAnalysisInputSchema = DaysInputSchema.extend({
 	metric: z.enum(VALID_METRICS),
 	splitBy: z.enum(VALID_DIMENSIONS).optional(),
 	limit: z.number().int().positive().default(20),
-	userId: z.string().optional(),
-	projectPath: z.string().optional(),
+	userId: z.string().max(MAX_ID_FILTER_LENGTH).optional(),
+	projectPath: z.string().max(MAX_PATH_FILTER_LENGTH).optional(),
 });
 
 export const DimensionAnalysisDataPointSchema = z.object({
@@ -378,7 +381,7 @@ export const SessionDetailSchema = z.object({
 });
 
 export const SessionDetailInputSchema = z.object({
-	sessionId: z.string(),
+	sessionId: z.string().max(MAX_ID_FILTER_LENGTH),
 });
 
 // ── ROI ────────────────────────────────────────────────────────────

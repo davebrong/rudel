@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
 		"dev:env": "doppler run --project rudel --config prd_local -- bun --watch src/index.ts",
+		"lint": "bun ../../scripts/check-clickhouse-guardrails.ts",
 		"check-types": "tsc --noEmit",
 		"test": "bun test",
 		"test:integration": "bun test src/__tests__/ingest-clickhouse.integration.ts",

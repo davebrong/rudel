@@ -8,7 +8,6 @@ import { eq } from "drizzle-orm";
 import {
 	buildAbsoluteDateFilter,
 	buildDateFilter,
-	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
 import { db } from "../db.js";
@@ -28,8 +27,12 @@ export async function getOverviewKPIs(
 	startDate: string,
 	endDate: string,
 ): Promise<OverviewKPIs> {
-	const org = escapeString(orgId);
-	const dateFilter = buildAbsoluteDateFilter(startDate, endDate);
+	const dateFilter = buildAbsoluteDateFilter("startDate", "endDate");
+	const query_params = {
+		startDate,
+		endDate,
+		orgId,
+	};
 
 	const [mainResult, subagentsResult, skillsResult, slashResult, totalResult] =
 		await Promise.all([
@@ -37,44 +40,59 @@ export async function getOverviewKPIs(
 				distinct_users: number;
 				distinct_sessions: number;
 				distinct_projects: number;
-			}>(`
+			}>({
+				query: `
         SELECT
           uniq(user_id) as distinct_users,
           count() as distinct_sessions,
           uniq(if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))) as distinct_projects
         FROM rudel.session_analytics
         WHERE ${dateFilter}
-          AND organization_id = '${org}'
-      `),
-			queryClickhouse<{ count: number }>(`
+          AND organization_id = {orgId:String}
+      `,
+				query_params,
+			}),
+			queryClickhouse<{ count: number }>({
+				query: `
         SELECT uniqExact(val) as count
         FROM rudel.session_analytics
         ARRAY JOIN subagent_types as val
         WHERE ${dateFilter}
-          AND organization_id = '${org}'
+          AND organization_id = {orgId:String}
           AND val != ''
-      `),
-			queryClickhouse<{ count: number }>(`
+      `,
+				query_params,
+			}),
+			queryClickhouse<{ count: number }>({
+				query: `
         SELECT uniqExact(val) as count
         FROM rudel.session_analytics
         ARRAY JOIN skills as val
         WHERE ${dateFilter}
-          AND organization_id = '${org}'
+          AND organization_id = {orgId:String}
           AND val != ''
-      `),
-			queryClickhouse<{ count: number }>(`
+      `,
+				query_params,
+			}),
+			queryClickhouse<{ count: number }>({
+				query: `
         SELECT uniqExact(val) as count
         FROM rudel.session_analytics
         ARRAY JOIN slash_commands as val
         WHERE ${dateFilter}
-          AND organization_id = '${org}'
+          AND organization_id = {orgId:String}
           AND val != ''
-      `),
-			queryClickhouse<{ count: number }>(`
+      `,
+				query_params,
+			}),
+			queryClickhouse<{ count: number }>({
+				query: `
         SELECT count() as count
         FROM rudel.session_analytics
-        WHERE organization_id = '${org}'
-      `),
+        WHERE organization_id = {orgId:String}
+      `,
+				query_params,
+			}),
 		]);
 
 	const row = mainResult[0];
@@ -109,8 +127,7 @@ export async function getModelTokensTrend(
 	startDate: string,
 	endDate: string,
 ): Promise<ModelTokensTrendData[]> {
-	const org = escapeString(orgId);
-	const dateFilter = buildAbsoluteDateFilter(startDate, endDate);
+	const dateFilter = buildAbsoluteDateFilter("startDate", "endDate");
 
 	const query = `
     SELECT
@@ -121,14 +138,21 @@ export async function getModelTokensTrend(
       sum(output_tokens) as output_tokens
     FROM rudel.session_analytics
     WHERE ${dateFilter}
-      AND organization_id = '${org}'
+      AND organization_id = {orgId:String}
       AND model_used != ''
       AND model_used != 'unknown'
     GROUP BY date, model
     ORDER BY date ASC, total_tokens DESC
   `;
 
-	return queryClickhouse<ModelTokensTrendData>(query);
+	return queryClickhouse<ModelTokensTrendData>({
+		query,
+		query_params: {
+			startDate,
+			endDate,
+			orgId,
+		},
+	});
 }
 
 /**
@@ -139,8 +163,7 @@ export async function getUsageTrendDetailed(
 	startDate: string,
 	endDate: string,
 ): Promise<UsageTrendData[]> {
-	const org = escapeString(orgId);
-	const dateFilter = buildAbsoluteDateFilter(startDate, endDate);
+	const dateFilter = buildAbsoluteDateFilter("startDate", "endDate");
 
 	const query = `
     SELECT
@@ -151,12 +174,19 @@ export async function getUsageTrendDetailed(
       sum(total_tokens) as total_tokens
     FROM rudel.session_analytics
     WHERE ${dateFilter}
-      AND organization_id = '${org}'
+      AND organization_id = {orgId:String}
     GROUP BY date
     ORDER BY date ASC
   `;
 
-	return queryClickhouse<UsageTrendData>(query);
+	return queryClickhouse<UsageTrendData>({
+		query,
+		query_params: {
+			startDate,
+			endDate,
+			orgId,
+		},
+	});
 }
 
 /**
@@ -167,13 +197,17 @@ export async function getOverviewInsights(
 	startDate: string,
 	endDate: string,
 ): Promise<Insight[]> {
-	const org = escapeString(orgId);
 	const insights: Insight[] = [];
 	const periodMs = new Date(endDate).getTime() - new Date(startDate).getTime();
 	const prevEnd = new Date(new Date(startDate).getTime() - 1);
 	const prevStart = new Date(prevEnd.getTime() - periodMs);
 	const prevStartStr = prevStart.toISOString().slice(0, 10);
 	const prevEndStr = prevEnd.toISOString().slice(0, 10);
+	const currentDateFilter = buildAbsoluteDateFilter("startDate", "endDate");
+	const previousDateFilter = buildAbsoluteDateFilter(
+		"previousStartDate",
+		"previousEndDate",
+	);
 
 	interface PeriodStats {
 		total_sessions: number;
@@ -183,56 +217,83 @@ export async function getOverviewInsights(
 
 	const [currentData, previousData, topPerformerData, silos] =
 		await Promise.all([
-			queryClickhouse<PeriodStats>(`
+			queryClickhouse<PeriodStats>({
+				query: `
       SELECT
         count() as total_sessions,
         uniq(user_id) as total_users,
         round(avg(actual_duration_min), 2) as avg_duration_min
       FROM rudel.session_analytics
-      WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
-        AND organization_id = '${org}'
-    `),
-			queryClickhouse<PeriodStats>(`
+      WHERE ${currentDateFilter}
+        AND organization_id = {orgId:String}
+    `,
+				query_params: {
+					startDate,
+					endDate,
+					orgId,
+				},
+			}),
+			queryClickhouse<PeriodStats>({
+				query: `
       SELECT
         count() as total_sessions,
         uniq(user_id) as total_users,
         round(avg(actual_duration_min), 2) as avg_duration_min
       FROM rudel.session_analytics
-      WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
-        AND organization_id = '${org}'
-    `),
+      WHERE ${previousDateFilter}
+        AND organization_id = {orgId:String}
+    `,
+				query_params: {
+					previousStartDate: prevStartStr,
+					previousEndDate: prevEndStr,
+					orgId,
+				},
+			}),
 			queryClickhouse<{
 				user_id: string;
 				sessions: number;
 				total_hours: number;
-			}>(`
+			}>({
+				query: `
       SELECT
         user_id,
         count() as sessions,
         round(sum(actual_duration_min) / 60, 1) as total_hours
       FROM rudel.session_analytics
-      WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
-        AND organization_id = '${org}'
+      WHERE ${currentDateFilter}
+        AND organization_id = {orgId:String}
       GROUP BY user_id
       ORDER BY sessions DESC
       LIMIT 1
-    `),
+    `,
+				query_params: {
+					startDate,
+					endDate,
+					orgId,
+				},
+			}),
 			queryClickhouse<{
 				project_path: string;
 				unique_users: number;
 				sessions: number;
-			}>(`
+			}>({
+				query: `
       SELECT
         project_path,
         uniq(user_id) as unique_users,
         count() as sessions
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(30)}
-        AND organization_id = '${org}'
+      WHERE ${buildDateFilter("siloDays")}
+        AND organization_id = {orgId:String}
       GROUP BY project_path
       HAVING unique_users = 1 AND sessions >= 5
       ORDER BY sessions DESC
-    `),
+    `,
+				query_params: {
+					siloDays: 30,
+					orgId,
+				},
+			}),
 		]);
 
 	const current = currentData[0];
@@ -306,12 +367,16 @@ export async function getTeamSummaryWithComparison(
 	startDate: string,
 	endDate: string,
 ) {
-	const org = escapeString(orgId);
 	const periodMs = new Date(endDate).getTime() - new Date(startDate).getTime();
 	const prevEnd = new Date(new Date(startDate).getTime() - 1);
 	const prevStart = new Date(prevEnd.getTime() - periodMs);
 	const prevStartStr = prevStart.toISOString().slice(0, 10);
 	const prevEndStr = prevEnd.toISOString().slice(0, 10);
+	const currentDateFilter = buildAbsoluteDateFilter("startDate", "endDate");
+	const previousDateFilter = buildAbsoluteDateFilter(
+		"previousStartDate",
+		"previousEndDate",
+	);
 
 	const currentQuery = `
     SELECT
@@ -320,8 +385,8 @@ export async function getTeamSummaryWithComparison(
       round(avg(actual_duration_min), 2) as avg_duration_min,
       round(count() / uniq(user_id), 2) as avg_sessions_per_user
     FROM rudel.session_analytics
-    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
-      AND organization_id = '${org}'
+    WHERE ${currentDateFilter}
+      AND organization_id = {orgId:String}
   `;
 
 	const previousQuery = `
@@ -331,13 +396,27 @@ export async function getTeamSummaryWithComparison(
       round(avg(actual_duration_min), 2) as avg_duration_min,
       round(count() / uniq(user_id), 2) as avg_sessions_per_user
     FROM rudel.session_analytics
-    WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
-      AND organization_id = '${org}'
+    WHERE ${previousDateFilter}
+      AND organization_id = {orgId:String}
   `;
 
 	const [currentData, previousData] = await Promise.all([
-		queryClickhouse<TeamSummaryPeriodData>(currentQuery),
-		queryClickhouse<TeamSummaryPeriodData>(previousQuery),
+		queryClickhouse<TeamSummaryPeriodData>({
+			query: currentQuery,
+			query_params: {
+				startDate,
+				endDate,
+				orgId,
+			},
+		}),
+		queryClickhouse<TeamSummaryPeriodData>({
+			query: previousQuery,
+			query_params: {
+				previousStartDate: prevStartStr,
+				previousEndDate: prevEndStr,
+				orgId,
+			},
+		}),
 	]);
 
 	const defaultPeriod: TeamSummaryPeriodData = {
@@ -385,12 +464,16 @@ export async function getSuccessRateMetrics(
 	startDate: string,
 	endDate: string,
 ) {
-	const org = escapeString(orgId);
 	const periodMs = new Date(endDate).getTime() - new Date(startDate).getTime();
 	const prevEnd = new Date(new Date(startDate).getTime() - 1);
 	const prevStart = new Date(prevEnd.getTime() - periodMs);
 	const prevStartStr = prevStart.toISOString().slice(0, 10);
 	const prevEndStr = prevEnd.toISOString().slice(0, 10);
+	const currentDateFilter = buildAbsoluteDateFilter("startDate", "endDate");
+	const previousDateFilter = buildAbsoluteDateFilter(
+		"previousStartDate",
+		"previousEndDate",
+	);
 
 	const currentQuery = `
     SELECT
@@ -398,8 +481,8 @@ export async function getSuccessRateMetrics(
       round(avg(success_score), 1) as avg_success_score,
       countIf(success_score >= 70) as high_quality_sessions
     FROM rudel.session_analytics
-    WHERE ${buildAbsoluteDateFilter(startDate, endDate)}
-      AND organization_id = '${org}'
+    WHERE ${currentDateFilter}
+      AND organization_id = {orgId:String}
   `;
 
 	const previousQuery = `
@@ -408,8 +491,8 @@ export async function getSuccessRateMetrics(
       round(avg(success_score), 1) as avg_success_score,
       countIf(success_score >= 70) as high_quality_sessions
     FROM rudel.session_analytics
-    WHERE ${buildAbsoluteDateFilter(prevStartStr, prevEndStr)}
-      AND organization_id = '${org}'
+    WHERE ${previousDateFilter}
+      AND organization_id = {orgId:String}
   `;
 
 	interface SuccessRateStats {
@@ -419,8 +502,22 @@ export async function getSuccessRateMetrics(
 	}
 
 	const [currentData, previousData] = await Promise.all([
-		queryClickhouse<SuccessRateStats>(currentQuery),
-		queryClickhouse<SuccessRateStats>(previousQuery),
+		queryClickhouse<SuccessRateStats>({
+			query: currentQuery,
+			query_params: {
+				startDate,
+				endDate,
+				orgId,
+			},
+		}),
+		queryClickhouse<SuccessRateStats>({
+			query: previousQuery,
+			query_params: {
+				previousStartDate: prevStartStr,
+				previousEndDate: prevEndStr,
+				orgId,
+			},
+		}),
 	]);
 
 	const current: SuccessRateStats = currentData[0] || {

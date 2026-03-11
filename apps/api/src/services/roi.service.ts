@@ -4,11 +4,7 @@ import type {
 	ROIMetrics,
 	ROITrend,
 } from "@rudel/api-routes";
-import {
-	buildDateFilter,
-	escapeString,
-	queryClickhouse,
-} from "../clickhouse.js";
+import { buildDateFilter, queryClickhouse } from "../clickhouse.js";
 
 // Pricing constants based on Claude Sonnet 4 rates, used as a default approximation
 // across all models. TODO: implement per-model pricing using the model_used column.
@@ -86,8 +82,12 @@ export async function getROIMetrics(
 	orgId: string,
 	days = 7,
 ): Promise<ROIMetrics> {
-	const org = escapeString(orgId);
 	const d = Number(days);
+	const query_params = {
+		currentDays: d,
+		previousDays: d * 2,
+		orgId,
+	};
 
 	const query = `
     WITH current_period AS (
@@ -100,11 +100,11 @@ export async function getROIMetrics(
         AVG(success_score) as avg_success_score,
         COUNT(DISTINCT user_id) as active_developers,
         SUM(has_commit) as total_commits,
-        now64(3) - INTERVAL ${d} DAY as period_start,
+        now64(3) - toIntervalDay({currentDays:UInt32}) as period_start,
         now64(3) as period_end
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+      WHERE ${buildDateFilter("currentDays")}
+        AND organization_id = {orgId:String}
     ),
     previous_period AS (
       SELECT
@@ -112,12 +112,12 @@ export async function getROIMetrics(
         SUM(input_tokens) as total_input_tokens,
         SUM(output_tokens) as total_output_tokens,
         SUM(has_commit) as total_commits,
-        now64(3) - INTERVAL ${d * 2} DAY as period_start,
-        now64(3) - INTERVAL ${d} DAY as period_end
+        now64(3) - toIntervalDay({previousDays:UInt32}) as period_start,
+        now64(3) - toIntervalDay({currentDays:UInt32}) as period_end
       FROM rudel.session_analytics
-      WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
-        AND session_date < now64(3) - INTERVAL ${d} DAY
-        AND organization_id = '${org}'
+      WHERE session_date >= now64(3) - toIntervalDay({previousDays:UInt32})
+        AND session_date < now64(3) - toIntervalDay({currentDays:UInt32})
+        AND organization_id = {orgId:String}
     )
     SELECT
       c.total_sessions,
@@ -154,7 +154,10 @@ export async function getROIMetrics(
     CROSS JOIN previous_period p
   `;
 
-	const result = await queryClickhouse<ROIMetricsQueryResult>(query);
+	const result = await queryClickhouse<ROIMetricsQueryResult>({
+		query,
+		query_params,
+	});
 
 	if (!result || result.length === 0) {
 		throw new Error("No data available for ROI metrics");
@@ -264,7 +267,6 @@ export async function getROITrends(
 	orgId: string,
 	days = 56,
 ): Promise<ROITrend[]> {
-	const org = escapeString(orgId);
 	const d = Number(days);
 
 	const query = `
@@ -280,13 +282,19 @@ export async function getROITrends(
       round((SUM(output_tokens) / 1000000.0) * ${OUTPUT_PRICE_PER_MILLION} +
             (SUM(input_tokens) / 1000000.0) * ${INPUT_PRICE_PER_MILLION}, 2) as total_cost
     FROM rudel.session_analytics
-    WHERE session_date >= now64(3) - INTERVAL ${d} DAY
-      AND organization_id = '${org}'
+    WHERE session_date >= now64(3) - toIntervalDay({days:UInt32})
+      AND organization_id = {orgId:String}
     GROUP BY week_start
     ORDER BY week_start ASC
   `;
 
-	const result = await queryClickhouse<TrendQueryResult>(query);
+	const result = await queryClickhouse<TrendQueryResult>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+		},
+	});
 
 	return result.map((row) => {
 		const productivityScore =
@@ -313,7 +321,6 @@ export async function getDeveloperCostBreakdown(
 	orgId: string,
 	days = 30,
 ): Promise<DeveloperCostBreakdown[]> {
-	const org = escapeString(orgId);
 	const d = Number(days);
 
 	const query = `
@@ -327,13 +334,19 @@ export async function getDeveloperCostBreakdown(
       round((SUM(output_tokens) / 1000000.0) * ${OUTPUT_PRICE_PER_MILLION} +
             (SUM(input_tokens) / 1000000.0) * ${INPUT_PRICE_PER_MILLION}, 2) as total_cost
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
     GROUP BY user_id
     ORDER BY total_cost DESC
   `;
 
-	const result = await queryClickhouse<DeveloperBreakdownQueryResult>(query);
+	const result = await queryClickhouse<DeveloperBreakdownQueryResult>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+		},
+	});
 
 	// Calculate total cost across all developers for cost_percentage
 	const grandTotalCost = result.reduce(
@@ -365,7 +378,6 @@ export async function getProjectCostBreakdown(
 	orgId: string,
 	days = 30,
 ): Promise<ProjectCostBreakdown[]> {
-	const org = escapeString(orgId);
 	const d = Number(days);
 
 	const query = `
@@ -379,14 +391,20 @@ export async function getProjectCostBreakdown(
       round((SUM(output_tokens) / 1000000.0) * ${OUTPUT_PRICE_PER_MILLION} +
             (SUM(input_tokens) / 1000000.0) * ${INPUT_PRICE_PER_MILLION}, 2) as total_cost
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND project_path != ''
     GROUP BY project_path
     ORDER BY total_cost DESC
   `;
 
-	const result = await queryClickhouse<ProjectBreakdownQueryResult>(query);
+	const result = await queryClickhouse<ProjectBreakdownQueryResult>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+		},
+	});
 
 	// Calculate total cost across all projects for cost_percentage
 	const grandTotalCost = result.reduce(

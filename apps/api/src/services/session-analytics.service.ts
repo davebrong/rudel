@@ -5,8 +5,8 @@ import type {
 	SessionDetail,
 } from "@rudel/api-routes";
 import {
+	addOptionalStringEqFilter,
 	buildDateFilter,
-	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
 
@@ -91,21 +91,33 @@ export async function getSessionAnalytics(
 		sort_order = "desc",
 	} = params;
 
-	const org = escapeString(orgId);
 	const d = Number(days);
-	const lim = Number(limit);
-	const off = Number(offset);
-
-	let filters = "";
-	if (user_id) {
-		filters += ` AND user_id = '${escapeString(user_id)}'`;
-	}
-	if (project_path) {
-		filters += ` AND project_path = '${escapeString(project_path)}'`;
-	}
+	const query_params: Record<string, unknown> = {
+		days: d,
+		limit: Number(limit),
+		offset: Number(offset),
+		orgId,
+	};
+	const filters: string[] = [];
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"user_id",
+		"userId",
+		user_id,
+	);
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
 	if (repository) {
-		const escapedRepo = escapeString(repository);
-		filters += ` AND (git_remote = '${escapedRepo}' OR package_name = '${escapedRepo}' OR project_path = '${escapedRepo}')`;
+		filters.push(
+			"(git_remote = {repository:String} OR package_name = {repository:String} OR project_path = {repository:String})",
+		);
+		query_params.repository = repository;
 	}
 
 	const sortColumn =
@@ -148,15 +160,18 @@ export async function getSessionAnalytics(
       model_used,
       used_plan_mode
     FROM rudel.session_analytics sa
-    WHERE ${buildDateFilter(d, "sa.session_date")}
-      AND organization_id = '${org}'
-      ${filters}
+    WHERE ${buildDateFilter("days", "sa.session_date")}
+      AND organization_id = {orgId:String}
+      ${filters.length > 0 ? `AND ${filters.join("\n      AND ")}` : ""}
     ORDER BY ${sortColumn} ${sortDirection}
-    LIMIT ${lim}
-    OFFSET ${off}
+    LIMIT {limit:UInt32}
+    OFFSET {offset:UInt32}
   `;
 
-	const raw = await queryClickhouse<SessionAnalyticsRaw>(query);
+	const raw = await queryClickhouse<SessionAnalyticsRaw>({
+		query,
+		query_params,
+	});
 
 	return raw.map(
 		(row): SessionAnalytics => ({
@@ -197,16 +212,26 @@ export async function getSessionAnalyticsSummary(
 	} = {},
 ): Promise<SessionAnalyticsSummary> {
 	const { days = 30, user_id, project_path } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-
-	let filters = "";
-	if (user_id) {
-		filters += ` AND user_id = '${escapeString(user_id)}'`;
-	}
-	if (project_path) {
-		filters += ` AND project_path = '${escapeString(project_path)}'`;
-	}
+	const query_params: Record<string, unknown> = {
+		days: d,
+		orgId,
+	};
+	const filters: string[] = [];
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"user_id",
+		"userId",
+		user_id,
+	);
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
 
 	const query = `
     WITH totals AS (
@@ -223,9 +248,9 @@ export async function getSessionAnalyticsSummary(
         countIf(length(skills) > 0) as cnt_skills,
         countIf(length(slash_commands) > 0) as cnt_slash
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
-        ${filters}
+      WHERE ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
+        ${filters.length > 0 ? `AND ${filters.join("\n        AND ")}` : ""}
     )
     SELECT
       cnt_sessions as total_sessions,
@@ -242,7 +267,10 @@ export async function getSessionAnalyticsSummary(
     FROM totals
   `;
 
-	const results = await queryClickhouse<SessionAnalyticsSummary>(query);
+	const results = await queryClickhouse<SessionAnalyticsSummary>({
+		query,
+		query_params,
+	});
 
 	const defaults: SessionAnalyticsSummary = {
 		total_sessions: 0,
@@ -284,17 +312,22 @@ export async function getSessionAnalyticsSummaryComparison(
 	} = {},
 ) {
 	const { days = 7, user_id, project_path } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
 	const previousDays = d * 2;
-
-	let filters = "";
-	if (user_id) {
-		filters += ` AND user_id = '${escapeString(user_id)}'`;
-	}
-	if (project_path) {
-		filters += ` AND project_path = '${escapeString(project_path)}'`;
-	}
+	const baseParams: Record<string, unknown> = {
+		currentDays: d,
+		previousDays,
+		orgId,
+	};
+	const filters: string[] = [];
+	addOptionalStringEqFilter(filters, baseParams, "user_id", "userId", user_id);
+	addOptionalStringEqFilter(
+		filters,
+		baseParams,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
 
 	const summarySQL = (dateCondition: string) => `
     WITH totals AS (
@@ -307,8 +340,8 @@ export async function getSessionAnalyticsSummaryComparison(
         countIf(length(slash_commands) > 0) as cnt_slash
       FROM rudel.session_analytics
       WHERE ${dateCondition}
-        AND organization_id = '${org}'
-        ${filters}
+        AND organization_id = {orgId:String}
+        ${filters.length > 0 ? `AND ${filters.join("\n        AND ")}` : ""}
     )
     SELECT
       cnt_sessions as total_sessions,
@@ -320,14 +353,20 @@ export async function getSessionAnalyticsSummaryComparison(
     FROM totals
   `;
 
-	const currentQuery = summarySQL(buildDateFilter(d));
+	const currentQuery = summarySQL(buildDateFilter("currentDays"));
 	const previousQuery = summarySQL(
-		`session_date >= now64(3) - INTERVAL ${previousDays} DAY AND session_date < now64(3) - INTERVAL ${d} DAY`,
+		"session_date >= now64(3) - toIntervalDay({previousDays:UInt32}) AND session_date < now64(3) - toIntervalDay({currentDays:UInt32})",
 	);
 
 	const [currentData, previousData] = await Promise.all([
-		queryClickhouse<SessionSummaryComparisonPeriod>(currentQuery),
-		queryClickhouse<SessionSummaryComparisonPeriod>(previousQuery),
+		queryClickhouse<SessionSummaryComparisonPeriod>({
+			query: currentQuery,
+			query_params: baseParams,
+		}),
+		queryClickhouse<SessionSummaryComparisonPeriod>({
+			query: previousQuery,
+			query_params: baseParams,
+		}),
 	]);
 
 	const defaultPeriod: SessionSummaryComparisonPeriod = {
@@ -389,33 +428,47 @@ export async function getInteractionTimingDistribution(
 	} = {},
 ): Promise<Array<{ bucket: string; count: number; percentage: number }>> {
 	const { days = 30, user_id, project_path } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-
-	let filters = "";
-	if (user_id) {
-		filters += ` AND user_id = '${escapeString(user_id)}'`;
-	}
-	if (project_path) {
-		filters += ` AND project_path = '${escapeString(project_path)}'`;
-	}
+	const query_params: Record<string, unknown> = {
+		days: d,
+		orgId,
+	};
+	const filters: string[] = [];
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"user_id",
+		"userId",
+		user_id,
+	);
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
+	const filterSql =
+		filters.length > 0 ? `AND ${filters.join("\n        AND ")}` : "";
+	const repeatedFilterSql =
+		filters.length > 0 ? `AND ${filters.join("\n      AND ")}` : "";
 
 	const query = `
     WITH total AS (
       SELECT SUM(total_interactions) as total_count
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
-        ${filters}
+      WHERE ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
+        ${filterSql}
     )
     SELECT
       'Instant (< 5s)' as bucket,
       SUM(quick_responses) as count,
       round(SUM(quick_responses) * 100.0 / (SELECT total_count FROM total), 2) as percentage
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
-      ${filters}
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
+      ${repeatedFilterSql}
 
     UNION ALL
 
@@ -424,9 +477,9 @@ export async function getInteractionTimingDistribution(
       SUM(normal_responses) as count,
       round(SUM(normal_responses) * 100.0 / (SELECT total_count FROM total), 2) as percentage
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
-      ${filters}
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
+      ${repeatedFilterSql}
 
     UNION ALL
 
@@ -435,15 +488,18 @@ export async function getInteractionTimingDistribution(
       SUM(long_pauses) as count,
       round(SUM(long_pauses) * 100.0 / (SELECT total_count FROM total), 2) as percentage
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
-      ${filters}
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
+      ${repeatedFilterSql}
 
     ORDER BY count DESC
   `;
 
 	return queryClickhouse<{ bucket: string; count: number; percentage: number }>(
-		query,
+		{
+			query,
+			query_params,
+		},
 	);
 }
 
@@ -467,6 +523,23 @@ const METRIC_EXPRESSIONS: Record<DimensionAnalysisInput["metric"], string> = {
 	total_errors: "SUM(error_count)",
 };
 
+const DIMENSION_EXPRESSIONS: Record<
+	DimensionAnalysisInput["dimension"],
+	string
+> = {
+	user_id: "user_id",
+	project_path: "arrayElement(splitByChar('/', project_path), -1)",
+	repository:
+		"if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))",
+	session_archetype: "session_archetype",
+	model_used: "model_used",
+	has_commit: "has_commit",
+	used_plan_mode: "used_plan_mode",
+	used_skills: "if(length(skills) > 0, 1, 0)",
+	used_slash_commands: "if(length(slash_commands) > 0, 1, 0)",
+	used_subagents: "if(length(subagent_types) > 0, 1, 0)",
+};
+
 export async function getSessionDimensionAnalysis(
 	orgId: string,
 	params: {
@@ -488,34 +561,32 @@ export async function getSessionDimensionAnalysis(
 		user_id,
 		project_path,
 	} = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-	const lim = Number(limit);
-
-	const metricExpression = METRIC_EXPRESSIONS[metric];
-
-	// Map dimension to SQL expression (for computed dimensions)
-	const dimensionExpressions: Record<string, string> = {
-		repository:
-			"if(git_remote != '', git_remote, if(package_name != '', package_name, project_path))",
-		used_skills: "if(length(skills) > 0, 1, 0)",
-		used_slash_commands: "if(length(slash_commands) > 0, 1, 0)",
-		used_subagents: "if(length(subagent_types) > 0, 1, 0)",
-		project_path: "arrayElement(splitByChar('/', project_path), -1)",
+	const query_params: Record<string, unknown> = {
+		days: d,
+		limit: Number(limit),
+		orgId,
 	};
 
-	const dimensionExpression = dimensionExpressions[dimension] || dimension;
-	const splitByExpression = split_by
-		? dimensionExpressions[split_by] || split_by
-		: null;
+	const metricExpression = METRIC_EXPRESSIONS[metric];
+	const dimensionExpression = DIMENSION_EXPRESSIONS[dimension];
+	const splitByExpression = split_by ? DIMENSION_EXPRESSIONS[split_by] : null;
 
-	let filters = "";
-	if (user_id) {
-		filters += ` AND user_id = '${escapeString(user_id)}'`;
-	}
-	if (project_path) {
-		filters += ` AND project_path = '${escapeString(project_path)}'`;
-	}
+	const filters: string[] = [];
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"user_id",
+		"userId",
+		user_id,
+	);
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
 
 	let query: string;
 
@@ -526,9 +597,9 @@ export async function getSessionDimensionAnalysis(
         ${splitByExpression} as split_value,
         ${metricExpression} as metric_value
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
-        ${filters}
+      WHERE ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
+        ${filters.length > 0 ? `AND ${filters.join("\n        AND ")}` : ""}
       GROUP BY dimension_value, split_value
       ORDER BY metric_value DESC
     `;
@@ -538,12 +609,12 @@ export async function getSessionDimensionAnalysis(
         ${dimensionExpression} as dimension_value,
         ${metricExpression} as metric_value
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
-        ${filters}
+      WHERE ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
+        ${filters.length > 0 ? `AND ${filters.join("\n        AND ")}` : ""}
       GROUP BY dimension_value
       ORDER BY metric_value DESC
-      LIMIT ${lim}
+      LIMIT {limit:UInt32}
     `;
 	}
 
@@ -553,7 +624,10 @@ export async function getSessionDimensionAnalysis(
 		metric_value: number;
 	}
 
-	const results = await queryClickhouse<DimensionRow>(query);
+	const results = await queryClickhouse<DimensionRow>({
+		query,
+		query_params,
+	});
 
 	if (split_by) {
 		const grouped = new Map<string, Record<string, number>>();
@@ -581,7 +655,7 @@ export async function getSessionDimensionAnalysis(
 				_total: totalMetric.get(dimension_value) || 0,
 			}))
 			.sort((a, b) => b._total - a._total)
-			.slice(0, lim)
+			.slice(0, Number(limit))
 			.map(({ dimension_value, split_values }) => ({
 				dimension_value,
 				split_values,
@@ -603,9 +677,6 @@ export async function getSessionDetail(
 	orgId: string,
 	sessionId: string,
 ): Promise<SessionDetail | null> {
-	const org = escapeString(orgId);
-	const sid = escapeString(sessionId);
-
 	const query = `
     SELECT
       session_id,
@@ -629,13 +700,19 @@ export async function getSessionDetail(
       session_archetype,
       model_used
     FROM rudel.session_analytics sa
-    WHERE session_id = '${sid}'
-      AND organization_id = '${org}'
+    WHERE session_id = {sessionId:String}
+      AND organization_id = {orgId:String}
     ORDER BY ingested_at DESC
     LIMIT 1
   `;
 
-	const results = await queryClickhouse<SessionDetail>(query);
+	const results = await queryClickhouse<SessionDetail>({
+		query,
+		query_params: {
+			orgId,
+			sessionId,
+		},
+	});
 
 	const [row] = results;
 	if (!row) {

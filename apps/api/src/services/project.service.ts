@@ -8,8 +8,9 @@ import type {
 	ProjectTrendDataPoint as ProjectTrendDataPointBase,
 } from "@rudel/api-routes";
 import {
+	addOptionalStringEqFilter,
+	addOptionalStringInFilter,
 	buildDateFilter,
-	escapeString,
 	queryClickhouse,
 } from "../clickhouse.js";
 
@@ -19,22 +20,26 @@ const PROJECT_KEY_EXPR = `if(git_remote != '', git_remote, if(package_name != ''
 const PROJECT_DISPLAY_EXPR = `if(git_remote != '', arrayElement(splitByChar('/', git_remote), -1), arrayElement(splitByChar('/', project_path), -1))`;
 
 function buildProjectDisplaySubquery(
-	org: string,
-	escapedProjectPath: string,
+	orgParamName: string,
+	projectParamName: string,
 ): string {
 	return `(
     SELECT
       if(
         count() > 0,
         any(${PROJECT_DISPLAY_EXPR}),
-        if(position('${escapedProjectPath}', '/') > 0, arrayElement(splitByChar('/', '${escapedProjectPath}'), -1), '${escapedProjectPath}')
+        if(
+          position({${projectParamName}:String}, '/') > 0,
+          arrayElement(splitByChar('/', {${projectParamName}:String}), -1),
+          {${projectParamName}:String}
+        )
       ) as project_display
     FROM rudel.session_analytics
-    WHERE organization_id = '${org}'
+    WHERE organization_id = {${orgParamName}:String}
       AND (
-        project_path = '${escapedProjectPath}'
-        OR git_remote = '${escapedProjectPath}'
-        OR ${PROJECT_KEY_EXPR} = '${escapedProjectPath}'
+        project_path = {${projectParamName}:String}
+        OR git_remote = {${projectParamName}:String}
+        OR ${PROJECT_KEY_EXPR} = {${projectParamName}:String}
       )
       AND (git_remote != '' OR package_name != '' OR project_path != '')
   )`;
@@ -116,17 +121,30 @@ export async function getProjectInvestment(
 		project_path,
 		project_paths,
 	} = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-	const lim = Number(limit);
-	const off = Number(offset);
-
-	let projectFilter = "";
-	if (project_path) {
-		projectFilter = `AND project_path = '${escapeString(project_path)}'`;
-	} else if (project_paths && project_paths.length > 0) {
-		const escaped = project_paths.map((p) => `'${escapeString(p)}'`).join(", ");
-		projectFilter = `AND project_path IN (${escaped})`;
+	const query_params: Record<string, unknown> = {
+		currentDays: d,
+		previousDays: d * 2,
+		limit: Number(limit),
+		offset: Number(offset),
+		orgId,
+	};
+	const projectFilters: string[] = [];
+	addOptionalStringEqFilter(
+		projectFilters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
+	if (!project_path) {
+		addOptionalStringInFilter(
+			projectFilters,
+			query_params,
+			"project_path",
+			"projectPathList",
+			project_paths,
+		);
 	}
 
 	const query = `
@@ -144,10 +162,10 @@ export async function getProjectInvestment(
         round(AVG(actual_duration_min), 2) as avg_session_duration_min,
         round(AVG(success_score), 2) as success_rate
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+      WHERE ${buildDateFilter("currentDays")}
+        AND organization_id = {orgId:String}
         AND (git_remote != '' OR package_name != '' OR project_path != '')
-        ${projectFilter}
+        ${projectFilters.length > 0 ? `AND ${projectFilters.join("\n        AND ")}` : ""}
       GROUP BY ${PROJECT_DISPLAY_EXPR}
     ),
     previous_period AS (
@@ -155,11 +173,11 @@ export async function getProjectInvestment(
         ${PROJECT_DISPLAY_EXPR} as project_display,
         round(AVG(success_score), 2) as prev_success_rate
       FROM rudel.session_analytics
-      WHERE session_date >= now64(3) - INTERVAL ${d * 2} DAY
-        AND session_date < now64(3) - INTERVAL ${d} DAY
-        AND organization_id = '${org}'
+      WHERE session_date >= now64(3) - toIntervalDay({previousDays:UInt32})
+        AND session_date < now64(3) - toIntervalDay({currentDays:UInt32})
+        AND organization_id = {orgId:String}
         AND (git_remote != '' OR package_name != '' OR project_path != '')
-        ${projectFilter}
+        ${projectFilters.length > 0 ? `AND ${projectFilters.join("\n        AND ")}` : ""}
       GROUP BY ${PROJECT_DISPLAY_EXPR}
     )
     SELECT
@@ -179,13 +197,16 @@ export async function getProjectInvestment(
     FROM current_period c
     LEFT JOIN previous_period p ON c.project_display = p.project_display
     ORDER BY c.total_duration_min DESC
-    LIMIT ${lim}
-    OFFSET ${off}
+    LIMIT {limit:UInt32}
+    OFFSET {offset:UInt32}
   `;
 
 	const results = await queryClickhouse<
 		ProjectInvestment & { git_remote?: string }
-	>(query);
+	>({
+		query,
+		query_params,
+	});
 
 	return results.map((project) => ({
 		...project,
@@ -202,9 +223,12 @@ export async function getKnowledgeSilos(
 	params: { days?: number; min_sessions?: number } = {},
 ): Promise<KnowledgeSilo[]> {
 	const { days = 30, min_sessions = 5 } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-	const minSess = Number(min_sessions);
+	const query_params = {
+		days: d,
+		minSessions: Number(min_sessions),
+		orgId,
+	};
 
 	const query = `
     SELECT
@@ -217,16 +241,19 @@ export async function getKnowledgeSilos(
         ELSE 'low'
       END as risk_level
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND project_path != ''
     GROUP BY project_path
     HAVING COUNT(DISTINCT user_id) = 1
-      AND COUNT(*) >= ${minSess}
+      AND COUNT(*) >= {minSessions:UInt32}
     ORDER BY sessions DESC
   `;
 
-	const results = await queryClickhouse<KnowledgeSilo>(query);
+	const results = await queryClickhouse<KnowledgeSilo>({
+		query,
+		query_params,
+	});
 
 	return results.map((silo) => ({
 		...silo,
@@ -244,8 +271,6 @@ export async function getProjectActivity(
 	params: { days?: number; granularity?: "day" | "week" | "month" } = {},
 ): Promise<ProjectActivity[]> {
 	const { days = 30, granularity = "day" } = params;
-	const org = escapeString(orgId);
-	const pp = escapeString(projectPath);
 	const d = Number(days);
 
 	let dateGrouping = "toDate(session_date)";
@@ -259,9 +284,9 @@ export async function getProjectActivity(
     WITH project_key AS (
       SELECT if(git_remote != '', git_remote, if(package_name != '', package_name, project_path)) as pk, any(project_path) as project_path
       FROM rudel.session_analytics
-      WHERE project_path = '${pp}'
+      WHERE project_path = {projectPath:String}
         AND (git_remote != '' OR package_name != '' OR project_path != '')
-        AND organization_id = '${org}'
+        AND organization_id = {orgId:String}
       LIMIT 1
     )
     SELECT
@@ -271,13 +296,20 @@ export async function getProjectActivity(
       COUNT(DISTINCT s.user_id) as unique_users
     FROM project_key pk
     INNER JOIN rudel.session_analytics s ON if(s.git_remote != '', s.git_remote, if(s.package_name != '', s.package_name, s.project_path)) = pk.pk
-    WHERE s.${buildDateFilter(d)}
-      AND s.organization_id = '${org}'
+    WHERE ${buildDateFilter("days", "s.session_date")}
+      AND s.organization_id = {orgId:String}
     GROUP BY ${dateGrouping}, pk.project_path
     ORDER BY date ASC
   `;
 
-	return queryClickhouse<ProjectActivity>(query);
+	return queryClickhouse<ProjectActivity>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+			projectPath,
+		},
+	});
 }
 
 /**
@@ -287,7 +319,6 @@ export async function getProjectSummary(
 	orgId: string,
 	days = 30,
 ): Promise<ProjectSummary> {
-	const org = escapeString(orgId);
 	const d = Number(days);
 
 	const query = `
@@ -297,8 +328,8 @@ export async function getProjectSummary(
         COUNT(*) as sessions,
         COUNT(DISTINCT user_id) as users
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+      WHERE ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
         AND project_path != ''
       GROUP BY project_path
     )
@@ -311,7 +342,13 @@ export async function getProjectSummary(
     FROM project_stats
   `;
 
-	const result = await queryClickhouse<ProjectSummary>(query);
+	const result = await queryClickhouse<ProjectSummary>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+		},
+	});
 	return (
 		result[0] || {
 			total_projects: 0,
@@ -331,10 +368,16 @@ export async function getProjectDetails(
 	projectPath: string,
 	days = 30,
 ): Promise<ProjectDetails | null> {
-	const org = escapeString(orgId);
-	const pp = escapeString(projectPath);
 	const d = Number(days);
-	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
+	const projectDisplaySubquery = buildProjectDisplaySubquery(
+		"orgId",
+		"projectPath",
+	);
+	const query_params = {
+		days: d,
+		orgId,
+		projectPath,
+	};
 
 	const query = `
     SELECT
@@ -350,8 +393,8 @@ export async function getProjectDetails(
       round(SUM(actual_duration_min), 2) as total_duration_min
     FROM rudel.session_analytics
     WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (git_remote != '' OR package_name != '' OR project_path != '')
   `;
 
@@ -367,7 +410,10 @@ export async function getProjectDetails(
 				input_tokens_sum: number;
 				output_tokens_sum: number;
 			}
-		>(query);
+		>({
+			query,
+			query_params,
+		});
 	} catch (err) {
 		logger.error(
 			"getProjectDetails ClickHouse query failed for org={org} path={path}: {error}",
@@ -401,18 +447,24 @@ export async function getProjectContributors(
 	projectPath: string,
 	days = 30,
 ): Promise<ProjectContributor[]> {
-	const org = escapeString(orgId);
-	const pp = escapeString(projectPath);
 	const d = Number(days);
-	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
+	const projectDisplaySubquery = buildProjectDisplaySubquery(
+		"orgId",
+		"projectPath",
+	);
+	const query_params = {
+		days: d,
+		orgId,
+		projectPath,
+	};
 
 	const query = `
     WITH project_totals AS (
       SELECT COUNT(*) as total_sessions
       FROM rudel.session_analytics
       WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-        AND ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+        AND ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
         AND (git_remote != '' OR package_name != '' OR project_path != '')
     )
     SELECT
@@ -425,14 +477,17 @@ export async function getProjectContributors(
       round(COUNT(*) * 100.0 / (SELECT total_sessions FROM project_totals), 2) as contribution_percentage
     FROM rudel.session_analytics
     WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (git_remote != '' OR package_name != '' OR project_path != '')
     GROUP BY user_id
     ORDER BY sessions DESC
   `;
 
-	return queryClickhouse<ProjectContributor>(query);
+	return queryClickhouse<ProjectContributor>({
+		query,
+		query_params,
+	});
 }
 
 /**
@@ -443,10 +498,16 @@ export async function getProjectFeatureUsage(
 	projectPath: string,
 	days = 30,
 ): Promise<ProjectFeatureUsage> {
-	const org = escapeString(orgId);
-	const pp = escapeString(projectPath);
 	const d = Number(days);
-	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
+	const projectDisplaySubquery = buildProjectDisplaySubquery(
+		"orgId",
+		"projectPath",
+	);
+	const query_params = {
+		days: d,
+		orgId,
+		projectPath,
+	};
 
 	const adoptionQuery = `
     SELECT
@@ -456,8 +517,8 @@ export async function getProjectFeatureUsage(
       countIf(length(slash_commands) > 0) as slash_commands_sessions
     FROM rudel.session_analytics
     WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (git_remote != '' OR package_name != '' OR project_path != '')
   `;
 
@@ -466,8 +527,8 @@ export async function getProjectFeatureUsage(
     FROM rudel.session_analytics
     ARRAY JOIN subagent_types as val
     WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (git_remote != '' OR package_name != '' OR project_path != '')
       AND val != ''
     GROUP BY val
@@ -480,8 +541,8 @@ export async function getProjectFeatureUsage(
     FROM rudel.session_analytics
     ARRAY JOIN skills as val
     WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (git_remote != '' OR package_name != '' OR project_path != '')
       AND val != ''
     GROUP BY val
@@ -494,8 +555,8 @@ export async function getProjectFeatureUsage(
     FROM rudel.session_analytics
     ARRAY JOIN slash_commands as val
     WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-      AND ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+      AND ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (git_remote != '' OR package_name != '' OR project_path != '')
       AND val != ''
     GROUP BY val
@@ -510,10 +571,22 @@ export async function getProjectFeatureUsage(
 				subagents_sessions: number;
 				skills_sessions: number;
 				slash_commands_sessions: number;
-			}>(adoptionQuery),
-			queryClickhouse<{ name: string; count: number }>(topSubagentsQuery),
-			queryClickhouse<{ name: string; count: number }>(topSkillsQuery),
-			queryClickhouse<{ name: string; count: number }>(topSlashCommandsQuery),
+			}>({
+				query: adoptionQuery,
+				query_params,
+			}),
+			queryClickhouse<{ name: string; count: number }>({
+				query: topSubagentsQuery,
+				query_params,
+			}),
+			queryClickhouse<{ name: string; count: number }>({
+				query: topSkillsQuery,
+				query_params,
+			}),
+			queryClickhouse<{ name: string; count: number }>({
+				query: topSlashCommandsQuery,
+				query_params,
+			}),
 		]);
 
 	if (adoptionResults.length === 0) {
@@ -564,10 +637,11 @@ export async function getProjectErrors(
 	projectPath: string,
 	days = 30,
 ): Promise<ProjectError[]> {
-	const org = escapeString(orgId);
-	const pp = escapeString(projectPath);
 	const d = Number(days);
-	const projectDisplaySubquery = buildProjectDisplaySubquery(org, pp);
+	const projectDisplaySubquery = buildProjectDisplaySubquery(
+		"orgId",
+		"projectPath",
+	);
 
 	const query = `
     WITH error_extracts AS (
@@ -587,8 +661,8 @@ export async function getProjectErrors(
         END as error_pattern
       FROM rudel.session_analytics
       WHERE ${PROJECT_DISPLAY_EXPR} = ${projectDisplaySubquery}
-        AND ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+        AND ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
         AND (git_remote != '' OR package_name != '' OR project_path != '')
         AND (content LIKE '%Error:%' OR content LIKE '%error:%')
     )
@@ -605,7 +679,14 @@ export async function getProjectErrors(
     LIMIT 20
   `;
 
-	return queryClickhouse<ProjectError>(query);
+	return queryClickhouse<ProjectError>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+			projectPath,
+		},
+	});
 }
 
 /**
@@ -616,7 +697,6 @@ export async function getProjectTrends(
 	days = 30,
 	groupBy: "day" | "week" = "day",
 ): Promise<ProjectTrendDataPoint[]> {
-	const org = escapeString(orgId);
 	const d = Number(days);
 
 	const dateFunc =
@@ -634,8 +714,8 @@ export async function getProjectTrends(
       SUM(ifNull(input_tokens, 0) + ifNull(output_tokens, 0)) as total_tokens,
       round(AVG(success_score), 2) as avg_success_rate
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (git_remote != '' OR package_name != '' OR project_path != '')
     GROUP BY date, ${PROJECT_DISPLAY_EXPR}
     ORDER BY date ASC, project_key ASC
@@ -643,7 +723,13 @@ export async function getProjectTrends(
 
 	const results = await queryClickhouse<
 		ProjectTrendDataPoint & { project_key: string; _project_path: string }
-	>(query);
+	>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+		},
+	});
 
 	return results.map((item) => ({
 		date: item.date,

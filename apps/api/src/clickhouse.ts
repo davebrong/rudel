@@ -3,10 +3,29 @@ import { getLogger } from "@logtape/logtape";
 
 const logger = getLogger(["rudel", "api", "clickhouse"]);
 
+const ALLOWED_CLICKHOUSE_TABLES = new Set([
+	"rudel.claude_sessions",
+	"rudel.codex_sessions",
+	"rudel.session_analytics",
+]);
+
+export interface ClickHouseStatement {
+	query: string;
+	query_params?: Record<string, unknown>;
+	format?: "JSONEachRow";
+}
+
 export interface ClickHouseExecutor {
-	execute(sql: string): Promise<void>;
-	query<T>(sql: string): Promise<T[]>;
+	execute(statement: ClickHouseStatement): Promise<void>;
+	query<T>(statement: ClickHouseStatement): Promise<T[]>;
 	insert(params: { table: string; values: object[] }): Promise<void>;
+}
+
+export function getSafeClickHouseTable(table: string): string {
+	if (!ALLOWED_CLICKHOUSE_TABLES.has(table)) {
+		throw new Error(`Unsupported ClickHouse table: ${table}`);
+	}
+	return table;
 }
 
 export function createClickHouseExecutor(config: {
@@ -27,22 +46,27 @@ export function createClickHouseExecutor(config: {
 		},
 	});
 	return {
-		async execute(sql) {
-			await client.command({ query: sql });
+		async execute(statement: ClickHouseStatement) {
+			await client.command({
+				query: statement.query,
+				query_params: statement.query_params,
+			});
 		},
-		async query<T>(sql: string): Promise<T[]> {
+		async query<T>(statement: ClickHouseStatement): Promise<T[]> {
 			const result = await client.query({
-				query: sql,
-				format: "JSONEachRow",
+				query: statement.query,
+				query_params: statement.query_params,
+				format: statement.format ?? "JSONEachRow",
 			});
 			return result.json();
 		},
 		async insert(params) {
+			const table = getSafeClickHouseTable(params.table);
 			// Use command() with FORMAT JSONEachRow instead of client.insert()
 			// because ClickHouse Cloud's @clickhouse/client insert() silently drops data.
 			const rows = params.values.map((r) => JSON.stringify(r)).join("\n");
 			await client.command({
-				query: `INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
+				query: `INSERT INTO ${table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
 			});
 		},
 	};
@@ -94,23 +118,52 @@ export function getClickhouse(): ClickHouseExecutor {
 	return _clickhouse;
 }
 
-export function escapeString(value: string): string {
-	return value.replace(/'/g, "\\'");
+export function addOptionalStringEqFilter(
+	where: string[],
+	query_params: Record<string, unknown>,
+	column: string,
+	paramName: string,
+	value?: string,
+): void {
+	if (!value) return;
+	where.push(`${column} = {${paramName}:String}`);
+	query_params[paramName] = value;
 }
 
-export function buildDateFilter(days: number, column = "session_date"): string {
-	return `${column} >= now64(3) - INTERVAL ${Number(days)} DAY AND ${column} <= now64(3)`;
+export function addOptionalStringInFilter(
+	where: string[],
+	query_params: Record<string, unknown>,
+	column: string,
+	paramBase: string,
+	values?: string[],
+): void {
+	if (!values || values.length === 0) return;
+	const placeholders = values.map((value, index) => {
+		const paramName = `${paramBase}_${index}`;
+		query_params[paramName] = value;
+		return `{${paramName}:String}`;
+	});
+	where.push(`${column} IN (${placeholders.join(", ")})`);
+}
+
+export function buildDateFilter(
+	paramName: string,
+	column = "session_date",
+): string {
+	return `${column} >= now64(3) - toIntervalDay({${paramName}:UInt32}) AND ${column} <= now64(3)`;
 }
 
 export function buildAbsoluteDateFilter(
-	startDate: string,
-	endDate: string,
+	startParamName: string,
+	endParamName: string,
 	column = "session_date",
 ): string {
-	return `toDate(${column}) >= '${startDate}' AND toDate(${column}) <= '${endDate}'`;
+	return `toDate(${column}) >= toDate({${startParamName}:String}) AND toDate(${column}) <= toDate({${endParamName}:String})`;
 }
 
-export async function queryClickhouse<T>(sql: string): Promise<T[]> {
+export async function queryClickhouse<T>(
+	statement: ClickHouseStatement,
+): Promise<T[]> {
 	const ch = getClickhouse();
-	return ch.query<T>(sql);
+	return ch.query<T>(statement);
 }

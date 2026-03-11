@@ -1,7 +1,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { getAdapter } from "@rudel/agent-adapters";
 import type { IngestSessionInput } from "@rudel/api-routes";
-import { createClickHouseExecutor } from "../clickhouse.js";
+import {
+	createClickHouseExecutor,
+	getSafeClickHouseTable,
+} from "../clickhouse.js";
 
 const testId = `api_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -12,24 +15,17 @@ const baseExecutor = createClickHouseExecutor({
 	password: process.env.CLICKHOUSE_PASSWORD || "",
 	database: "default",
 });
-
-// ClickHouse Cloud's @clickhouse/client insert() silently drops data.
-// Wrap the executor to use execute() with FORMAT JSONEachRow instead.
-// async_insert=0 forces synchronous insert so data is immediately queryable.
-const executor: typeof baseExecutor = {
-	...baseExecutor,
-	async insert(params) {
-		const rows = params.values.map((r) => JSON.stringify(r)).join("\n");
-		await baseExecutor.execute(
-			`INSERT INTO ${params.table} SETTINGS async_insert=0 FORMAT JSONEachRow ${rows}`,
-		);
-	},
-};
+const executor = baseExecutor;
 
 afterAll(() => {
 	// Fire-and-forget: ClickHouse Cloud DELETE mutations are slow
 	executor
-		.execute(`DELETE FROM rudel.claude_sessions WHERE session_id = '${testId}'`)
+		.execute({
+			query: `DELETE FROM ${getSafeClickHouseTable("rudel.claude_sessions")} WHERE session_id = {sessionId:String}`,
+			query_params: {
+				sessionId: testId,
+			},
+		})
 		.catch(() => {});
 });
 
@@ -55,9 +51,12 @@ async function waitForRow(
 				tag: string;
 				user_id: string;
 				organization_id: string;
-			}>(
-				`SELECT session_id, project_path, tag, user_id, organization_id FROM rudel.claude_sessions WHERE session_id = '${sessionId}' LIMIT 1`,
-			);
+			}>({
+				query: `SELECT session_id, project_path, tag, user_id, organization_id FROM ${getSafeClickHouseTable("rudel.claude_sessions")} WHERE session_id = {sessionId:String} LIMIT 1`,
+				query_params: {
+					sessionId,
+				},
+			});
 			if (results.length > 0) return results;
 		} catch {
 			// Transient ClickHouse errors (e.g. S3 storage) - retry

@@ -3,7 +3,7 @@ import type {
 	LearningsFeedStats,
 	LearningsTrendDataPoint,
 } from "@rudel/api-routes";
-import { escapeString, queryClickhouse } from "../clickhouse.js";
+import { addOptionalStringEqFilter, queryClickhouse } from "../clickhouse.js";
 
 export interface LearningEntry extends LearningEntryBase {
 	organization_id: string;
@@ -27,21 +27,32 @@ export async function getLearningsFeed(
 ): Promise<LearningEntry[]> {
 	const { days = 30, user_id, project_path, limit = 50, offset = 0 } = params;
 
-	const org = escapeString(orgId);
 	const d = Number(days);
-	const lim = Number(limit);
-	const off = Number(offset);
-
-	let filters = `last_interaction_date >= now64(3) - INTERVAL ${d} DAY
-    AND has(slash_commands, 'compound:feedback')
-    AND organization_id = '${org}'`;
-
-	if (user_id) {
-		filters += `\n    AND user_id = '${escapeString(user_id)}'`;
-	}
-	if (project_path) {
-		filters += `\n    AND project_path = '${escapeString(project_path)}'`;
-	}
+	const query_params: Record<string, unknown> = {
+		days: d,
+		limit: Number(limit),
+		offset: Number(offset),
+		orgId,
+	};
+	const filters = [
+		"last_interaction_date >= now64(3) - toIntervalDay({days:UInt32})",
+		"has(slash_commands, 'compound:feedback')",
+		"organization_id = {orgId:String}",
+	];
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"user_id",
+		"userId",
+		user_id,
+	);
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
 
 	const query = `
     WITH
@@ -58,7 +69,7 @@ export async function getLearningsFeed(
           slash_commands,
           content
         FROM rudel.session_analytics
-        WHERE ${filters}
+        WHERE ${filters.join("\n          AND ")}
       )
     SELECT
       session_id,
@@ -93,11 +104,11 @@ export async function getLearningsFeed(
       arrayFilter(x -> x != 'compound:feedback', slash_commands) as other_commands
     FROM feedback_data
     ORDER BY last_interaction_date DESC
-    LIMIT ${lim}
-    OFFSET ${off}
+    LIMIT {limit:UInt32}
+    OFFSET {offset:UInt32}
   `;
 
-	return queryClickhouse<LearningEntry>(query);
+	return queryClickhouse<LearningEntry>({ query, query_params });
 }
 
 /**
@@ -112,19 +123,30 @@ export async function getLearningsFeedStats(
 	} = {},
 ): Promise<LearningsFeedStats> {
 	const { days = 30, user_id, project_path } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-
-	let filters = `last_interaction_date >= now64(3) - INTERVAL ${d} DAY
-    AND has(slash_commands, 'compound:feedback')
-    AND organization_id = '${org}'`;
-
-	if (user_id) {
-		filters += `\n    AND user_id = '${escapeString(user_id)}'`;
-	}
-	if (project_path) {
-		filters += `\n    AND project_path = '${escapeString(project_path)}'`;
-	}
+	const query_params: Record<string, unknown> = {
+		days: d,
+		orgId,
+	};
+	const filters = [
+		"last_interaction_date >= now64(3) - toIntervalDay({days:UInt32})",
+		"has(slash_commands, 'compound:feedback')",
+		"organization_id = {orgId:String}",
+	];
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"user_id",
+		"userId",
+		user_id,
+	);
+	addOptionalStringEqFilter(
+		filters,
+		query_params,
+		"project_path",
+		"projectPath",
+		project_path,
+	);
 
 	const statsQuery = `
     SELECT
@@ -132,7 +154,7 @@ export async function getLearningsFeedStats(
       uniq(user_id) as unique_users,
       uniq(project_path) as unique_projects
     FROM rudel.session_analytics
-    WHERE ${filters}
+    WHERE ${filters.join("\n      AND ")}
   `;
 
 	const timeSeriesQuery = `
@@ -140,7 +162,7 @@ export async function getLearningsFeedStats(
       toDate(last_interaction_date) as date,
       count() as count
     FROM rudel.session_analytics
-    WHERE ${filters}
+    WHERE ${filters.join("\n      AND ")}
     GROUP BY date
     ORDER BY date DESC
   `;
@@ -150,8 +172,11 @@ export async function getLearningsFeedStats(
 			total_learnings: number;
 			unique_users: number;
 			unique_projects: number;
-		}>(statsQuery),
-		queryClickhouse<{ date: string; count: number }>(timeSeriesQuery),
+		}>({ query: statsQuery, query_params }),
+		queryClickhouse<{ date: string; count: number }>({
+			query: timeSeriesQuery,
+			query_params,
+		}),
 	]);
 
 	const stats = statsData[0] || {
@@ -170,18 +195,22 @@ export async function getLearningsFeedStats(
  * Get unique users who have used compound:feedback (for filter dropdown)
  */
 export async function getLearningUsers(orgId: string): Promise<string[]> {
-	const org = escapeString(orgId);
-
 	const query = `
     SELECT DISTINCT user_id
     FROM rudel.session_analytics
-    WHERE last_interaction_date >= now64(3) - INTERVAL 90 DAY
+    WHERE last_interaction_date >= now64(3) - toIntervalDay({days:UInt32})
       AND has(slash_commands, 'compound:feedback')
-      AND organization_id = '${org}'
+      AND organization_id = {orgId:String}
     ORDER BY user_id
   `;
 
-	const data = await queryClickhouse<{ user_id: string }>(query);
+	const data = await queryClickhouse<{ user_id: string }>({
+		query,
+		query_params: {
+			days: 90,
+			orgId,
+		},
+	});
 	return data.map((row) => row.user_id);
 }
 
@@ -189,18 +218,22 @@ export async function getLearningUsers(orgId: string): Promise<string[]> {
  * Get unique projects that have compound:feedback (for filter dropdown)
  */
 export async function getLearningProjects(orgId: string): Promise<string[]> {
-	const org = escapeString(orgId);
-
 	const query = `
     SELECT DISTINCT project_path
     FROM rudel.session_analytics
-    WHERE last_interaction_date >= now64(3) - INTERVAL 90 DAY
+    WHERE last_interaction_date >= now64(3) - toIntervalDay({days:UInt32})
       AND has(slash_commands, 'compound:feedback')
-      AND organization_id = '${org}'
+      AND organization_id = {orgId:String}
     ORDER BY project_path
   `;
 
-	const data = await queryClickhouse<{ project_path: string }>(query);
+	const data = await queryClickhouse<{ project_path: string }>({
+		query,
+		query_params: {
+			days: 90,
+			orgId,
+		},
+	});
 	return data.map((row) => row.project_path);
 }
 
@@ -215,7 +248,6 @@ export async function getLearningsTrend(
 	},
 ): Promise<LearningsTrendDataPoint[]> {
 	const { days = 30, split_by } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
 
 	const splitColumn =
@@ -229,9 +261,9 @@ export async function getLearningsTrend(
       ${splitColumn} as split_key,
       count() as count
     FROM rudel.session_analytics
-    WHERE last_interaction_date >= now64(3) - INTERVAL ${d} DAY
+    WHERE last_interaction_date >= now64(3) - toIntervalDay({days:UInt32})
       AND has(slash_commands, 'compound:feedback')
-      AND organization_id = '${org}'
+      AND organization_id = {orgId:String}
     GROUP BY date, split_key
     ORDER BY date ASC, split_key ASC
   `;
@@ -240,7 +272,13 @@ export async function getLearningsTrend(
 		date: string;
 		split_key: string;
 		count: number;
-	}>(query);
+	}>({
+		query,
+		query_params: {
+			days: d,
+			orgId,
+		},
+	});
 
 	// Transform data into chart-friendly format
 	const dataByDate = new Map<string, Record<string, number>>();

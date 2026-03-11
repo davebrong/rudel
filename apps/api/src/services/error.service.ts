@@ -1,9 +1,5 @@
 import type { ErrorTrendDataPoint, RecurringError } from "@rudel/api-routes";
-import {
-	buildDateFilter,
-	escapeString,
-	queryClickhouse,
-} from "../clickhouse.js";
+import { buildDateFilter, queryClickhouse } from "../clickhouse.js";
 
 export interface CrossDeveloperError {
 	error_pattern: string;
@@ -21,10 +17,13 @@ export async function getTopRecurringErrors(
 	params: { days?: number; min_occurrences?: number; limit?: number } = {},
 ): Promise<RecurringError[]> {
 	const { days = 7, min_occurrences = 2, limit = 15 } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-	const minOcc = Number(min_occurrences);
-	const lim = Number(limit);
+	const query_params = {
+		days: d,
+		minOccurrences: Number(min_occurrences),
+		limit: Number(limit),
+		orgId,
+	};
 
 	const query = `
     WITH error_sessions AS (
@@ -43,8 +42,8 @@ export async function getTopRecurringErrors(
           ELSE 'UnknownError'
         END as error_pattern
       FROM rudel.session_analytics
-      WHERE ${buildDateFilter(d)}
-        AND organization_id = '${org}'
+      WHERE ${buildDateFilter("days")}
+        AND organization_id = {orgId:String}
         AND (
           content ILIKE '%error%' OR
           content ILIKE '%exception%' OR
@@ -67,12 +66,15 @@ export async function getTopRecurringErrors(
     FROM error_sessions
     WHERE error_pattern != ''
     GROUP BY error_pattern
-    HAVING occurrences >= ${minOcc}
+    HAVING occurrences >= {minOccurrences:UInt32}
     ORDER BY occurrences DESC
-    LIMIT ${lim}
+    LIMIT {limit:UInt32}
   `;
 
-	return queryClickhouse<RecurringError>(query);
+	return queryClickhouse<RecurringError>({
+		query,
+		query_params,
+	});
 }
 
 /**
@@ -83,10 +85,13 @@ export async function getCrossDeveloperErrors(
 	params: { days?: number; min_developers?: number; limit?: number } = {},
 ): Promise<CrossDeveloperError[]> {
 	const { days = 7, min_developers = 2, limit = 10 } = params;
-	const org = escapeString(orgId);
 	const d = Number(days);
-	const minDevs = Number(min_developers);
-	const lim = Number(limit);
+	const query_params = {
+		days: d,
+		minDevelopers: Number(min_developers),
+		limit: Number(limit),
+		orgId,
+	};
 
 	const query = `
     SELECT
@@ -102,8 +107,8 @@ export async function getCrossDeveloperErrors(
       groupUniqArray(user_id) as affected_user_ids,
       round(AVG(actual_duration_min), 2) as avg_session_duration_min
     FROM rudel.session_analytics
-    WHERE ${buildDateFilter(d)}
-      AND organization_id = '${org}'
+    WHERE ${buildDateFilter("days")}
+      AND organization_id = {orgId:String}
       AND (
         content ILIKE '%error%' OR
         content ILIKE '%exception%' OR
@@ -111,12 +116,15 @@ export async function getCrossDeveloperErrors(
         content ILIKE '%timeout%'
       )
     GROUP BY error_pattern
-    HAVING developers_affected >= ${minDevs}
+    HAVING developers_affected >= {minDevelopers:UInt32}
     ORDER BY developers_affected DESC, total_occurrences DESC
-    LIMIT ${lim}
+    LIMIT {limit:UInt32}
   `;
 
-	return queryClickhouse<CrossDeveloperError>(query);
+	return queryClickhouse<CrossDeveloperError>({
+		query,
+		query_params,
+	});
 }
 
 /**
@@ -131,9 +139,11 @@ export async function getErrorTrends(
 	},
 ): Promise<ErrorTrendDataPoint[]> {
 	const { start_date, end_date, split_by } = params;
-	const org = escapeString(orgId);
-	const sd = escapeString(start_date);
-	const ed = escapeString(end_date);
+	const query_params = {
+		startDate: start_date,
+		endDate: end_date,
+		orgId,
+	};
 
 	if (split_by === "project_path" || split_by === "model") {
 		const dimensionExpr =
@@ -147,9 +157,9 @@ export async function getErrorTrends(
           ${dimensionExpr} as dimension_value,
           sa.error_count
         FROM rudel.session_analytics sa
-        WHERE sa.session_date >= '${sd}'
-          AND sa.session_date < '${ed}'
-          AND sa.organization_id = '${org}'
+        WHERE sa.session_date >= toDateTime64({startDate:String}, 3)
+          AND sa.session_date < toDateTime64({endDate:String}, 3)
+          AND sa.organization_id = {orgId:String}
           AND sa.error_count > 0
       ),
       daily_metrics AS (
@@ -173,7 +183,10 @@ export async function getErrorTrends(
       ORDER BY date, dimension
     `;
 
-		return queryClickhouse<ErrorTrendDataPoint>(query);
+		return queryClickhouse<ErrorTrendDataPoint>({
+			query,
+			query_params,
+		});
 	}
 
 	// For user_id split
@@ -188,9 +201,9 @@ export async function getErrorTrends(
         ${dimension_field} as dimension_value,
         length(splitByRegexp('\\\\n', content)) as error_count
       FROM rudel.session_analytics
-      WHERE session_date >= '${sd}'
-        AND session_date < '${ed}'
-        AND organization_id = '${org}'
+      WHERE session_date >= toDateTime64({startDate:String}, 3)
+        AND session_date < toDateTime64({endDate:String}, 3)
+        AND organization_id = {orgId:String}
         AND (
           content ILIKE '%error%' OR
           content ILIKE '%exception%' OR
@@ -219,5 +232,8 @@ export async function getErrorTrends(
     ORDER BY date, dimension
   `;
 
-	return queryClickhouse<ErrorTrendDataPoint>(query);
+	return queryClickhouse<ErrorTrendDataPoint>({
+		query,
+		query_params,
+	});
 }
