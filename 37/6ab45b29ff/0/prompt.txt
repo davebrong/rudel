@@ -1,0 +1,9 @@
+which version of chkit dependencies are installed in this repo?
+
+---
+
+run `bun type-check` i think the error should have been fixed in the latest chkit update (beta.16) or why are we having a type issue? did we actua;ly install beta.16 or do we only have it in the package.json
+
+---
+
+yes run install

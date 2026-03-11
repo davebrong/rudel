@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "376ab45b29ff",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6702-security-replace-cli-loopback-query-string-token-handoff",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "bun.lock"
+  ],
+  "sessions": [
+    {
+      "metadata": "/37/6ab45b29ff/0/metadata.json",
+      "transcript": "/37/6ab45b29ff/0/full.jsonl",
+      "context": "/37/6ab45b29ff/0/context.md",
+      "content_hash": "/37/6ab45b29ff/0/content_hash.txt",
+      "prompt": "/37/6ab45b29ff/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 30875,
+    "cache_read_tokens": 435756,
+    "output_tokens": 3247,
+    "api_call_count": 17
+  }
+}
