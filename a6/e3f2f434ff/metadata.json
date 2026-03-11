@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "a6e3f2f434ff",
+  "strategy": "manual-commit",
+  "branch": "fix/project-details-endpoint",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/index.ts",
+    "apps/api/src/services/project.service.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a6/e3f2f434ff/0/metadata.json",
+      "transcript": "/a6/e3f2f434ff/0/full.jsonl",
+      "context": "/a6/e3f2f434ff/0/context.md",
+      "content_hash": "/a6/e3f2f434ff/0/content_hash.txt",
+      "prompt": "/a6/e3f2f434ff/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 157,
+    "cache_creation_tokens": 156999,
+    "cache_read_tokens": 13221601,
+    "output_tokens": 73560,
+    "api_call_count": 151
+  }
+}
