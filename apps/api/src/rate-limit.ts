@@ -1,21 +1,28 @@
 import { getLogger } from "@logtape/logtape";
 import { ORPCError } from "@orpc/server";
-import { escapeString, queryClickhouse } from "./clickhouse.js";
+import type { ClickHouseStatement } from "./clickhouse.js";
+import { queryClickhouse } from "./clickhouse.js";
 
 const logger = getLogger(["rudel", "api", "rate-limit"]);
 
 export interface RateLimitConfig {
 	maxRequests: number;
 	windowSeconds: number;
-	countQuery: (userId: string, windowSeconds: number) => string;
+	countQuery: (userId: string, windowSeconds: number) => ClickHouseStatement;
 }
 
-const ingestCountQuery = (userId: string, windowSeconds: number) =>
-	`SELECT sum(c) AS count FROM (` +
-	`SELECT count() AS c FROM rudel.claude_sessions WHERE user_id = '${userId}' AND ingested_at >= now64(3) - INTERVAL ${windowSeconds} SECOND ` +
-	`UNION ALL ` +
-	`SELECT count() AS c FROM rudel.codex_sessions WHERE user_id = '${userId}' AND ingested_at >= now64(3) - INTERVAL ${windowSeconds} SECOND` +
-	`)`;
+const ingestCountQuery = (
+	userId: string,
+	windowSeconds: number,
+): ClickHouseStatement => ({
+	query:
+		`SELECT sum(c) AS count FROM (` +
+		`SELECT count() AS c FROM rudel.claude_sessions WHERE user_id = {userId:String} AND ingested_at >= now64(3) - INTERVAL {window:UInt32} SECOND ` +
+		`UNION ALL ` +
+		`SELECT count() AS c FROM rudel.codex_sessions WHERE user_id = {userId:String} AND ingested_at >= now64(3) - INTERVAL {window:UInt32} SECOND` +
+		`)`,
+	query_params: { userId, window: windowSeconds },
+});
 
 export const INGEST_RATE_LIMIT: RateLimitConfig = {
 	maxRequests: Number(process.env.RATE_LIMIT_INGEST_MAX ?? 120),
@@ -35,7 +42,7 @@ export async function checkIngestRateLimit(
 
 	try {
 		const rows = await queryClickhouse<{ count: number }>(
-			countQuery(escapeString(userId), windowSeconds),
+			countQuery(userId, windowSeconds),
 		);
 		const count = rows[0]?.count ?? 0;
 
