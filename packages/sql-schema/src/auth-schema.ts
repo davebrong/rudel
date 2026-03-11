@@ -174,8 +174,10 @@ export const deviceCode = pgTable("deviceCode", {
 	deviceCode: text("device_code").notNull().unique(),
 	userCode: text("user_code").notNull().unique(),
 	userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
-	expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" })
-		.notNull(),
+	expiresAt: timestamp("expires_at", {
+		withTimezone: true,
+		mode: "date",
+	}).notNull(),
 	status: text("status").notNull(),
 	lastPolledAt: timestamp("last_polled_at", {
 		withTimezone: true,
