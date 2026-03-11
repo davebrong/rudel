@@ -11,24 +11,25 @@ const {
 	getSafeClickHouseTable,
 } = await import("../clickhouse.js");
 
-const hasClickHouseEnv = Boolean(process.env.CLICKHOUSE_URL);
-const clickhouseDescribe = hasClickHouseEnv ? describe : describe.skip;
 const liveTable = getSafeClickHouseTable("rudel.claude_sessions");
 const insertedSessionIds = new Set<string>();
 
-const executor = hasClickHouseEnv
-	? createClickHouseExecutor({
-			url: process.env.CLICKHOUSE_URL || "http://localhost:8123",
-			username:
-				process.env.CLICKHOUSE_USERNAME ||
-				process.env.CLICKHOUSE_USER ||
-				"default",
-			password: process.env.CLICKHOUSE_PASSWORD || "",
-			database: process.env.CLICKHOUSE_DB || "default",
-		})
-	: null;
+function getExecutor() {
+	const url = process.env.CLICKHOUSE_URL;
+	if (!url) throw new Error("CLICKHOUSE_URL is required");
+	return createClickHouseExecutor({
+		url,
+		username:
+			process.env.CLICKHOUSE_USERNAME ||
+			process.env.CLICKHOUSE_USER ||
+			"default",
+		password: process.env.CLICKHOUSE_PASSWORD || "",
+		database: process.env.CLICKHOUSE_DB || "default",
+	});
+}
 
 async function waitForRow(
+	executor: ReturnType<typeof createClickHouseExecutor>,
 	sessionId: string,
 	timeoutMs = 30_000,
 	intervalMs = 1_000,
@@ -40,8 +41,6 @@ async function waitForRow(
 	  }
 	| undefined
 > {
-	if (!executor) return undefined;
-
 	const deadline = Date.now() + timeoutMs;
 	while (Date.now() < deadline) {
 		try {
@@ -66,11 +65,11 @@ async function waitForRow(
 }
 
 afterAll(() => {
-	if (!executor) return;
-
+	if (insertedSessionIds.size === 0) return;
+	const exec = getExecutor();
 	void Promise.all(
 		[...insertedSessionIds].map((sessionId) =>
-			executor
+			exec
 				.execute({
 					query: `DELETE FROM ${liveTable} WHERE session_id = {sessionId:String}`,
 					query_params: { sessionId },
@@ -141,10 +140,9 @@ describe("clickhouse helpers", () => {
 	});
 });
 
-clickhouseDescribe("clickhouse executor", () => {
+describe("clickhouse executor", () => {
 	test("round-trips malicious query params against real ClickHouse", async () => {
-		if (!executor) throw new Error("CLICKHOUSE_URL is required for this test");
-
+		const executor = getExecutor();
 		const payload = "abc'\\\\\n--\u2028";
 		const rows = await executor.query<{ value: string }>({
 			query: "SELECT {value:String} AS value",
@@ -157,8 +155,7 @@ clickhouseDescribe("clickhouse executor", () => {
 	});
 
 	test("inserts and queries a live row in ClickHouse", async () => {
-		if (!executor) throw new Error("CLICKHOUSE_URL is required for this test");
-
+		const executor = getExecutor();
 		const sessionId = `clickhouse_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 		const now = new Date().toISOString().replace("Z", "");
 		const projectPath = "/tmp/quote-'\\\\\n\u2028";
@@ -189,7 +186,7 @@ clickhouseDescribe("clickhouse executor", () => {
 			],
 		});
 
-		const row = await waitForRow(sessionId);
+		const row = await waitForRow(executor, sessionId);
 
 		expect(row).toBeDefined();
 		expect(row?.session_id).toBe(sessionId);
