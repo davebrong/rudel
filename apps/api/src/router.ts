@@ -6,6 +6,7 @@ import { getClickhouse } from "./clickhouse.js";
 import { db } from "./db.js";
 import { analyticsRouter } from "./handlers/analytics/index.js";
 import { authMiddleware, os } from "./middleware.js";
+import { checkIngestRateLimit } from "./rate-limit.js";
 import {
 	deleteOrgSessions,
 	getOrgSessionCount,
@@ -56,6 +57,8 @@ const listMyOrganizations = os.listMyOrganizations
 const ingestSessionHandler = os.ingestSession
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
+		await checkIngestRateLimit(context.user.id);
+
 		const orgId =
 			input.organizationId ??
 			((context.session as Record<string, unknown>).activeOrganizationId as

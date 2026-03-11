@@ -70,6 +70,9 @@ function corsHeaders(origin: string | null): Record<string, string> {
 }
 
 const port = process.env.PORT ?? 4010;
+const MAX_REQUEST_BODY_BYTES = Number(
+	process.env.MAX_REQUEST_BODY_BYTES ?? 500 * 1024 * 1024, // 500 MB
+);
 
 const server = Bun.serve({
 	port,
@@ -79,6 +82,19 @@ const server = Bun.serve({
 
 		if (request.method === "OPTIONS") {
 			return new Response(null, { status: 204, headers: cors });
+		}
+
+		const contentLength = request.headers.get("Content-Length");
+		if (contentLength && Number(contentLength) > MAX_REQUEST_BODY_BYTES) {
+			return new Response(
+				JSON.stringify({
+					error: `Request body too large. Maximum size is ${Math.round(MAX_REQUEST_BODY_BYTES / (1024 * 1024))} MB.`,
+				}),
+				{
+					status: 413,
+					headers: { ...cors, "Content-Type": "application/json" },
+				},
+			);
 		}
 
 		const url = new URL(request.url);
