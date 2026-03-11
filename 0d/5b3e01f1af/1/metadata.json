@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "0d5b3e01f1af",
+  "session_id": "3c3d614b-b79e-41a6-92f7-d711921e1fa5",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T08:20:04.102735Z",
+  "branch": "marc/classify-prompt-injection",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/lib/classifier.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "7a65fc9a78f4",
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 67469,
+    "cache_read_tokens": 153046,
+    "output_tokens": 1719,
+    "api_call_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T08:20:04.080071Z",
+    "agent_lines": 45,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 45,
+    "agent_percentage": 100
+  }
+}

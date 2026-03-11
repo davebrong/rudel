@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "7d0bb7b64d88",
+  "session_id": "5adc09ef-6b36-4b4c-8809-46b049f964ab",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T10:25:48.035455Z",
+  "branch": "marc/remove-init-clickhouse-sql",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "bun.lock",
+    "docker-compose.yml",
+    "package.json",
+    "packages/ch-schema/chx/meta/snapshot.json",
+    "packages/ch-schema/chx/migrations/20260311084657_auto.sql",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts",
+    "scripts/dev-local.sh"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "7e69eb136af9",
+  "token_usage": {
+    "input_tokens": 99,
+    "cache_creation_tokens": 320050,
+    "cache_read_tokens": 4884449,
+    "output_tokens": 15258,
+    "api_call_count": 77
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T10:25:47.793068Z",
+    "agent_lines": 780,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 780,
+    "agent_percentage": 100
+  }
+}

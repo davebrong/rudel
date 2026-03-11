@@ -1,0 +1,203 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/marc/conductor/workspaces/rudel/charlotte-v1 directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is main. Use this for actions like creating new PRs, bisecting, etc., unless you're told otherwise.
+
+If the user asks you to work on several unrelated tasks in parallel, you can suggest they start new workspaces.
+If the user asks for help with Conductor, ask them to email [humans@conductor.build](mailto:humans@conductor.build) or
+click on the comment icon in the bottom left to send feedback.
+</system_instruction>
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- /Users/marc/conductor/workspaces/rudel/charlotte-v1/.context/attachments/[LINEAR]-NUM-6707.md
+</system_instruction>
+
+---
+
+Base directory for this skill: /Users/marc/conductor/workspaces/rudel/charlotte-v1/.claude/skills/testing-bun
+
+# Testing Standards (Bun)
+
+## Framework
+- Use `bun:test` imports (`describe`, `test`, `expect`, etc.)
+- Use Bun test runner, typically via workspace scripts (`bun run test`)
+- Do not introduce Vitest or Jest in this repo
+- For local e2e/integration runs that need env vars, use Doppler (`bun run test:env`)
+
+## Critical Rules
+
+### 1. No Try/Catch in Positive Tests
+```ts
+// Bad - Hides real errors
+test('creates user', async () => {
+  try {
+    const user = await createUser(input)
+    expect(user.id).toBeDefined()
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+// Good - Let test framework handle errors
+test('creates user', async () => {
+  const user = await createUser(input)
+  expect(user.id).toBeDefined()
+})
+
+// Good - Only for testing expected failures
+test('rejects invalid input', async () => {
+  await expect(createUser(invalid)).rejects.toThrow('Invalid email')
+})
+```
+
+### 2. No Early Returns in Tests
+```ts
+// Bad - Silently skips test
+test('calls API', async () => {
+  if (!hasCredentials) return
+  await callApi()
+})
+
+// Good - Fail when preconditions missing
+test('calls API', async () => {
+  expect(hasCredentials).toBe(true)
+  await callApi()
+})
+```
+
+### 3. No Hidden Skips for Missing Env Vars
+```ts
+// Bad
+describe.skipIf(!process.env.CLICKHOUSE_URL)('integration', () => {})
+
+// Bad
+if (!process.env.CLICKHOUSE_URL) {
+  test.skip('requires CLICKHOUSE_URL', () => {})
+}
+
+// Good - Let tests fail if env not configured
+describe('integration', () => {
+  const url = process.env.CLICKHOUSE_URL
+  expect(url).toBeTruthy()
+})
+```
+
+### 4. E2E Policy (Mandatory)
+- E2E tests must never be conditional on env availability
+- Never use `skip`, `skipIf`, guard `return`, or branching that bypasses e2e execution when env vars are absent
+- Missing required env vars must cause test failure immediately
+- Local e2e execution must use Doppler so required vars are injected
+
+```bash
+# Required local command for env-dependent suites
+bun run test:env
+```
+
+### 5. Prefer Inline Setup Over `beforeEach`
+```ts
+// Bad - Unnecessary beforeEach
+describe('Tests', () => {
+  let queryBuilder: QueryBuilder
+  beforeEach(() => {
+    queryBuilder = new QueryBuilder(schema)
+  })
+})
+
+// Good - Inline initialization
+describe('Tests', () => {
+  const queryBuilder = new QueryBuilder(schema)
+})
+
+// Good - Use beforeEach only for async cleanup
+beforeEach(async () => {
+  await client.query('DELETE FROM test_table')
+})
+```
+
+## Best Practices
+
+### Use assert() for Type Narrowing
+```ts
+// Good - Provides type narrowing
+assert(checkoutRecord)
+```
+
+### Keep Tests Deterministic and Isolated
+- Prefer plain `test(...)` blocks with explicit setup
+- Use package-level scripts (`bun test src`) for focused runs when needed
+
+## Environment Variables
+When adding new env vars for tests, update:
+1. Package's `turbo.json` → `passThroughEnv` array
+2. `.github/workflows/ci.yml` → `env` section
+3. Run local e2e/integration suites with `bun run test:env`
+4. Treat missing vars as a hard failure, not a skip path
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- /Users/marc/conductor/workspaces/rudel/charlotte-v1/.context/attachments/PR instructions.md
+</system_instruction>
+
+
+
+Create a PR
+
+---
+
+Base directory for this skill: /Users/marc/conductor/workspaces/rudel/charlotte-v1/.claude/skills/pr-creation
+
+# PR Creation Checklist
+
+Follow these steps in order when creating a pull request. Do not skip any step.
+
+## 1. Run Verification
+
+```bash
+bun run verify
+```
+
+This runs type checking, linting, and tests across the monorepo.
+
+**Do NOT proceed if verification fails.** Fix issues first, then re-run.
+
+## 2. Review the Workspace Diff
+
+Use `mcp__conductor__GetWorkspaceDiff` with `stat: true` to see all changed files, then review the full diff to understand the scope of changes.
+
+## 3. Commit All Changes
+
+Stage and commit all changes. Follow any user instructions about commit message style.
+
+## 4. Push and Create PR
+
+1. Push to origin with `-u` flag if the branch has no upstream
+2. PR title **must** use conventional commit format (enforced by CI):
+   `feat:` | `fix:` | `docs:` | `style:` | `refactor:` | `perf:` | `test:` | `build:` | `ci:` | `chore:` | `revert:`
+3. Use `gh pr create --base main` with:
+   - Title under 80 characters
+   - Description covering ALL changes in the workspace diff (not just the latest commit)
+   - Keep description concise
+
+```bash
+gh pr create --base main --title "title here" --body "$(cat <<'EOF'
+## Summary
+- bullet points describing changes
+
+## Test plan
+- [ ] testing steps
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)"
+```
+
+## Common Mistakes to Avoid
+
+- **Skipping verification**: Step 1 is non-negotiable. CI will catch the same failures but slower.
+- **Wrong PR title format**: Must be conventional commit format or CI will reject it.
+- **Describing only the latest commit**: The PR description should cover the entire branch diff.
