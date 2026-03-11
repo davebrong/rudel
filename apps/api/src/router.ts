@@ -63,13 +63,14 @@ const ingestSessionHandler = os.ingestSession
 				| null) ??
 			context.user.id;
 
-		if (input.organizationId) {
+		// Verify membership for any org that isn't the user's personal workspace
+		if (orgId !== context.user.id) {
 			const membership = await db
 				.select({ id: member.id })
 				.from(member)
 				.where(
 					and(
-						eq(member.organizationId, input.organizationId),
+						eq(member.organizationId, orgId),
 						eq(member.userId, context.user.id),
 					),
 				)
