@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "37428cf7bbf0",
+  "session_id": "da0c23bc-ffd8-4784-822b-5bb7750ec898",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T07:44:03.26555Z",
+  "branch": "marc/verify-org-membership",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/middleware.ts",
+    "apps/api/src/router.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "62733a7216c1",
+  "token_usage": {
+    "input_tokens": 58,
+    "cache_creation_tokens": 83354,
+    "cache_read_tokens": 425758,
+    "output_tokens": 3732,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T07:44:03.161058Z",
+    "agent_lines": 27,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 27,
+    "agent_percentage": 100
+  }
+}
