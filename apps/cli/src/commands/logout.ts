@@ -15,7 +15,9 @@ async function runLogout(): Promise<void> {
 			const client = createApiClient(credentials);
 			await client.cli.revokeToken();
 		} catch {
-			p.log.warn("Failed to revoke token on server. Local credentials were cleared.");
+			p.log.warn(
+				"Failed to revoke token on server. Local credentials were cleared.",
+			);
 		}
 	}
 
