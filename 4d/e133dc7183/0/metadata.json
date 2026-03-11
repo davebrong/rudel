@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "4de133dc7183",
+  "session_id": "e44e88a1-2d58-4bcd-9fbb-382a6e86f986",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T12:35:24.388338Z",
+  "branch": "ux/chart-hover",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".claude/learnings/feedback/2026-02-25-offer-single-or-batch-upload.md",
+    "apps/cli/reupload-with-org.sh",
+    "apps/cli/upload-all.sh",
+    "apps/web/src/components/charts/ChartTooltip.tsx",
+    "apps/web/src/components/charts/DeveloperTrendChart.tsx",
+    "apps/web/src/components/charts/DimensionAnalysisChart.tsx",
+    "apps/web/src/components/charts/ErrorTrendChart.tsx",
+    "apps/web/src/components/charts/LearningsTrendChart.tsx",
+    "apps/web/src/components/charts/ModelTokensChart.tsx",
+    "apps/web/src/components/charts/ProjectTrendChart.tsx",
+    "apps/web/src/components/charts/UsageTrendChart.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 74,
+    "cache_creation_tokens": 95522,
+    "cache_read_tokens": 4440010,
+    "output_tokens": 35211,
+    "api_call_count": 66
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T12:35:23.654025Z",
+    "agent_lines": 330,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 99,
+    "total_committed": 330,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-rafa-Obsession-rudel/e44e88a1-2d58-4bcd-9fbb-382a6e86f986.jsonl"
+}
