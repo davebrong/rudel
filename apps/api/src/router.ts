@@ -126,7 +126,7 @@ const revokeCliToken = os.cli.revokeToken
 			.where(
 				and(
 					eq(apikey.id, context.apiKeyId),
-					eq(apikey.userId, context.user.id),
+					eq(apikey.referenceId, context.user.id),
 				),
 			);
 

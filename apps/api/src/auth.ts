@@ -1,13 +1,9 @@
+import { apiKey } from "@better-auth/api-key";
 import { getLogger } from "@logtape/logtape";
 import * as schema from "@rudel/sql-schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import {
-	apiKey,
-	bearer,
-	deviceAuthorization,
-	organization,
-} from "better-auth/plugins";
+import { bearer, deviceAuthorization, organization } from "better-auth/plugins";
 import { fetchGitHubHandle, notifySignup } from "./slack.js";
 
 const logger = getLogger(["rudel", "api", "auth"]);

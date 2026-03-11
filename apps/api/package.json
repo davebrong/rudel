@@ -13,6 +13,7 @@
 		"test:migrate": "bun test src/__tests__/migrate-sessions.integration.ts"
 	},
 	"dependencies": {
+		"@better-auth/api-key": "^1.5.4",
 		"@clickhouse/client-web": "^1.11.0",
 		"@logtape/file": "^2.0.4",
 		"@logtape/logtape": "^2.0.4",
@@ -21,7 +22,7 @@
 		"@rudel/api-routes": "workspace:*",
 		"@rudel/ch-schema": "workspace:*",
 		"@rudel/sql-schema": "workspace:*",
-		"better-auth": "^1.4.18",
+		"better-auth": "^1.5.4",
 		"drizzle-orm": "0.45.1",
 		"postgres": "^3.4.5"
 	},

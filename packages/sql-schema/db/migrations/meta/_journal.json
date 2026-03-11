@@ -36,6 +36,13 @@
 			"when": 1773225959526,
 			"tag": "0004_supreme_malcolm_colcord",
 			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1773500000000,
+			"tag": "0005_better-auth-api-key",
+			"breakpoints": true
 		}
 	]
 }

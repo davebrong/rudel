@@ -148,9 +148,6 @@ async function createIngestApiKey(
 		body: JSON.stringify({
 			name: "rudel-cli-ingest",
 			expiresIn: null,
-			permissions: {
-				ingest: ["write"],
-			},
 		}),
 	});
 

@@ -50,7 +50,7 @@ describe("auth e2e", () => {
 			[
 				"bash",
 				"-c",
-				`bun "${cliPath}" login --api-base="${server.baseUrl}" --web-url=http://localhost:9999 --no-browser 2>&1 | tee "${stdoutLogPath}"`,
+				`set -o pipefail; bun "${cliPath}" login --api-base="${server.baseUrl}" --web-url=http://localhost:9999 --no-browser 2>&1 | tee "${stdoutLogPath}"`,
 			],
 			{
 				env: {
@@ -76,7 +76,7 @@ describe("auth e2e", () => {
 		}
 
 		// Extract user code and approve the device flow as the test user
-		const userCodeMatch = output.match(/User code:\s*([A-Z0-9-]+)/i);
+		const userCodeMatch = output.match(/User code:\s*([A-Z0-9_-]+)/i);
 		expect(userCodeMatch).not.toBeNull();
 		const userCode = userCodeMatch?.[1] ?? "";
 
@@ -86,6 +86,7 @@ describe("auth e2e", () => {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${sessionToken}`,
 					Cookie: `better-auth.session_token=${sessionToken}`,
 				},
 				body: JSON.stringify({ userCode }),

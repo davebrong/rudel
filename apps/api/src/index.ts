@@ -226,7 +226,7 @@ async function getContext(request: Request) {
 						updatedAt: userTable.updatedAt,
 					})
 					.from(userTable)
-					.where(eq(userTable.id, verification.key.userId))
+					.where(eq(userTable.id, verification.key.referenceId))
 					.limit(1);
 
 				if (foundUser) {
