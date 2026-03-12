@@ -26,16 +26,115 @@ declare global {
 	}
 }
 
-const BASE_URL = import.meta.env.VITE_CHATWOOT_BASE_URL?.trim() ?? "";
-const WEBSITE_TOKEN = import.meta.env.VITE_CHATWOOT_WEBSITE_TOKEN?.trim() ?? "";
-const ENABLED = import.meta.env.VITE_CHATWOOT_ENABLED !== "false";
+function trimValue(value: string | null | undefined) {
+	const trimmed = value?.trim();
+	return trimmed ? trimmed : undefined;
+}
+
+type ChatwootConfig = {
+	baseUrl: string;
+	websiteToken: string;
+	enabled: boolean;
+};
+
 const SCRIPT_ID = "rudel-chatwoot-sdk";
 const LOAD_TIMEOUT_MS = 5_000;
+const RUNTIME_CONFIG_ENDPOINT = "/api/runtime-config";
 
 let loadPromise: Promise<void> | null = null;
+let runtimeConfig: ChatwootConfig | null | undefined;
+let runtimeConfigPromise: Promise<ChatwootConfig | null> | null = null;
 
-function getScriptUrl() {
-	return `${BASE_URL.replace(/\/$/, "")}/packs/js/sdk.js`;
+function getBuildChatwootConfig(): ChatwootConfig | null {
+	const baseUrl = trimValue(import.meta.env.VITE_CHATWOOT_BASE_URL) ?? "";
+	const websiteToken =
+		trimValue(import.meta.env.VITE_CHATWOOT_WEBSITE_TOKEN) ?? "";
+	const enabled =
+		(trimValue(import.meta.env.VITE_CHATWOOT_ENABLED) ?? "true") !== "false";
+
+	if (!enabled || baseUrl.length === 0 || websiteToken.length === 0) {
+		return null;
+	}
+
+	return {
+		baseUrl,
+		websiteToken,
+		enabled,
+	};
+}
+
+function parseRuntimeChatwootConfig(input: {
+	CHATWOOT_BASE_URL?: string;
+	CHATWOOT_WEBSITE_TOKEN?: string;
+	CHATWOOT_ENABLED?: string;
+}): ChatwootConfig | null {
+	const baseUrl = trimValue(input.CHATWOOT_BASE_URL) ?? "";
+	const websiteToken = trimValue(input.CHATWOOT_WEBSITE_TOKEN) ?? "";
+	const enabled = (trimValue(input.CHATWOOT_ENABLED) ?? "true") !== "false";
+
+	if (!enabled || baseUrl.length === 0 || websiteToken.length === 0) {
+		return null;
+	}
+
+	return {
+		baseUrl,
+		websiteToken,
+		enabled,
+	};
+}
+
+async function loadRuntimeChatwootConfig(): Promise<ChatwootConfig | null> {
+	if (typeof window === "undefined") {
+		return null;
+	}
+
+	if (runtimeConfig !== undefined) {
+		return runtimeConfig;
+	}
+
+	if (runtimeConfigPromise) {
+		return runtimeConfigPromise;
+	}
+
+	runtimeConfigPromise = fetch(RUNTIME_CONFIG_ENDPOINT, {
+		credentials: "same-origin",
+	})
+		.then(async (response) => {
+			if (!response.ok) {
+				return null;
+			}
+
+			const payload = (await response.json()) as {
+				CHATWOOT_BASE_URL?: string;
+				CHATWOOT_WEBSITE_TOKEN?: string;
+				CHATWOOT_ENABLED?: string;
+			};
+
+			runtimeConfig = parseRuntimeChatwootConfig(payload);
+			return runtimeConfig;
+		})
+		.catch(() => {
+			runtimeConfig = null;
+			return runtimeConfig;
+		})
+		.finally(() => {
+			runtimeConfigPromise = null;
+		});
+
+	return runtimeConfigPromise;
+}
+
+async function resolveChatwootConfig(): Promise<ChatwootConfig | null> {
+	const fromRuntime = await loadRuntimeChatwootConfig();
+	return fromRuntime ?? getBuildChatwootConfig();
+}
+
+function getKnownChatwootConfig(): ChatwootConfig | null {
+	return runtimeConfig ?? getBuildChatwootConfig();
+}
+
+function getScriptUrl(baseUrl: string) {
+	return `${baseUrl.replace(/\/$/, "")}/packs/js/sdk.js`;
 }
 
 function delay(ms: number) {
@@ -57,32 +156,33 @@ async function waitForChatwoot() {
 	throw new Error("Timed out waiting for Chatwoot to initialize");
 }
 
-function runChatwoot() {
+function runChatwoot(config: ChatwootConfig) {
 	if (!window.chatwootSDK) {
 		throw new Error("Chatwoot SDK failed to load");
 	}
 
 	window.chatwootSDK.run({
-		websiteToken: WEBSITE_TOKEN,
-		baseUrl: BASE_URL,
+		websiteToken: config.websiteToken,
+		baseUrl: config.baseUrl,
 	});
 }
 
 export function isChatwootEnabled() {
-	return ENABLED && BASE_URL.length > 0 && WEBSITE_TOKEN.length > 0;
+	return getKnownChatwootConfig() !== null;
 }
 
-export function ensureChatwootLoaded(): Promise<void> {
-	if (
-		typeof window === "undefined" ||
-		typeof document === "undefined" ||
-		!isChatwootEnabled()
-	) {
-		return Promise.resolve();
+export async function ensureChatwootLoaded(): Promise<void> {
+	if (typeof window === "undefined" || typeof document === "undefined") {
+		return;
+	}
+
+	const config = await resolveChatwootConfig();
+	if (!config) {
+		return;
 	}
 
 	if (window.$chatwoot?.hasLoaded) {
-		return Promise.resolve();
+		return;
 	}
 
 	if (loadPromise) {
@@ -104,7 +204,7 @@ export function ensureChatwootLoaded(): Promise<void> {
 
 		const startWidget = () => {
 			try {
-				runChatwoot();
+				runChatwoot(config);
 				void waitForChatwoot().then(resolve, reject);
 			} catch (error) {
 				reject(error);
@@ -129,7 +229,7 @@ export function ensureChatwootLoaded(): Promise<void> {
 		const script = document.createElement("script");
 		script.id = SCRIPT_ID;
 		script.async = true;
-		script.src = getScriptUrl();
+		script.src = getScriptUrl(config.baseUrl);
 		script.addEventListener("load", startWidget, { once: true });
 		script.addEventListener(
 			"error",
@@ -139,29 +239,19 @@ export function ensureChatwootLoaded(): Promise<void> {
 
 		document.head.appendChild(script);
 	});
-
-	return loadPromise.catch((error) => {
+	await loadPromise.catch((error) => {
 		loadPromise = null;
 		throw error;
 	});
 }
 
 export async function openChatwoot() {
-	if (!isChatwootEnabled()) {
-		return;
-	}
-
 	try {
 		await ensureChatwootLoaded();
 		window.$chatwoot?.toggle("open");
 	} catch {
 		// Ignore widget load failures so the dashboard remains functional.
 	}
-}
-
-function trimValue(value: string | null | undefined) {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
 }
 
 export async function syncChatwootUser(user: {
@@ -171,10 +261,6 @@ export async function syncChatwootUser(user: {
 	avatarUrl?: string | null;
 	organizationName?: string | null;
 }) {
-	if (!isChatwootEnabled()) {
-		return;
-	}
-
 	try {
 		await ensureChatwootLoaded();
 

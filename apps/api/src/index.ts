@@ -65,6 +65,19 @@ const STATIC_DIR = join(
 	process.env.STATIC_DIR ?? "public",
 );
 
+function getPublicRuntimeConfig() {
+	return {
+		CHATWOOT_BASE_URL:
+			process.env.VITE_CHATWOOT_BASE_URL ?? process.env.CHATWOOT_BASE_URL ?? "",
+		CHATWOOT_WEBSITE_TOKEN:
+			process.env.VITE_CHATWOOT_WEBSITE_TOKEN ??
+			process.env.CHATWOOT_WEBSITE_TOKEN ??
+			"",
+		CHATWOOT_ENABLED:
+			process.env.VITE_CHATWOOT_ENABLED ?? process.env.CHATWOOT_ENABLED ?? "",
+	};
+}
+
 function corsHeaders(origin: string | null): Record<string, string> {
 	if (origin !== ALLOWED_ORIGIN) return {};
 	return {
@@ -146,6 +159,15 @@ async function handleRequest(
 			response.headers.set(key, value);
 		}
 		return response;
+	}
+
+	if (url.pathname === "/api/runtime-config") {
+		return Response.json(getPublicRuntimeConfig(), {
+			headers: {
+				...cors,
+				"Cache-Control": "no-store",
+			},
+		});
 	}
 
 	const { matched, response } = await rpcHandler.handle(request, {

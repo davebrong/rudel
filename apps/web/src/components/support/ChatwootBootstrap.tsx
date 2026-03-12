@@ -1,28 +1,20 @@
 import { useEffect } from "react";
 import { useOrganization } from "../../contexts/OrganizationContext";
 import { authClient } from "../../lib/auth-client";
-import {
-	ensureChatwootLoaded,
-	isChatwootEnabled,
-	syncChatwootUser,
-} from "../../lib/chatwoot";
+import { ensureChatwootLoaded, syncChatwootUser } from "../../lib/chatwoot";
 
 export function ChatwootBootstrap() {
 	const { data: session } = authClient.useSession();
 	const { activeOrg } = useOrganization();
 
 	useEffect(() => {
-		if (!isChatwootEnabled()) {
-			return;
-		}
-
 		void ensureChatwootLoaded().catch(() => {
 			// Keep the dashboard usable even if Chatwoot is unavailable.
 		});
 	}, []);
 
 	useEffect(() => {
-		if (!isChatwootEnabled() || !session?.user) {
+		if (!session?.user) {
 			return;
 		}
 
