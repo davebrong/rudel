@@ -34,103 +34,22 @@ declare global {
 
 const SCRIPT_ID = "rudel-chatwoot-sdk";
 const LOAD_TIMEOUT_MS = 5_000;
-const RUNTIME_CONFIG_ENDPOINT = "/api/runtime-config";
 
 let loadPromise: Promise<void> | null = null;
-let runtimeConfig: ChatwootConfig | null | undefined;
-let runtimeConfigPromise: Promise<ChatwootConfig | null> | null = null;
 
-function trimValue(value: string | null | undefined) {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
-}
-
-function getBuildChatwootConfig(): ChatwootConfig | null {
-	const baseUrl = trimValue(import.meta.env.VITE_CHATWOOT_BASE_URL) ?? "";
-	const websiteToken =
-		trimValue(import.meta.env.VITE_CHATWOOT_WEBSITE_TOKEN) ?? "";
+function getChatwootConfig(): ChatwootConfig | null {
+	const baseUrl = (import.meta.env.VITE_CHATWOOT_BASE_URL ?? "").trim();
+	const websiteToken = (
+		import.meta.env.VITE_CHATWOOT_WEBSITE_TOKEN ?? ""
+	).trim();
 	const enabled =
-		(trimValue(import.meta.env.VITE_CHATWOOT_ENABLED) ?? "true") !== "false";
+		(import.meta.env.VITE_CHATWOOT_ENABLED ?? "true").trim() !== "false";
 
 	if (!enabled || baseUrl.length === 0 || websiteToken.length === 0) {
 		return null;
 	}
 
-	return {
-		baseUrl,
-		websiteToken,
-		enabled,
-	};
-}
-
-function parseRuntimeChatwootConfig(input: {
-	CHATWOOT_BASE_URL?: string;
-	CHATWOOT_WEBSITE_TOKEN?: string;
-	CHATWOOT_ENABLED?: string;
-}): ChatwootConfig | null {
-	const baseUrl = trimValue(input.CHATWOOT_BASE_URL) ?? "";
-	const websiteToken = trimValue(input.CHATWOOT_WEBSITE_TOKEN) ?? "";
-	const enabled = (trimValue(input.CHATWOOT_ENABLED) ?? "true") !== "false";
-
-	if (!enabled || baseUrl.length === 0 || websiteToken.length === 0) {
-		return null;
-	}
-
-	return {
-		baseUrl,
-		websiteToken,
-		enabled,
-	};
-}
-
-async function loadRuntimeChatwootConfig(): Promise<ChatwootConfig | null> {
-	if (typeof window === "undefined") {
-		return null;
-	}
-
-	if (runtimeConfig !== undefined) {
-		return runtimeConfig;
-	}
-
-	if (runtimeConfigPromise) {
-		return runtimeConfigPromise;
-	}
-
-	runtimeConfigPromise = fetch(RUNTIME_CONFIG_ENDPOINT, {
-		credentials: "same-origin",
-	})
-		.then(async (response) => {
-			if (!response.ok) {
-				return null;
-			}
-
-			const payload = (await response.json()) as {
-				CHATWOOT_BASE_URL?: string;
-				CHATWOOT_WEBSITE_TOKEN?: string;
-				CHATWOOT_ENABLED?: string;
-			};
-
-			runtimeConfig = parseRuntimeChatwootConfig(payload);
-			return runtimeConfig;
-		})
-		.catch(() => {
-			runtimeConfig = null;
-			return runtimeConfig;
-		})
-		.finally(() => {
-			runtimeConfigPromise = null;
-		});
-
-	return runtimeConfigPromise;
-}
-
-async function resolveChatwootConfig(): Promise<ChatwootConfig | null> {
-	const fromRuntime = await loadRuntimeChatwootConfig();
-	return fromRuntime ?? getBuildChatwootConfig();
-}
-
-function getKnownChatwootConfig(): ChatwootConfig | null {
-	return runtimeConfig ?? getBuildChatwootConfig();
+	return { baseUrl, websiteToken, enabled };
 }
 
 function getScriptUrl(baseUrl: string) {
@@ -168,7 +87,7 @@ function runChatwoot(config: ChatwootConfig) {
 }
 
 export function isChatwootEnabled() {
-	return getKnownChatwootConfig() !== null;
+	return getChatwootConfig() !== null;
 }
 
 export async function ensureChatwootLoaded(): Promise<void> {
@@ -176,7 +95,7 @@ export async function ensureChatwootLoaded(): Promise<void> {
 		return;
 	}
 
-	const config = await resolveChatwootConfig();
+	const config = getChatwootConfig();
 	if (!config) {
 		return;
 	}
@@ -271,11 +190,11 @@ export async function syncChatwootUser(user: {
 		}
 
 		const contact: ChatwootUser = {
-			email: trimValue(user.email),
-			name: trimValue(user.name),
-			avatar_url: trimValue(user.avatarUrl),
-			company_name: trimValue(user.organizationName),
-			description: trimValue(user.organizationName)
+			email: user.email?.trim() || undefined,
+			name: user.name?.trim() || undefined,
+			avatar_url: user.avatarUrl?.trim() || undefined,
+			company_name: user.organizationName?.trim() || undefined,
+			description: user.organizationName?.trim()
 				? `Rudel dashboard user from ${user.organizationName}`
 				: "Rudel dashboard user",
 		};

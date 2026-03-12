@@ -18,6 +18,11 @@ COPY apps/ apps/
 COPY packages/ packages/
 COPY turbo.json turbo.json
 
+# Chatwoot config is baked into the frontend at build time via Vite
+ARG VITE_CHATWOOT_BASE_URL=""
+ARG VITE_CHATWOOT_WEBSITE_TOKEN=""
+ARG VITE_CHATWOOT_ENABLED="true"
+
 # Build web app and place output where the API serves static files
 RUN bun run --cwd apps/web build
 RUN cp -r apps/web/dist/ apps/api/public/
