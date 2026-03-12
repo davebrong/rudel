@@ -245,3 +245,35 @@
 		@apply h-full;
 	}
 }
+
+body .woot-widget-bubble.woot-widget-bubble {
+	width: 52px;
+	height: 52px;
+	bottom: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+body .woot-widget-bubble.woot-widget-bubble svg {
+	width: 20px;
+	height: 20px;
+	margin: 0;
+}
+
+body .woot-widget-bubble.woot-widget-bubble.woot--close::before,
+body .woot-widget-bubble.woot-widget-bubble.woot--close::after {
+	top: 16px;
+	left: 25px;
+	height: 20px;
+}
+
+body .woot-widget-holder.woot-widget-holder {
+	width: min(352px, calc(100vw - 24px));
+	max-height: min(540px, calc(100vh - 88px));
+	bottom: 80px;
+}
+
+body .woot-widget-holder.woot-widget-holder iframe {
+	border-radius: 16px;
+}
