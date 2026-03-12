@@ -19,23 +19,18 @@ type ChatwootAPI = {
 	reset: () => void;
 };
 
+type ChatwootConfig = {
+	baseUrl: string;
+	websiteToken: string;
+	enabled: boolean;
+};
+
 declare global {
 	interface Window {
 		chatwootSDK?: ChatwootSDK;
 		$chatwoot?: ChatwootAPI;
 	}
 }
-
-function trimValue(value: string | null | undefined) {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
-}
-
-type ChatwootConfig = {
-	baseUrl: string;
-	websiteToken: string;
-	enabled: boolean;
-};
 
 const SCRIPT_ID = "rudel-chatwoot-sdk";
 const LOAD_TIMEOUT_MS = 5_000;
@@ -44,6 +39,11 @@ const RUNTIME_CONFIG_ENDPOINT = "/api/runtime-config";
 let loadPromise: Promise<void> | null = null;
 let runtimeConfig: ChatwootConfig | null | undefined;
 let runtimeConfigPromise: Promise<ChatwootConfig | null> | null = null;
+
+function trimValue(value: string | null | undefined) {
+	const trimmed = value?.trim();
+	return trimmed ? trimmed : undefined;
+}
 
 function getBuildChatwootConfig(): ChatwootConfig | null {
 	const baseUrl = trimValue(import.meta.env.VITE_CHATWOOT_BASE_URL) ?? "";
@@ -239,6 +239,7 @@ export async function ensureChatwootLoaded(): Promise<void> {
 
 		document.head.appendChild(script);
 	});
+
 	await loadPromise.catch((error) => {
 		loadPromise = null;
 		throw error;
