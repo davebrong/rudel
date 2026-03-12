@@ -37,6 +37,7 @@ import {
 	calculateRollingAverage,
 	calculateWeekOverWeek,
 	formatWoWChange,
+	getTrendColor,
 	getTrendDirection,
 	getTrendIcon,
 } from "@/lib/analytics";
@@ -137,7 +138,7 @@ export function DeveloperDetailPage() {
 		}));
 	}, [timeline]);
 
-	const { wowChange, trendIcon } = useMemo(() => {
+	const { wowChange, trendColorClass, trendIcon } = useMemo(() => {
 		if (!timeline || timeline.length < 14) {
 			return {
 				wowChange: 0,
@@ -152,6 +153,7 @@ export function DeveloperDetailPage() {
 		const direction = getTrendDirection(sessionValues);
 		return {
 			wowChange: wow,
+			trendColorClass: getTrendColor(direction),
 			trendIcon: getTrendIcon(direction),
 		};
 	}, [timeline]);
@@ -382,7 +384,13 @@ export function DeveloperDetailPage() {
 
 			{/* Activity Timeline */}
 			{chartData.length > 0 && (
-				<ChartCard title={`Daily Activity ${trendIcon}`} className="mb-8">
+				<ChartCard
+					title="Daily Activity"
+					titleSuffix={
+						<span className={`ml-2 ${trendColorClass}`}>{trendIcon}</span>
+					}
+					className="mb-8"
+				>
 					{timeline && timeline.length >= 14 && (
 						<div className="flex justify-end mb-4">
 							<div className="bg-surface px-4 py-2 rounded-lg">

@@ -17,6 +17,7 @@ import { AnalyticsCard } from "./AnalyticsCard";
 
 interface ChartCardProps {
 	title: string;
+	titleSuffix?: ReactNode;
 	description?: string;
 	children: ReactNode;
 	className?: string;
@@ -25,6 +26,7 @@ interface ChartCardProps {
 
 export function ChartCard({
 	title,
+	titleSuffix,
 	description,
 	children,
 	className,
@@ -75,7 +77,10 @@ export function ChartCard({
 		<AnalyticsCard className={className}>
 			<div className="flex items-start justify-between mb-4">
 				<div>
-					<h2 className="text-xl font-bold text-heading">{title}</h2>
+					<h2 className="text-xl font-bold text-heading">
+						{title}
+						{titleSuffix}
+					</h2>
 					{description && (
 						<p className="text-sm text-muted mt-1">{description}</p>
 					)}
