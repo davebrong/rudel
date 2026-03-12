@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Breadcrumb } from "../components/analytics/Breadcrumb";
 import { Sidebar } from "../components/analytics/Sidebar";
+import { ChatwootBootstrap } from "../components/support/ChatwootBootstrap";
 import { DateRangeProvider } from "../contexts/DateRangeContext";
 import { FilterProvider } from "../contexts/FilterContext";
 import { OrganizationProvider } from "../contexts/OrganizationContext";
@@ -11,6 +12,7 @@ export function DashboardLayout() {
 			<DateRangeProvider>
 				<FilterProvider>
 					<div className="fixed inset-0 flex overflow-hidden bg-surface">
+						<ChatwootBootstrap />
 						<Sidebar />
 						<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 							<Breadcrumb />

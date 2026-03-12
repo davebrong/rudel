@@ -253,18 +253,65 @@ export function Sidebar() {
 				</nav>
 
 				{session?.user && (
-					<div
-						className={cn(
-							"border-t border-border p-2 flex items-center gap-2",
-							collapsed ? "justify-center" : "px-2",
-						)}
-					>
+					<div className="border-t border-border p-2">
 						{collapsed ? (
-							<Tooltip>
-								<TooltipTrigger asChild>
+							<div className="mb-2 flex justify-center">
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<div className="flex h-7 w-7 items-center justify-center rounded-md bg-hover text-[0.5625rem] font-bold tracking-[0.14em] text-accent">
+											A
+										</div>
+									</TooltipTrigger>
+									<TooltipContent side="right">
+										OPEN ALPHA Testing v{__APP_VERSION__}
+									</TooltipContent>
+								</Tooltip>
+							</div>
+						) : (
+							<div className="mb-2 flex items-center justify-between gap-2 rounded-lg bg-hover px-2 py-2">
+								<div className="truncate text-[0.6875rem] font-bold tracking-[0.08em] text-accent">
+									OPEN ALPHA Testing
+								</div>
+								<div className="shrink-0 text-[0.6875rem] text-muted">
+									v{__APP_VERSION__}
+								</div>
+							</div>
+						)}
+						<div
+							className={cn(
+								"flex items-center gap-2",
+								collapsed ? "justify-center" : "px-0",
+							)}
+						>
+							{collapsed ? (
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Link
+											to="/dashboard/profile"
+											className="flex items-center gap-2 min-w-0"
+										>
+											<Avatar size="sm" className="shrink-0">
+												{session.user.image && (
+													<AvatarImage
+														src={session.user.image}
+														alt={session.user.name}
+													/>
+												)}
+												<AvatarFallback>
+													{getInitials(session.user.name)}
+												</AvatarFallback>
+											</Avatar>
+										</Link>
+									</TooltipTrigger>
+									<TooltipContent side="right">
+										{session.user.name}
+									</TooltipContent>
+								</Tooltip>
+							) : (
+								<>
 									<Link
 										to="/dashboard/profile"
-										className="flex items-center gap-2 min-w-0"
+										className="flex-1 flex items-center gap-2 min-w-0"
 									>
 										<Avatar size="sm" className="shrink-0">
 											{session.user.image && (
@@ -277,44 +324,22 @@ export function Sidebar() {
 												{getInitials(session.user.name)}
 											</AvatarFallback>
 										</Avatar>
+										<span className="flex-1 truncate text-xs font-medium text-foreground hover:text-heading transition-colors">
+											{session.user.name}
+										</span>
 									</Link>
-								</TooltipTrigger>
-								<TooltipContent side="right">
-									{session.user.name}
-								</TooltipContent>
-							</Tooltip>
-						) : (
-							<>
-								<Link
-									to="/dashboard/profile"
-									className="flex-1 flex items-center gap-2 min-w-0"
-								>
-									<Avatar size="sm" className="shrink-0">
-										{session.user.image && (
-											<AvatarImage
-												src={session.user.image}
-												alt={session.user.name}
-											/>
-										)}
-										<AvatarFallback>
-											{getInitials(session.user.name)}
-										</AvatarFallback>
-									</Avatar>
-									<span className="flex-1 truncate text-xs font-medium text-foreground hover:text-heading transition-colors">
-										{session.user.name}
-									</span>
-								</Link>
-								<ThemeToggle />
-								<button
-									type="button"
-									onClick={() => signOut()}
-									className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors shrink-0"
-									title="Sign out"
-								>
-									<LogOut className="h-3.5 w-3.5" />
-								</button>
-							</>
-						)}
+									<ThemeToggle />
+									<button
+										type="button"
+										onClick={() => signOut()}
+										className="p-1 rounded-md text-muted hover:text-foreground hover:bg-hover transition-colors shrink-0"
+										title="Sign out"
+									>
+										<LogOut className="h-3.5 w-3.5" />
+									</button>
+								</>
+							)}
+						</div>
 					</div>
 				)}
 			</div>

@@ -1,5 +1,6 @@
 import { organizationClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
+import { resetChatwoot } from "./chatwoot";
 import { queryClient } from "./query-client";
 
 export const authClient = createAuthClient({
@@ -8,6 +9,7 @@ export const authClient = createAuthClient({
 });
 
 export async function signOut() {
+	resetChatwoot();
 	await authClient.signOut();
 	queryClient.clear();
 	localStorage.removeItem("dateRange");
