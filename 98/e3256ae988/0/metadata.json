@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "98e3256ae988",
+  "session_id": "8e0bd61c-0332-4bb5-b76c-7a342db7d775",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-12T19:40:46.443299Z",
+  "branch": "alvaro/num-6742-rudel-add-social-media-share-buttons",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "apps/web/src/components/analytics/ChartCard.tsx",
+    "apps/web/src/lib/screenshot.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "64992cb0-9368-47b4-8d92-3be100152126",
+  "checkpoint_transcript_start": 515,
+  "transcript_lines_at_start": 515,
+  "token_usage": {
+    "input_tokens": 37,
+    "cache_creation_tokens": 13852,
+    "cache_read_tokens": 2908503,
+    "output_tokens": 5290,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-12T19:40:45.784185Z",
+    "agent_lines": 37,
+    "human_added": 238,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 275,
+    "agent_percentage": 13.454545454545455
+  },
+  "transcript_path": ".claude/projects/-Users-alvaro-Workspace-obsessiondb-rudel/8e0bd61c-0332-4bb5-b76c-7a342db7d775.jsonl"
+}
