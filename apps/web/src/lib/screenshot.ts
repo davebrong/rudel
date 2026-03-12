@@ -1,4 +1,6 @@
-import { toBlob } from "html-to-image";
+import { toPng } from "html-to-image";
+
+const PADDING = 24;
 
 function resolveBackgroundColor(element: HTMLElement): string {
 	let el: HTMLElement | null = element;
@@ -13,14 +15,37 @@ function resolveBackgroundColor(element: HTMLElement): string {
 }
 
 export async function captureElement(element: HTMLElement): Promise<Blob> {
-	const blob = await toBlob(element, {
-		backgroundColor: resolveBackgroundColor(element),
+	const bg = resolveBackgroundColor(element);
+	const dataUrl = await toPng(element, {
+		backgroundColor: bg,
 		pixelRatio: 2,
 	});
-	if (!blob) {
-		throw new Error("Failed to capture element as image");
-	}
-	return blob;
+
+	// Draw onto a canvas with padding
+	const img = new Image();
+	await new Promise<void>((resolve, reject) => {
+		img.onload = () => resolve();
+		img.onerror = reject;
+		img.src = dataUrl;
+	});
+
+	const pad = PADDING * 2; // pixelRatio is already applied in the image
+	const canvas = document.createElement("canvas");
+	canvas.width = img.width + pad * 2;
+	canvas.height = img.height + pad * 2;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) throw new Error("Failed to get canvas context");
+
+	ctx.fillStyle = bg;
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.drawImage(img, pad, pad);
+
+	return new Promise((resolve, reject) => {
+		canvas.toBlob((blob) => {
+			if (blob) resolve(blob);
+			else reject(new Error("Failed to capture element as image"));
+		}, "image/png");
+	});
 }
 
 export async function copyToClipboard(blob: Blob): Promise<boolean> {

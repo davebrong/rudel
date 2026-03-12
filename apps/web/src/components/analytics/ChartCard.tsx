@@ -42,8 +42,12 @@ export function ChartCard({
 		if (!blob) return;
 		const copied = await copyToClipboard(blob);
 		if (copied) {
-			toast.success("Chart copied to clipboard — paste it into your post!");
+			toast.success(
+				"Chart image copied! Paste it into your X post with Cmd+V",
+				{ duration: 8000 },
+			);
 		}
+		await new Promise((resolve) => setTimeout(resolve, 2000));
 		shareToX("Check out my coding agents analytics, made with rudel.ai");
 	};
 
