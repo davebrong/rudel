@@ -19,6 +19,12 @@ type ChatwootAPI = {
 	reset: () => void;
 };
 
+type ChatwootConfig = {
+	baseUrl: string;
+	websiteToken: string;
+	enabled: boolean;
+};
+
 declare global {
 	interface Window {
 		chatwootSDK?: ChatwootSDK;
@@ -26,16 +32,28 @@ declare global {
 	}
 }
 
-const BASE_URL = import.meta.env.VITE_CHATWOOT_BASE_URL?.trim() ?? "";
-const WEBSITE_TOKEN = import.meta.env.VITE_CHATWOOT_WEBSITE_TOKEN?.trim() ?? "";
-const ENABLED = import.meta.env.VITE_CHATWOOT_ENABLED !== "false";
 const SCRIPT_ID = "rudel-chatwoot-sdk";
 const LOAD_TIMEOUT_MS = 5_000;
 
 let loadPromise: Promise<void> | null = null;
 
-function getScriptUrl() {
-	return `${BASE_URL.replace(/\/$/, "")}/packs/js/sdk.js`;
+function getChatwootConfig(): ChatwootConfig | null {
+	const baseUrl = (import.meta.env.VITE_CHATWOOT_BASE_URL ?? "").trim();
+	const websiteToken = (
+		import.meta.env.VITE_CHATWOOT_WEBSITE_TOKEN ?? ""
+	).trim();
+	const enabled =
+		(import.meta.env.VITE_CHATWOOT_ENABLED ?? "true").trim() !== "false";
+
+	if (!enabled || baseUrl.length === 0 || websiteToken.length === 0) {
+		return null;
+	}
+
+	return { baseUrl, websiteToken, enabled };
+}
+
+function getScriptUrl(baseUrl: string) {
+	return `${baseUrl.replace(/\/$/, "")}/packs/js/sdk.js`;
 }
 
 function delay(ms: number) {
@@ -57,32 +75,33 @@ async function waitForChatwoot() {
 	throw new Error("Timed out waiting for Chatwoot to initialize");
 }
 
-function runChatwoot() {
+function runChatwoot(config: ChatwootConfig) {
 	if (!window.chatwootSDK) {
 		throw new Error("Chatwoot SDK failed to load");
 	}
 
 	window.chatwootSDK.run({
-		websiteToken: WEBSITE_TOKEN,
-		baseUrl: BASE_URL,
+		websiteToken: config.websiteToken,
+		baseUrl: config.baseUrl,
 	});
 }
 
 export function isChatwootEnabled() {
-	return ENABLED && BASE_URL.length > 0 && WEBSITE_TOKEN.length > 0;
+	return getChatwootConfig() !== null;
 }
 
-export function ensureChatwootLoaded(): Promise<void> {
-	if (
-		typeof window === "undefined" ||
-		typeof document === "undefined" ||
-		!isChatwootEnabled()
-	) {
-		return Promise.resolve();
+export async function ensureChatwootLoaded(): Promise<void> {
+	if (typeof window === "undefined" || typeof document === "undefined") {
+		return;
+	}
+
+	const config = getChatwootConfig();
+	if (!config) {
+		return;
 	}
 
 	if (window.$chatwoot?.hasLoaded) {
-		return Promise.resolve();
+		return;
 	}
 
 	if (loadPromise) {
@@ -104,7 +123,7 @@ export function ensureChatwootLoaded(): Promise<void> {
 
 		const startWidget = () => {
 			try {
-				runChatwoot();
+				runChatwoot(config);
 				void waitForChatwoot().then(resolve, reject);
 			} catch (error) {
 				reject(error);
@@ -129,7 +148,7 @@ export function ensureChatwootLoaded(): Promise<void> {
 		const script = document.createElement("script");
 		script.id = SCRIPT_ID;
 		script.async = true;
-		script.src = getScriptUrl();
+		script.src = getScriptUrl(config.baseUrl);
 		script.addEventListener("load", startWidget, { once: true });
 		script.addEventListener(
 			"error",
@@ -140,28 +159,19 @@ export function ensureChatwootLoaded(): Promise<void> {
 		document.head.appendChild(script);
 	});
 
-	return loadPromise.catch((error) => {
+	await loadPromise.catch((error) => {
 		loadPromise = null;
 		throw error;
 	});
 }
 
 export async function openChatwoot() {
-	if (!isChatwootEnabled()) {
-		return;
-	}
-
 	try {
 		await ensureChatwootLoaded();
 		window.$chatwoot?.toggle("open");
 	} catch {
 		// Ignore widget load failures so the dashboard remains functional.
 	}
-}
-
-function trimValue(value: string | null | undefined) {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
 }
 
 export async function syncChatwootUser(user: {
@@ -171,10 +181,6 @@ export async function syncChatwootUser(user: {
 	avatarUrl?: string | null;
 	organizationName?: string | null;
 }) {
-	if (!isChatwootEnabled()) {
-		return;
-	}
-
 	try {
 		await ensureChatwootLoaded();
 
@@ -184,11 +190,11 @@ export async function syncChatwootUser(user: {
 		}
 
 		const contact: ChatwootUser = {
-			email: trimValue(user.email),
-			name: trimValue(user.name),
-			avatar_url: trimValue(user.avatarUrl),
-			company_name: trimValue(user.organizationName),
-			description: trimValue(user.organizationName)
+			email: user.email?.trim() || undefined,
+			name: user.name?.trim() || undefined,
+			avatar_url: user.avatarUrl?.trim() || undefined,
+			company_name: user.organizationName?.trim() || undefined,
+			description: user.organizationName?.trim()
 				? `Rudel dashboard user from ${user.organizationName}`
 				: "Rudel dashboard user",
 		};
