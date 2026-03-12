@@ -1,0 +1,5 @@
+link in the begging of the readme, to the hosted version on rudel.ai
+
+---
+
+make it clear that there you find the hosted version where you can test it for free
