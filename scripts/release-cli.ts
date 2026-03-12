@@ -34,6 +34,7 @@ type PackageJson = {
 
 const CLI_DIR = resolve("apps/cli");
 const CLI_PKG_PATH = resolve(CLI_DIR, "package.json");
+const RELEASE_PLEASE_MANIFEST = resolve(".release-please-manifest.json");
 
 export async function main(): Promise<void> {
 	const args = parseArgs(process.argv.slice(2));
@@ -111,7 +112,16 @@ function writeCliVersion(version: string): void {
 	pkg.version = version;
 	writeFileSync(CLI_PKG_PATH, `${JSON.stringify(pkg, null, "\t")}\n`);
 
-	logLine(`Updated version to ${version} in package.json`);
+	const manifest = JSON.parse(
+		readFileSync(RELEASE_PLEASE_MANIFEST, "utf8"),
+	);
+	manifest["apps/cli"] = version;
+	writeFileSync(
+		RELEASE_PLEASE_MANIFEST,
+		`${JSON.stringify(manifest, null, "\t")}\n`,
+	);
+
+	logLine(`Updated version to ${version} in package.json and release-please manifest`);
 }
 
 // ---------------------------------------------------------------------------
@@ -156,7 +166,7 @@ function tagAndPush(version: string, commitVersionBump: boolean): void {
 
 	if (commitVersionBump) {
 		logLine("Committing version changes...");
-		runCommand("git", ["add", CLI_PKG_PATH]);
+		runCommand("git", ["add", CLI_PKG_PATH, RELEASE_PLEASE_MANIFEST]);
 		runCommand("git", ["commit", "-m", `chore: release rudel@${version}`]);
 	}
 
