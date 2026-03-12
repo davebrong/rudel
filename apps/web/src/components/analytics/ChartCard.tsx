@@ -44,7 +44,7 @@ export function ChartCard({
 		if (copied) {
 			toast.success("Chart copied to clipboard — paste it into your post!");
 		}
-		shareToX(`Check out my ${title} analytics from @rudel_ai`);
+		shareToX("Check out my coding agents analytics, made with rudel.ai");
 	};
 
 	const handleCopyAsImage = async () => {
@@ -88,15 +88,24 @@ export function ChartCard({
 							</button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={handleShareToX}>
+							<DropdownMenuItem
+								onClick={handleShareToX}
+								className="focus:bg-hover focus:text-foreground"
+							>
 								<Twitter className="h-4 w-4" />
 								Share on X
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleCopyAsImage}>
+							<DropdownMenuItem
+								onClick={handleCopyAsImage}
+								className="focus:bg-hover focus:text-foreground"
+							>
 								<Clipboard className="h-4 w-4" />
 								Copy as image
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleDownload}>
+							<DropdownMenuItem
+								onClick={handleDownload}
+								className="focus:bg-hover focus:text-foreground"
+							>
 								<Download className="h-4 w-4" />
 								Download as PNG
 							</DropdownMenuItem>
@@ -106,20 +115,16 @@ export function ChartCard({
 			</div>
 			<div ref={chartRef} className="relative">
 				{children}
-				{/* Watermark */}
+				{/* Watermark — inside chart area, behind data */}
 				<div
-					className="pointer-events-none select-none absolute inset-0 flex items-center justify-center"
+					className="pointer-events-none select-none absolute inset-0 z-0 flex flex-col items-center pt-4"
+					style={{ top: "10%" }}
 					aria-hidden="true"
 				>
-					<span className="text-foreground text-2xl font-bold opacity-15">
+					<span className="text-foreground text-2xl font-bold opacity-[0.08]">
 						rudel.ai
 					</span>
-				</div>
-				<div
-					className="pointer-events-none select-none absolute bottom-2 right-3"
-					aria-hidden="true"
-				>
-					<span className="text-foreground text-[0.65rem] opacity-20">
+					<span className="text-foreground text-[0.65rem] opacity-[0.12] -mt-1">
 						powered by ObsessionDB
 					</span>
 				</div>

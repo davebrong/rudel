@@ -1,8 +1,20 @@
 import { toBlob } from "html-to-image";
 
+function resolveBackgroundColor(element: HTMLElement): string {
+	let el: HTMLElement | null = element;
+	while (el) {
+		const bg = getComputedStyle(el).backgroundColor;
+		if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
+			return bg;
+		}
+		el = el.parentElement;
+	}
+	return "#ffffff";
+}
+
 export async function captureElement(element: HTMLElement): Promise<Blob> {
 	const blob = await toBlob(element, {
-		backgroundColor: getComputedStyle(element).backgroundColor || "#ffffff",
+		backgroundColor: resolveBackgroundColor(element),
 		pixelRatio: 2,
 	});
 	if (!blob) {
