@@ -6,7 +6,7 @@ import {
 	Terminal,
 	Users,
 } from "lucide-react";
-import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { CliSetupHint } from "@/components/analytics/CliSetupHint";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { InsightCard } from "@/components/analytics/InsightCard";
@@ -167,31 +167,26 @@ export function OverviewPage() {
 					)}
 
 					{usageTrendData && usageTrendData.length > 0 && (
-						<AnalyticsCard className="mb-8">
-							<h2 className="text-xl font-bold text-heading mb-4">
-								Usage Trends
-							</h2>
-							<p className="text-sm text-muted mb-6">
-								Track key metrics over time - switch between metric pairs to see
-								different views
-							</p>
+						<ChartCard
+							title="Usage Trends"
+							description="Track key metrics over time - switch between metric pairs to see different views"
+							className="mb-8"
+						>
 							<UsageTrendChart
 								data={usageTrendData}
 								showRollingAverage={false}
 							/>
-						</AnalyticsCard>
+						</ChartCard>
 					)}
 
 					{modelTokensData && modelTokensData.length > 0 && (
-						<AnalyticsCard className="mb-8">
-							<h2 className="text-xl font-bold text-heading mb-4">
-								Tokens by Model
-							</h2>
-							<p className="text-sm text-muted mb-6">
-								Token consumption broken down by model type over time
-							</p>
+						<ChartCard
+							title="Tokens by Model"
+							description="Token consumption broken down by model type over time"
+							className="mb-8"
+						>
 							<ModelTokensChart data={modelTokensData} />
-						</AnalyticsCard>
+						</ChartCard>
 					)}
 				</>
 			)}

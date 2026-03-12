@@ -1,6 +1,7 @@
 import { AlertCircle, AlertTriangle, Clock, Users } from "lucide-react";
 import { useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
@@ -129,14 +130,11 @@ export function ErrorsPage() {
 			</div>
 
 			{/* Error Trends Chart */}
-			<AnalyticsCard className="mb-8">
-				<h2 className="text-xl font-bold text-heading mb-2">
-					Error Trends Over Time
-				</h2>
-				<p className="text-sm text-muted mb-6">
-					Track error metrics across different dimensions to identify patterns
-					and trends
-				</p>
+			<ChartCard
+				title="Error Trends Over Time"
+				description="Track error metrics across different dimensions to identify patterns and trends"
+				className="mb-8"
+			>
 				{trendLoading ? (
 					<div className="text-center py-12 text-muted">
 						Loading error trends...
@@ -151,7 +149,7 @@ export function ErrorsPage() {
 						userMap={userMap}
 					/>
 				)}
-			</AnalyticsCard>
+			</ChartCard>
 
 			{/* Top Recurring Errors */}
 			<AnalyticsCard className="mb-8">

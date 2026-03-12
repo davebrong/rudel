@@ -14,6 +14,7 @@ import {
 	YAxis,
 } from "recharts";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
@@ -275,8 +276,7 @@ export function ProjectDetailPage() {
 			)}
 
 			{contributorChartData.length > 0 && (
-				<AnalyticsCard className="mb-8">
-					<h2 className="text-xl font-bold text-heading mb-6">Contributors</h2>
+				<ChartCard title="Contributors" className="mb-8">
 					<ResponsiveContainer width="100%" height={350}>
 						<BarChart
 							data={contributorChartData}
@@ -338,7 +338,7 @@ export function ProjectDetailPage() {
 							/>
 						</div>
 					)}
-				</AnalyticsCard>
+				</ChartCard>
 			)}
 
 			{errors && errors.length > 0 && (
