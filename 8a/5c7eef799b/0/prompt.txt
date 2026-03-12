@@ -1,0 +1,659 @@
+Implement the following plan:
+
+# Plan: Add Export/Share Buttons with Watermark to Rudel Charts
+
+## Context
+
+Rudel's dashboard charts have no export or sharing functionality. We want to add "Share to X" (Twitter) buttons similar to datalenses, plus a branded watermark so shared screenshots are identifiable as coming from Rudel. The watermark should show "rudel.ai" prominently and "powered by ObsessionDB" in small text.
+
+## Approach
+
+### 1. Install dependencies
+
+- `html-to-image` — DOM screenshot capture (TypeScript-native, maintained fork of `dom-to-image` used by datalenses)
+- `sonner` — lightweight toast library (shadcn-compatible, no existing toast system in Rudel)
+
+Files: `apps/web/package.json`
+
+### 2. Set up toast system
+
+Add `<Toaster />` from sonner to the app layout.
+
+Files:
+- `apps/web/src/layouts/DashboardLayout.tsx` (or wherever the root layout is) — add `<Toaster />`
+
+### 3. Create screenshot utility
+
+`apps/web/src/lib/screenshot.ts` — TypeScript utility:
+- `captureElement(element: HTMLElement): Promise<Blob>` — uses `html-to-image` `toBlob()`
+- `copyToClipboard(blob: Blob): Promise<boolean>` — clipboard write with Safari detection fallback
+- `downloadAsImage(blob: Blob, filename: string)` — fallback download via `<a>` + `URL.createObjectURL`
+- `shareToX(text: string)` — opens `https://twitter.com/intent/tweet?text={encoded}` in new window
+
+### 4. Create `ChartCard` component
+
+`apps/web/src/components/analytics/ChartCard.tsx` — new component wrapping `AnalyticsCard`:
+
+```
+┌─────────────────────────────────────────────┐
+│ Title                        [Share ▾] btn  │
+│ Subtitle                                    │
+│ ┌─────────────────────────────────────────┐ │
+│ │         (chart content)                 │ │
+│ │                                         │ │
+│ │           rudel.ai          ← watermark │ │
+│ │                                         │ │
+│ │              powered by ObsessionDB  ←  │ │
+│ └─────────────────────────────────────────┘ │
+└─────────────────────────────────────────────┘
+        ↑ this inner div is the screenshot ref
+```
+
+Props:
+```ts
+interface ChartCardProps {
+  title: string;
+  description?: string;
+  children: ReactNode;
+  className?: string;
+  shareable?: boolean; // default true
+}
+```
+
+- **Header row**: title + description on left, share dropdown button on right
+- **Chart container**: inner `div` with `ref` for screenshot capture, contains children + watermark overlay
+- **Watermark**: two absolutely-positioned elements inside the chart container:
+  - "rudel.ai" — centered, large (~2rem), low opacity (~0.15), `pointer-events: none`
+  - "powered by ObsessionDB" — bottom-right, small (~0.65rem), low opacity (~0.2), `pointer-events: none`
+- **Share dropdown** (using existing `DropdownMenu`):
+  - "Share on X" — captures screenshot → clipboard → opens Twitter intent → toast confirmation
+  - "Copy as image" — captures screenshot → clipboard → toast
+  - "Download as PNG" — captures screenshot → downloads file
+
+### 5. Replace `AnalyticsCard` with `ChartCard` in dashboard pages
+
+Update each page to use `ChartCard` instead of manual `<AnalyticsCard>` + `<h2>` + `<p>` pattern.
+
+Files to update:
+- `apps/web/src/pages/dashboard/OverviewPage.tsx` (2 charts: UsageTrend, ModelTokens)
+- `apps/web/src/pages/dashboard/ProjectsListPage.tsx` (1 chart: ProjectTrend)
+- `apps/web/src/pages/dashboard/DevelopersListPage.tsx` (1 chart: DeveloperTrend)
+- `apps/web/src/pages/dashboard/SessionsListPage.tsx` (1 chart: TaskClassification)
+- `apps/web/src/pages/dashboard/ErrorsPage.tsx` (1 chart: ErrorTrend)
+- `apps/web/src/pages/dashboard/LearningsPage.tsx` (1 chart: LearningsTrend)
+- `apps/web/src/pages/dashboard/ROIPage.tsx` (2 inline charts)
+- `apps/web/src/pages/dashboard/ProjectDetailPage.tsx` (1 inline chart)
+- `apps/web/src/pages/dashboard/DeveloperDetailPage.tsx` (2 inline charts)
+
+The existing `AnalyticsCard` component stays untouched (still used by StatCard and non-chart cards).
+
+### 6. Watermark styling details
+
+- Both watermark elements use `absolute` positioning inside a `relative` container
+- `pointer-events: none` and `select-none` so they don't interfere with chart interactions
+- Use `text-foreground` with very low opacity so they adapt to light/dark themes
+- The watermark is always visible (not just in screenshots) — same as datalenses
+
+## File Summary
+
+| File | Action |
+|------|--------|
+| `apps/web/package.json` | Add `html-to-image`, `sonner` |
+| `apps/web/src/lib/screenshot.ts` | **New** — screenshot + clipboard + share utilities |
+| `apps/web/src/components/analytics/ChartCard.tsx` | **New** — chart card with watermark + share dropdown |
+| `apps/web/src/layouts/DashboardLayout.tsx` | Add `<Toaster />` |
+| `apps/web/src/pages/dashboard/OverviewPage.tsx` | Replace AnalyticsCard → ChartCard for chart sections |
+| `apps/web/src/pages/dashboard/ProjectsListPage.tsx` | Same |
+| `apps/web/src/pages/dashboard/DevelopersListPage.tsx` | Same |
+| `apps/web/src/pages/dashboard/SessionsListPage.tsx` | Same |
+| `apps/web/src/pages/dashboard/ErrorsPage.tsx` | Same |
+| `apps/web/src/pages/dashboard/LearningsPage.tsx` | Same |
+| `apps/web/src/pages/dashboard/ROIPage.tsx` | Same |
+| `apps/web/src/pages/dashboard/ProjectDetailPage.tsx` | Same |
+| `apps/web/src/pages/dashboard/DeveloperDetailPage.tsx` | Same |
+
+## Verification
+
+1. `bun run verify` — type check + lint + tests pass
+2. `bun run dev:local` — visual check:
+   - Watermark visible on all chart cards (light + dark mode)
+   - Share dropdown appears on hover/click
+   - "Share on X" copies to clipboard + opens Twitter intent
+   - "Copy as image" copies to clipboard + toast
+   - "Download as PNG" downloads file with timestamp name
+   - Watermark appears in downloaded/shared images
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/alvaro/.REDACTED.jsonl
+
+---
+
+Base directory for this skill: /Users/alvaro/Workspace/obsessiondb/rudel/.claude/skills/library-docs
+
+# Library Documentation Research
+
+## What I Do
+
+Fetch up-to-date, official library documentation to ensure you're using current APIs and patterns rather than potentially outdated training data. Training data can be months or years old - this skill retrieves the latest documentation directly from authoritative sources.
+
+## Core Process
+
+### 1. Library Resolution Pattern
+
+Always resolve the library ID first unless explicitly provided:
+
+```
+1. Call mcp__context7__resolve-library-id with the library name
+2. Evaluate matches based on:
+   - Name similarity (exact matches preferred)
+   - Description relevance
+   - Documentation coverage (higher snippet counts = better)
+   - Trust score (7-10 indicates authoritative source)
+3. Select the most relevant match
+```
+
+### 2. Documentation Retrieval Pattern
+
+Once you have the library ID:
+
+```
+1. Call mcp__context7__get-library-docs with:
+   - context7CompatibleLibraryID: The resolved ID
+   - topic: Specific feature/API if needed (optional)
+   - tokens: 5000 default, up to 10000 for comprehensive coverage
+2. Process the returned documentation
+3. Extract relevant sections for the query
+```
+
+## Search Strategies
+
+### For API Documentation
+
+- **Libraries**: "react", "next.js", "vue", "express", "fastify"
+- **Topics**: "hooks", "routing", "middleware", "components"
+- **Token Strategy**: Use 7000-10000 for comprehensive API coverage
+
+### For Implementation Patterns
+
+- **Focus topics**: "authentication", "state-management", "error-handling"
+- **Look for**: Code examples, usage patterns, best practices
+- **Token Strategy**: 5000 usually sufficient for focused topics
+
+### For Version-Specific Information
+
+- **Format**: `/org/project/version` (e.g., `/vercel/next.js/v14.3.0`)
+- **Key areas**: Breaking changes, migration guides, new features
+- **Token Strategy**: Increase tokens for migration guides
+
+## Common Library IDs
+
+### Claude Code Documentation
+
+- Claude Code: `/websites/claude_en_claude-code` (410+ code snippets for Claude Code features)
+
+### Frontend Frameworks & State Management
+
+- React: `/websites/react_dev` (1923 snippets, trust 9) or `/reactjs/react.dev` (2836 snippets, trust 10)
+- TanStack Router: `/tanstack/router` (1307 snippets, trust 8)
+- TanStack Query: `/tanstack/query` (749 snippets, trust 8) or `/websites/tanstack_query_v5` (4508 snippets)
+- Zustand: `/pmndrs/zustand` (462 snippets, trust 9.6)
+
+### Backend Frameworks
+
+- Hono: `/honojs/website` (740 snippets) or `/llmstxt/hono_dev_llms_txt` (1768 snippets)
+- oRPC: `/unnoq/orpc` (531 snippets, trust 9.4)
+- Better Auth: `/better-auth/better-auth` (1301 snippets, trust 7.6)
+
+### Databases & ORMs
+
+- PostgreSQL: `/postgres/postgres` (18 snippets, trust 8.4) or `/porsager/postgres` (178 snippets, JS client)
+- ClickHouse: `/clickhouse/clickhouse` (9889 snippets, trust 9.4)
+- Drizzle ORM: `/drizzle-team/drizzle-orm` (436 snippets, trust 7.6)
+
+### Build Tools & Runtimes
+
+- Vite: `/vitejs/vite` (480 snippets, trust 8.3)
+- Turborepo: `/vercel/turborepo` (822 snippets, trust 10)
+- Bun: `/oven-sh/bun` (2377 snippets, trust 9.4)
+- ESLint: `/eslint/eslint` (2853 snippets, trust 9.1)
+- TypeScript: `/microsoft/typescript` (15930 snippets, trust 9.9)
+
+### Testing Tools
+
+- Vitest: `/vitest-dev/vitest` (1183 snippets, trust 8.3)
+
+### Cloud & Infrastructure
+
+- Supabase: `/supabase/supabase` (4552 snippets, trust 10)
+- Cloudflare Workers: `/cloudflare/workers-sdk` (266 snippets, trust 9.3)
+- Google Cloud Platform: `/googleapis/google-cloud-node` (1610 snippets, trust 8.5)
+
+## Output Format Template
+
+```markdown
+## Library: [Name] ([Context7 ID])
+
+**Version**: [If specified]
+**Topic**: [If focused]
+
+### Key APIs/Features
+
+#### [Feature Name]
+
+**Purpose**: [What it does]
+**Usage**:
+\`\`\`javascript
+[Code example]
+\`\`\`
+**Parameters**: [If relevant]
+**Returns**: [If relevant]
+
+### Implementation Examples
+
+[Relevant code examples from docs]
+
+### Best Practices
+
+- [Practice 1 from official docs]
+- [Practice 2 from official docs]
+
+### Related Documentation
+
+- [Other relevant sections to explore]
+```
+
+## Error Handling
+
+### Library Not Found
+
+If resolve-library-id returns no matches:
+
+1. Try alternative names (e.g., "nodejs" vs "node")
+2. Check if it's a sub-package (e.g., "@react/router")
+3. Suggest using web search for newer/niche libraries
+
+### Insufficient Documentation
+
+If documentation is sparse:
+
+1. Try broader topic searches
+2. Increase token limit
+3. Consider multiple queries for different aspects
+4. Fall back to web search for community resources
+
+## When to Use This Skill vs Training Data or Web Search
+
+**ALWAYS use this skill FIRST for:**
+
+- ANY library or framework you're about to use (React, Vue, Next.js, Express, etc.)
+- Getting current API signatures and methods
+- Understanding the latest best practices
+- Checking if APIs have changed since your training cutoff
+- Verifying correct usage patterns before writing code
+- Claude Code documentation (`/websites/claude_en_claude-code`)
+
+**Why not rely on training data:**
+
+- Your training data may be months or years old
+- Libraries update frequently with breaking changes
+- New features and patterns emerge constantly
+- Deprecated methods may still be in your training data
+- Best practices evolve - what was correct may now be anti-pattern
+
+**Use web search only when:**
+
+- The library isn't indexed (try this skill first)
+- You need community tutorials and guides
+- Looking for real-world implementation stories
+- Troubleshooting specific error messages
+- Comparing multiple libraries
+
+## Integration Tips
+
+### With Codebase Analysis
+
+- Use to understand external dependencies
+- Clarify API usage in existing code
+- Verify version compatibility
+- Find migration paths for updates
+
+### With Implementation Planning
+
+- Get official patterns before coding
+- Understand API contracts
+- Find recommended approaches
+- Identify potential gotchas
+
+### Performance Optimization
+
+- Cache resolved library IDs mentally
+- Use focused topics to reduce tokens
+- Make multiple targeted queries vs one large query
+- Start with 5000 tokens, increase only if needed
+
+## Examples
+
+### Example 1: React Hooks Documentation
+
+```
+1. Direct retrieve (use verified ID): mcp__context7__get-library-docs(
+     context7CompatibleLibraryID="/reactjs/react.dev",
+     topic="hooks",
+     tokens=7000
+   )
+2. Extract: useState, useEffect, useContext, custom hooks patterns
+```
+
+### Example 2: TanStack Query Data Fetching
+
+```
+1. Direct retrieve (use verified ID): mcp__context7__get-library-docs(
+     context7CompatibleLibraryID="/websites/tanstack_query_v5",
+     topic="queries mutations",
+     tokens=8000
+   )
+2. Extract: useQuery, useMutation, optimistic updates, caching strategies
+```
+
+### Example 3: Drizzle ORM with PostgreSQL
+
+```
+1. Direct retrieve (use verified ID): mcp__context7__get-library-docs(
+     context7CompatibleLibraryID="/drizzle-team/drizzle-orm",
+     topic="postgres queries",
+     tokens=6000
+   )
+2. Extract: Query builder, joins, transactions, migrations
+```
+
+### Example 4: Hono API Development
+
+```
+1. Direct retrieve (use verified ID): mcp__context7__get-library-docs(
+     context7CompatibleLibraryID="/llmstxt/hono_dev_llms_txt",
+     topic="middleware routing",
+     tokens=5000
+   )
+2. Extract: Route handling, middleware, context, error handling
+```
+
+### Example 5: Claude Code Documentation
+
+```
+1. Direct retrieve (no resolution needed): mcp__context7__get-library-docs(
+     context7CompatibleLibraryID="/websites/claude_en_claude-code",
+     topic="skills agents mcp",
+     tokens=8000
+   )
+2. Extract: Skill creation, agent patterns, MCP integration
+```
+
+---
+
+Base directory for this skill: /Users/alvaro/Workspace/obsessiondb/rudel/.claude/skills/typescript-standards
+
+# TypeScript Standards
+
+## Named Exports Only
+```ts
+// ❌ Bad
+export default function myFunction() {}
+
+// ✅ Good
+export function myFunction() {}
+```
+
+## Package Exports (Monorepo)
+
+Only export what other packages actually consume:
+
+```ts
+// ❌ Bad - Exports everything including internal types
+export * from "./digest";
+
+// ✅ Good - Explicit public interface
+export {
+  fetchCompoundDigest,
+  buildCompoundDigestBlocks,
+  type CompoundDigestEnv,
+} from "./digest";
+```
+
+Before adding exports, check what's actually imported by consumer packages.
+
+## Import Patterns
+
+### Prefer Static Imports
+Always use static imports at the top of the file. Only use dynamic imports (`await import()`) when:
+- Conditional loading is required (feature flags, environment checks)
+- Code splitting is intentional for performance
+- Circular dependency breaking is necessary
+
+Never use dynamic imports just to import something mid-function when a static import would work.
+
+### Type-Only Imports
+For values used only as types, use explicit type-only imports:
+```ts
+// ❌ Bad - Imports value but only uses type
+import { MyClass } from './my-class'
+type Instance = MyClass
+
+// ✅ Good - Clear intent, no runtime import
+import { type MyClass } from './my-class'
+type Instance = MyClass
+```
+
+## Naming Conventions
+- **Files**: kebab-case (`my-component.ts`)
+- **Variables/functions**: camelCase (`myVariable`, `myFunction()`)
+- **Classes/types/interfaces**: PascalCase (`MyClass`, `MyInterface`)
+- **Constants/enum values**: ALL_CAPS (`MAX_COUNT`)
+- **Generic type parameters**: Prefix with `T` (`TKey`, `TValue`)
+
+## Type Safety Rules
+
+### Derive Types from Zod Schemas
+When a Zod schema exists, always derive the TypeScript type from it using `z.infer`. Never define a separate interface that duplicates the schema's shape:
+```ts
+// ❌ Bad - Manually duplicates the Zod schema, drifts over time
+export interface User {
+  id: string
+  name: string
+  email: string
+}
+
+// ✅ Good - Single source of truth
+import { type User } from "@rudel/api-routes"
+
+// ✅ Good - Extend when the service needs extra internal fields
+import { type User as UserBase } from "@rudel/api-routes"
+export interface User extends UserBase {
+  session_count: number
+}
+```
+
+If the type needs fields beyond the schema, extend the inferred type rather than redefining it.
+
+### No Type Casts
+Never use `as` or `as unknown as` type assertions. They hide type incompatibilities:
+```ts
+// ❌ Bad - Hides the real problem
+const env = context.env as unknown as ExecutorEnv
+
+// ✅ Good - Fix the underlying type mismatch
+// Option 1: Properly type the source
+const env: ExecutorEnv = context.env
+
+// Option 2: Use type guards for runtime checking
+function isExecutorEnv(env: unknown): env is ExecutorEnv {
+  return typeof env === 'object' && env !== null && 'DB' in env
+}
+```
+
+If you encounter code that seems to require a cast:
+1. Investigate why the types don't match
+2. Fix the source type definitions
+3. If copying from existing code with casts, note it needs cleanup
+
+### Prefer Discriminated Unions
+```ts
+// ✅ Good - Prevents impossible states
+type FetchingState<TData> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: TData }
+  | { status: 'error'; error: Error }
+
+// Handle with switch
+switch (state.status) {
+  case 'success':
+    console.log(state.data)
+    break
+}
+```
+
+### Optional Properties
+Use sparingly. Prefer `T | undefined` over `T?` to force explicit passing:
+```ts
+// ✅ Good
+type AuthOptions = {
+  userId: string | undefined
+}
+```
+
+### Prefer Interfaces for Extending
+```ts
+// ❌ Bad - & operator has terrible performance
+type C = A & B
+
+// ✅ Good
+interface C extends A, B {}
+```
+
+### Don't Use Enums
+Use `as const` objects instead:
+```ts
+const sizes = {
+  xs: 'EXTRA_SMALL',
+  sm: 'SMALL',
+} as const
+
+type Size = keyof typeof sizes
+```
+
+## Installing Libraries
+Never rely on training data for versions. Always install latest:
+```bash
+pnpm add -D @typescript-eslint/eslint-plugin
+```
+
+## Async Operations
+Use `Promise.all` for parallel operations:
+```ts
+const [users, posts] = await Promise.all([fetchUsers(), fetchPosts()])
+```
+
+## Immutability
+- Use readonly arrays
+- Use const assertions
+- Create new objects instead of mutating
+
+---
+
+Create a PR
+
+---
+
+how can I execute locally?
+
+---
+
+[Request interrupted by user]
+
+---
+
+And how can I do it connecting to obsession?
+
+---
+
+did bun run dev already, there's no data. I need to connect to obsession as if it was prod with doppler
+
+---
+
+I dont love the result here, We can move rudel.ai to top of the actual chart, powered by ObsessionDB right below it. It should always be below the actual content and never go above the chart
+
+Also, the html is empty and has no bg, can we fix it too?
+
+---
+
+[Image: source: /Users/alvaro/Library/Application Support/CleanShot/media/media_2jG47t88be/CleanShot 2026-03-12 at 19.55.21@2x.png]
+
+---
+
+I dont love the result here, We can move rudel.ai to top of the actual chart (exactly where the bar charts would end if occupying 100% of width), powered by ObsessionDB right below it. It should always be behind the actual content and never go above the chart
+
+Also, the html is empty and has no bg, can we fix it too?
+
+---
+
+Its almost good, but now is above the actual chart and behind the selectors. Should be inside the actual chart with data, in the bg
+
+---
+
+[Image: source: /Users/alvaro/Library/Application Support/CleanShot/media/media_zVoKd9bU0v/CleanShot 2026-03-12 at 20.01.47@2x.png]
+
+---
+
+Now its not visible (hiden below chart?)
+
+---
+
+[Image: source: /Users/alvaro/Library/Application Support/CleanShot/media/media_FrTrmojs2Z/CleanShot 2026-03-12 at 20.03.41@2x.png]
+
+---
+
+Still the same, take a step back and lets fix it for good
+
+---
+
+[Image: source: /Users/alvaro/Library/Application Support/CleanShot/media/media_mAh8kR6AH9/CleanShot 2026-03-12 at 20.08.43@2x.png]
+
+---
+
+Its almost good, but now is above the actual chart and behind the selectors. Should be inside the actual chart with data, in the bg but close to the top so its visible above the cntent in most cases
+
+---
+
+should be much closer to the top
+
+---
+
+[Image: source: /Users/alvaro/Library/Application REDACTED 2026-03-12 at 20.12.38@2x.png]
+
+---
+
+Now its on the left lol
+
+---
+
+[Image: source: /Users/alvaro/Library/Application REDACTED 2026-03-12 at 20.14.07@2x.png]
+
+---
+
+Now, the dropdown to download, copy or share should have similar hover to other components, not this blue one
+
+---
+
+Much better, can you update the text in the X share to something more common, like check out my agents usage from rudel.ai
+
+---
+
+It looks like the agents are form rudel. Can we make it clear that rudel is the analytics platform
+
+---
+
+made with rudel.ai
+
+---
+
+Update the PR please
