@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "b0d039621413",
+  "strategy": "manual-commit",
+  "branch": "evrendom/chatwoot-dashboard-plan",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".env.example",
+    ".github/workflows/ci.yml",
+    "Dockerfile",
+    "apps/api/src/index.ts",
+    "apps/web/src/lib/chatwoot.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b0/d039621413/0/metadata.json",
+      "transcript": "/b0/d039621413/0/full.jsonl",
+      "context": "/b0/d039621413/0/context.md",
+      "content_hash": "/b0/d039621413/0/content_hash.txt",
+      "prompt": "/b0/d039621413/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 470,
+    "cache_creation_tokens": 55270,
+    "cache_read_tokens": 1261707,
+    "output_tokens": 7728,
+    "api_call_count": 30
+  }
+}
