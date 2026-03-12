@@ -272,9 +272,9 @@ export function Sidebar() {
 								<div className="truncate text-[0.6875rem] font-bold tracking-[0.08em] text-accent">
 									OPEN ALPHA Testing
 								</div>
-								<div className="shrink-0 text-[0.6875rem] text-muted">
+								{/**<div className="shrink-0 text-[0.6875rem] text-muted">
 									v{__APP_VERSION__}
-								</div>
+								</div>*/}
 							</div>
 						)}
 						<div
