@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "7097c55cd049",
+  "session_id": "33e9c0d4-4a15-43d3-8542-67231233dffc",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T06:56:24.465819Z",
+  "branch": "marc/delete-claude-plugin",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude-plugin/marketplace.json",
+    "apps/web/src/components/analytics/CliSetupHint.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 72857,
+    "cache_read_tokens": 494194,
+    "output_tokens": 1909,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T06:56:24.37942Z",
+    "agent_lines": 3,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 3,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-tyler-v1/33e9c0d4-4a15-43d3-8542-67231233dffc.jsonl"
+}

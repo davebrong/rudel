@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "7053baa2c5f7",
+  "strategy": "manual-commit",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/migrate-sessions.integration.ts",
+    "apps/api/src/router.ts",
+    "apps/api/src/services/org-session.service.ts",
+    "apps/web/src/components/DeleteOrganizationDialog.tsx",
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx",
+    "packages/api-routes/src/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/70/53baa2c5f7/0/metadata.json",
+      "transcript": "/70/53baa2c5f7/0/full.jsonl",
+      "context": "/70/53baa2c5f7/0/context.md",
+      "content_hash": "/70/53baa2c5f7/0/content_hash.txt",
+      "prompt": "/70/53baa2c5f7/0/prompt.txt"
+    },
+    {
+      "metadata": "/70/53baa2c5f7/1/metadata.json",
+      "transcript": "/70/53baa2c5f7/1/full.jsonl",
+      "context": "/70/53baa2c5f7/1/context.md",
+      "content_hash": "/70/53baa2c5f7/1/content_hash.txt",
+      "prompt": "/70/53baa2c5f7/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 77,
+    "cache_creation_tokens": 244764,
+    "cache_read_tokens": 3070656,
+    "output_tokens": 21010,
+    "api_call_count": 57
+  }
+}

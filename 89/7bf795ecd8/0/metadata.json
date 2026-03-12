@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "897bf795ecd8",
+  "session_id": "1851d563-fe53-4369-ad9b-c079222c29c1",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-18T07:01:49.234292Z",
+  "branch": "KeKs0r/wrangler-deploy",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/auth.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "57d8b107-799d-4944-a57b-8ea8355356a1",
+  "checkpoint_transcript_start": 670,
+  "transcript_lines_at_start": 670,
+  "token_usage": {
+    "input_tokens": 32,
+    "cache_creation_tokens": 27113,
+    "cache_read_tokens": 3875877,
+    "output_tokens": 356,
+    "api_call_count": 30
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-18T07:01:48.813839Z",
+    "agent_lines": 8,
+    "human_added": 367,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 375,
+    "agent_percentage": 2.1333333333333333
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-tripoli/1851d563-fe53-4369-ad9b-c079222c29c1.jsonl"
+}

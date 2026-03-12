@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "72243cd1a78c",
+  "session_id": "79f65801-9298-4201-ae96-5ca486c7a7e3",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T16:12:29.669815Z",
+  "branch": "marc/ch-backfill-run",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "packages/ch-schema/chx/meta/backfill/events/059f453e8152a512.ndjson",
+    "packages/ch-schema/chx/meta/backfill/events/3eea159c576b48c8.ndjson",
+    "packages/ch-schema/chx/meta/backfill/events/e1d62173d06b9323.ndjson",
+    "packages/ch-schema/chx/meta/backfill/plans/3eea159c576b48c8.json",
+    "packages/ch-schema/chx/meta/backfill/plans/e1d62173d06b9323.json",
+    "packages/ch-schema/chx/meta/backfill/runs/e1d62173d06b9323.json",
+    "packages/ch-schema/chx/migrations/20260301135131_auto.sql",
+    "packages/ch-schema/chx/migrations/20260301145916_auto.sql",
+    "packages/ch-schema/scripts/backfill-session-analytics.sql",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 86,
+    "cache_creation_tokens": 123239,
+    "cache_read_tokens": 5736189,
+    "output_tokens": 38468,
+    "api_call_count": 75
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T16:12:29.203689Z",
+    "agent_lines": 4730,
+    "human_added": 0,
+    "human_modified": 5754,
+    "human_removed": 11916,
+    "total_committed": 9799,
+    "agent_percentage": 48.27023165629146
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-managua/79f65801-9298-4201-ae96-5ca486c7a7e3.jsonl"
+}

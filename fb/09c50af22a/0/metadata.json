@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "fb09c50af22a",
+  "session_id": "96e15baa-d2cb-41b5-a83e-7d95d09601b9",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T04:15:25.81897Z",
+  "branch": "KeKs0r/rename-gazed-to-rudel",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/middleware.ts",
+    "apps/api/tsconfig.json",
+    "apps/cli/package.json",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "apps/cli/src/app.ts",
+    "apps/cli/tsconfig.json",
+    "apps/web/package.json",
+    "apps/web/src/lib/orpc.ts",
+    "packages/api-routes/package.json",
+    "packages/api-routes/tsconfig.json",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/tsconfig.json",
+    "packages/typescript-config/package.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 28034,
+    "cache_read_tokens": 388863,
+    "output_tokens": 69,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T04:15:25.766835Z",
+    "agent_lines": 22,
+    "human_added": 28,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 50,
+    "agent_percentage": 44
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-gazed-porto/96e15baa-d2cb-41b5-a83e-7d95d09601b9.jsonl"
+}

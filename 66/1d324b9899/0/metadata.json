@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "661d324b9899",
+  "session_id": "08022c45-dd76-4689-b412-8d84ac9a3929",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-23T01:19:05.444845Z",
+  "branch": "KeKs0r/ci-bun-cache",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 1506,
+    "cache_creation_tokens": 32577,
+    "cache_read_tokens": 440366,
+    "output_tokens": 83,
+    "api_call_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-23T01:19:05.394892Z",
+    "agent_lines": 8,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 8,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-shanghai/08022c45-dd76-4689-b412-8d84ac9a3929.jsonl"
+}

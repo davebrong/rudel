@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "914a72b85486",
+  "session_id": "c53340f6-9e8a-4410-b6ef-920bb26b2b12",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:42:57.201441Z",
+  "branch": "marc/org-deletion",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/commands/hook-upload.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "181aa83e-46bb-4c83-a09b-47f4207d3f29",
+  "checkpoint_transcript_start": 505,
+  "transcript_lines_at_start": 505,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 17260,
+    "cache_read_tokens": 1792680,
+    "output_tokens": 1731,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:42:56.901693Z",
+    "agent_lines": 1,
+    "human_added": 312,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 313,
+    "agent_percentage": 0.3194888178913738
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-lima/c53340f6-9e8a-4410-b6ef-920bb26b2b12.jsonl"
+}

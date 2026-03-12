@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "d1f49b9961c6",
+  "strategy": "manual-commit",
+  "branch": "marc/sessions-table-controls",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/ui/data-table.tsx",
+    "apps/web/src/pages/dashboard/ProjectsListPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d1/f49b9961c6/0/metadata.json",
+      "transcript": "/d1/f49b9961c6/0/full.jsonl",
+      "context": "/d1/f49b9961c6/0/context.md",
+      "content_hash": "/d1/f49b9961c6/0/content_hash.txt",
+      "prompt": "/d1/f49b9961c6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 63,
+    "cache_creation_tokens": 128291,
+    "cache_read_tokens": 1827325,
+    "output_tokens": 10016,
+    "api_call_count": 32
+  }
+}

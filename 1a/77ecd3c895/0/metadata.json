@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1a77ecd3c895",
+  "session_id": "9b4cd201-cc2d-45da-8b1a-881c46159126",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T13:47:45.44665Z",
+  "branch": "marc/fix-session-migration",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/__tests__/migrate-sessions.integration.ts",
+    "apps/api/src/services/org-session.service.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 2452,
+    "cache_creation_tokens": 186763,
+    "cache_read_tokens": 3299986,
+    "output_tokens": 28999,
+    "api_call_count": 45
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T13:47:45.039183Z",
+    "agent_lines": 166,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 166,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-damascus/9b4cd201-cc2d-45da-8b1a-881c46159126.jsonl"
+}

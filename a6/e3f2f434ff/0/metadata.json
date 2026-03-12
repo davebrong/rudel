@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "a6e3f2f434ff",
+  "session_id": "3ed5ef56-9d0b-4e63-8ce5-c2abbc23ae5b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-10T11:19:22.643498Z",
+  "branch": "fix/project-details-endpoint",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/index.ts",
+    "apps/api/src/services/project.service.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "c4218aa4-dee6-4faf-a972-52c3b04aece6",
+  "token_usage": {
+    "input_tokens": 157,
+    "cache_creation_tokens": 156999,
+    "cache_read_tokens": 13221601,
+    "output_tokens": 73560,
+    "api_call_count": 151
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-10T11:19:22.225023Z",
+    "agent_lines": 12,
+    "human_added": 148,
+    "human_modified": 20,
+    "human_removed": 0,
+    "total_committed": 180,
+    "agent_percentage": 6.666666666666667
+  },
+  "transcript_path": ".claude/projects/-Users-rafa-Obsession-rudel/3ed5ef56-9d0b-4e63-8ce5-c2abbc23ae5b.jsonl"
+}

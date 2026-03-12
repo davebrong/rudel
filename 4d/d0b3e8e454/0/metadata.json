@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4dd0b3e8e454",
+  "session_id": "039d9967-26f7-4e1f-8792-82d0753a70ee",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:27:56.412902Z",
+  "branch": "marc/cli-dev-command",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/app.ts",
+    "apps/cli/src/commands/dev/index.ts",
+    "apps/cli/src/commands/dev/list-sessions.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 82,
+    "cache_creation_tokens": 100596,
+    "cache_read_tokens": 1127386,
+    "output_tokens": 7470,
+    "api_call_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:27:56.206277Z",
+    "agent_lines": 63,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 63,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-new-york/039d9967-26f7-4e1f-8792-82d0753a70ee.jsonl"
+}

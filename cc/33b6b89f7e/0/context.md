@@ -1,0 +1,8 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+make sure on logout to clean all react-query caches and everything, so there is no data cached
+

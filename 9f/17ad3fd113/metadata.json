@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "9f17ad3fd113",
+  "strategy": "manual-commit",
+  "branch": "marc/remove-init-clickhouse-sql",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/chx/meta/snapshot.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/9f/17ad3fd113/0/metadata.json",
+      "transcript": "/9f/17ad3fd113/0/full.jsonl",
+      "context": "/9f/17ad3fd113/0/context.md",
+      "content_hash": "/9f/17ad3fd113/0/content_hash.txt",
+      "prompt": "/9f/17ad3fd113/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 124,
+    "cache_creation_tokens": 432297,
+    "cache_read_tokens": 5934655,
+    "output_tokens": 16643,
+    "api_call_count": 88
+  }
+}

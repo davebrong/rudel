@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1434f795913a",
+  "session_id": "050fb7fb-b649-4063-a6c9-09986c326b84",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T04:19:27.896362Z",
+  "branch": "marc/num-6532-make-rudel-multitenant-team",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/app.ts",
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/commands/set-org.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/api-client.ts",
+    "apps/cli/src/lib/project-config.ts",
+    "apps/cli/src/lib/types.ts",
+    "apps/web/src/components/analytics/Sidebar.tsx",
+    "apps/web/src/contexts/OrganizationContext.tsx",
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "8363695d-bad2-4f75-a499-9a31e6a324c0",
+  "token_usage": {
+    "input_tokens": 4431,
+    "cache_creation_tokens": 263422,
+    "cache_read_tokens": 14358041,
+    "output_tokens": 1331,
+    "api_call_count": 125
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T04:19:26.791774Z",
+    "agent_lines": 186,
+    "human_added": 2006,
+    "human_modified": 107,
+    "human_removed": 0,
+    "total_committed": 2299,
+    "agent_percentage": 8.090474119182254
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-wellington/050fb7fb-b649-4063-a6c9-09986c326b84.jsonl"
+}

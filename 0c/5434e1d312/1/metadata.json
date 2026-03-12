@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "0c5434e1d312",
+  "session_id": "89d99e49-5429-4b7c-83e7-34c94b14618c",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-18T09:39:15.581801Z",
+  "branch": "KeKs0r/cli-deploy-endpoint",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".context/plans/replace-chkit-clickhouse-with-clickhouse-client-we.md",
+    "apps/api/package.json",
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/clickhouse.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 67,
+    "cache_creation_tokens": 36262,
+    "cache_read_tokens": 999493,
+    "output_tokens": 372,
+    "api_call_count": 23
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-18T09:39:15.492836Z",
+    "agent_lines": 47,
+    "human_added": 241,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 288,
+    "agent_percentage": 16.319444444444446
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-paris/89d99e49-5429-4b7c-83e7-34c94b14618c.jsonl"
+}

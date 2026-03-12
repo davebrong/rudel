@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "b2227e7b93a8",
+  "session_id": "d1e131fd-21af-4122-a1fb-6b00f27fd019",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T04:53:52.871641Z",
+  "branch": "marc/num-6593-rudel-org-invites-not-working",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".context/NUM-6590-analysis.md",
+    ".context/NUM-6592-mv-extraction-context.md",
+    ".context/NUM-6593-org-invites-analysis.md",
+    "packages/sql-schema/db/migrations/0003_clean_franklin_storm.sql",
+    "packages/sql-schema/db/migrations/meta/0003_snapshot.json",
+    "packages/sql-schema/src/auth-schema.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 1077,
+    "cache_creation_tokens": 92357,
+    "cache_read_tokens": 5487402,
+    "output_tokens": 975,
+    "api_call_count": 72
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T04:53:52.36137Z",
+    "agent_lines": 510,
+    "human_added": 7209,
+    "human_modified": 588,
+    "human_removed": 0,
+    "total_committed": 8193,
+    "agent_percentage": 6.224826071036251
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-chiang-mai/d1e131fd-21af-4122-a1fb-6b00f27fd019.jsonl"
+}

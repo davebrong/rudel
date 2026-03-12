@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f71e20b37ed7",
+  "strategy": "manual-commit",
+  "branch": "marc/cli-upload-project-picker",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/batch-uploader.ts",
+    "apps/cli/src/lib/project-scanner.ts",
+    "apps/cli/src/lib/session-resolver.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f7/1e20b37ed7/0/metadata.json",
+      "transcript": "/f7/1e20b37ed7/0/full.jsonl",
+      "context": "/f7/1e20b37ed7/0/context.md",
+      "content_hash": "/f7/1e20b37ed7/0/content_hash.txt",
+      "prompt": "/f7/1e20b37ed7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 87,
+    "cache_creation_tokens": 224882,
+    "cache_read_tokens": 3566935,
+    "output_tokens": 16974,
+    "api_call_count": 55
+  }
+}

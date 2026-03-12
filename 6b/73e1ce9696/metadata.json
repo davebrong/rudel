@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "6b73e1ce9696",
+  "strategy": "manual-commit",
+  "branch": "marc/overview-empty-install-hint",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/web/src/components/analytics/CliSetupHint.tsx",
+    "apps/web/src/pages/dashboard/OverviewPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6b/73e1ce9696/0/metadata.json",
+      "transcript": "/6b/73e1ce9696/0/full.jsonl",
+      "context": "/6b/73e1ce9696/0/context.md",
+      "content_hash": "/6b/73e1ce9696/0/content_hash.txt",
+      "prompt": "/6b/73e1ce9696/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 94,
+    "cache_creation_tokens": 187397,
+    "cache_read_tokens": 1729566,
+    "output_tokens": 10219,
+    "api_call_count": 30
+  }
+}

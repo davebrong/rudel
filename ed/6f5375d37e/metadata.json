@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "ed6f5375d37e",
+  "strategy": "manual-commit",
+  "branch": "fix/dashboard-issues",
+  "checkpoints_count": 10,
+  "files_touched": [
+    "apps/api/src/services/session-analytics.service.ts",
+    "apps/web/src/components/charts/DeveloperTrendChart.tsx",
+    "apps/web/src/components/charts/DimensionAnalysisChart.tsx",
+    "apps/web/src/components/charts/ErrorTrendChart.tsx",
+    "apps/web/src/components/charts/LearningsTrendChart.tsx",
+    "apps/web/src/components/charts/ModelTokensChart.tsx",
+    "apps/web/src/components/charts/ProjectTrendChart.tsx",
+    "apps/web/src/components/ui/switch.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ed/6f5375d37e/0/metadata.json",
+      "transcript": "/ed/6f5375d37e/0/full.jsonl",
+      "context": "/ed/6f5375d37e/0/context.md",
+      "content_hash": "/ed/6f5375d37e/0/content_hash.txt",
+      "prompt": "/ed/6f5375d37e/0/prompt.txt"
+    },
+    {
+      "metadata": "/ed/6f5375d37e/1/metadata.json",
+      "transcript": "/ed/6f5375d37e/1/full.jsonl",
+      "context": "/ed/6f5375d37e/1/context.md",
+      "content_hash": "/ed/6f5375d37e/1/content_hash.txt",
+      "prompt": "/ed/6f5375d37e/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 151,
+    "cache_creation_tokens": 163528,
+    "cache_read_tokens": 6531150,
+    "output_tokens": 49754,
+    "api_call_count": 88
+  }
+}

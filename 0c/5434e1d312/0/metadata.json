@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "0c5434e1d312",
+  "session_id": "0b934b77-70bf-479c-b1d8-04e3492f7783",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-18T09:39:15.465743Z",
+  "branch": "KeKs0r/cli-deploy-endpoint",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/lib/types.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 64,
+    "cache_creation_tokens": 59062,
+    "cache_read_tokens": 2156787,
+    "output_tokens": 561,
+    "api_call_count": 49
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-18T09:39:14.729564Z",
+    "agent_lines": 3,
+    "human_added": 285,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 288,
+    "agent_percentage": 1.0416666666666665
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-paris/0b934b77-70bf-479c-b1d8-04e3492f7783.jsonl"
+}

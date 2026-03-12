@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "224759391990",
+  "session_id": "050b88c5-7ea9-4bc7-9e04-3ad8c575f969",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T03:16:58.727895Z",
+  "branch": "KeKs0r/cli-session-upload",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/middleware.ts",
+    "apps/api/src/router.ts",
+    "apps/api/tsconfig.json",
+    "apps/cli/package.json",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "apps/cli/src/app.ts",
+    "apps/cli/src/bin/cli.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/classifier.ts",
+    "apps/cli/src/lib/git-info.ts",
+    "apps/cli/src/lib/session-resolver.ts",
+    "apps/cli/src/lib/subagent-reader.ts",
+    "apps/cli/src/lib/transcript-reader.ts",
+    "apps/cli/src/lib/types.ts",
+    "apps/cli/src/lib/uploader.ts",
+    "apps/cli/tsconfig.json",
+    "apps/web/package.json",
+    "apps/web/src/lib/orpc.ts",
+    "packages/api-routes/package.json",
+    "packages/api-routes/tsconfig.json",
+    "packages/typescript-config/package.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "773e3a8d-2d93-4e85-a8b5-6def1ba3ee83",
+  "token_usage": {
+    "input_tokens": 151,
+    "cache_creation_tokens": 287467,
+    "cache_read_tokens": 13506880,
+    "output_tokens": 1803,
+    "api_call_count": 138
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T03:16:58.192565Z",
+    "agent_lines": 1111,
+    "human_added": 616,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1727,
+    "agent_percentage": 64.3312101910828
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-gazed-belo-horizonte-v1/050b88c5-7ea9-4bc7-9e04-3ad8c575f969.jsonl"
+}

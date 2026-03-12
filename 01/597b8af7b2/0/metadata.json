@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "01597b8af7b2",
+  "session_id": "385c57cd-5784-4f94-aaf0-bb54a0ac0ab8",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T03:19:44.383043Z",
+  "branch": "marc/add-verify-to-claude-md",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 95,
+    "cache_creation_tokens": 38844,
+    "cache_read_tokens": 463584,
+    "output_tokens": 34,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T03:19:44.300325Z",
+    "agent_lines": 10,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 10,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-cape-town/385c57cd-5784-4f94-aaf0-bb54a0ac0ab8.jsonl"
+}

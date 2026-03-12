@@ -1,0 +1,47 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "224759391990",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/cli-session-upload",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/middleware.ts",
+    "apps/api/src/router.ts",
+    "apps/api/tsconfig.json",
+    "apps/cli/package.json",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "apps/cli/src/app.ts",
+    "apps/cli/src/bin/cli.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/classifier.ts",
+    "apps/cli/src/lib/git-info.ts",
+    "apps/cli/src/lib/session-resolver.ts",
+    "apps/cli/src/lib/subagent-reader.ts",
+    "apps/cli/src/lib/transcript-reader.ts",
+    "apps/cli/src/lib/types.ts",
+    "apps/cli/src/lib/uploader.ts",
+    "apps/cli/tsconfig.json",
+    "apps/web/package.json",
+    "apps/web/src/lib/orpc.ts",
+    "packages/api-routes/package.json",
+    "packages/api-routes/tsconfig.json",
+    "packages/typescript-config/package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/22/4759391990/0/metadata.json",
+      "transcript": "/22/4759391990/0/full.jsonl",
+      "context": "/22/4759391990/0/context.md",
+      "content_hash": "/22/4759391990/0/content_hash.txt",
+      "prompt": "/22/4759391990/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 151,
+    "cache_creation_tokens": 287467,
+    "cache_read_tokens": 13506880,
+    "output_tokens": 1803,
+    "api_call_count": 138
+  }
+}

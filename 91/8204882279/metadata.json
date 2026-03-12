@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "918204882279",
+  "strategy": "manual-commit",
+  "branch": "marc/cli-clack-prompts-ux",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/app.ts",
+    "apps/cli/src/commands/disable.ts",
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/commands/logout.ts",
+    "apps/cli/src/commands/set-org.ts",
+    "apps/cli/src/commands/whoami.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/91/8204882279/0/metadata.json",
+      "transcript": "/91/8204882279/0/full.jsonl",
+      "context": "/91/8204882279/0/context.md",
+      "content_hash": "/91/8204882279/0/content_hash.txt",
+      "prompt": "/91/8204882279/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 42,
+    "cache_creation_tokens": 137663,
+    "cache_read_tokens": 1534866,
+    "output_tokens": 10585,
+    "api_call_count": 27
+  }
+}

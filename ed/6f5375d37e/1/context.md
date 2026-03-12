@@ -1,0 +1,8 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+We have an issue that when groping by User/Developer (X-Axis) we get proper names but when we do it in the  Y-Axis we get the user ids this should be fixed.
+

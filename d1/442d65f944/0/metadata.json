@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "d1442d65f944",
+  "session_id": "b0451141-5cdc-40df-b8a1-ea91a892f36b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T16:44:33.503825Z",
+  "branch": "marc/cli-enable-verify-upload",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/actions/setup/action.yml",
+    "apps/api/package.json",
+    "apps/api/src/__tests__/ingest.integration.test.ts",
+    "apps/api/src/__tests__/ingest.test.ts",
+    "apps/api/src/ingest.ts",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "package.json",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/src/generated/index.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "ddc872ad-62e5-4be6-a9dd-416ba6234b03",
+  "token_usage": {
+    "input_tokens": 211,
+    "cache_creation_tokens": 278869,
+    "cache_read_tokens": 18002628,
+    "output_tokens": 55782,
+    "api_call_count": 170
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T16:44:32.879661Z",
+    "agent_lines": 0,
+    "human_added": 11796,
+    "human_modified": 147,
+    "human_removed": 0,
+    "total_committed": 11796,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-chennai/b0451141-5cdc-40df-b8a1-ea91a892f36b.jsonl"
+}

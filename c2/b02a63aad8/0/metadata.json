@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "c2b02a63aad8",
+  "session_id": "fa06eb03-42dc-4573-8ab6-665ab48f3993",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T10:47:25.517944Z",
+  "branch": "KeKs0r/session-ingest-endpoint",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/chx/meta/snapshot.json",
+    "packages/ch-schema/chx/migrations/20260213092427_auto.sql",
+    "packages/ch-schema/src/__tests__/ingest.test.ts",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/db/schema/flick.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 45502,
+    "cache_read_tokens": 1036109,
+    "output_tokens": 138,
+    "api_call_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T10:47:25.386138Z",
+    "agent_lines": 20,
+    "human_added": 36,
+    "human_modified": 8,
+    "human_removed": 0,
+    "total_committed": 64,
+    "agent_percentage": 31.25
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-riyadh/fa06eb03-42dc-4573-8ab6-665ab48f3993.jsonl"
+}

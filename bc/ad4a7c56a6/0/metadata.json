@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "bcad4a7c56a6",
+  "session_id": "60fc3240-c21e-4fd9-bac9-06cc47fedb48",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T06:23:08.518049Z",
+  "branch": "marc/run-ch-migrations",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/chx/migrations/20260302051814_auto.sql"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 130,
+    "cache_creation_tokens": 225345,
+    "cache_read_tokens": 6861220,
+    "output_tokens": 28496,
+    "api_call_count": 99
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T06:23:08.21878Z",
+    "agent_lines": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-missoula/60fc3240-c21e-4fd9-bac9-06cc47fedb48.jsonl"
+}

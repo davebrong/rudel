@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2e4f1bac7f5b",
+  "session_id": "425f9e08-7e1a-4e87-bd60-ef6123a1c4c5",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-27T16:26:45.944128Z",
+  "branch": "marc/num-6593-rudel-org-invites-not-working-v1",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/deploy-column-migration.md",
+    "packages/ch-schema/scripts/backfill.sql"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "37b7a1fa-615f-4bc0-9e1c-33f7d86c4fc8",
+  "checkpoint_transcript_start": 109,
+  "transcript_lines_at_start": 109,
+  "token_usage": {
+    "input_tokens": 320,
+    "cache_creation_tokens": 104104,
+    "cache_read_tokens": 429730,
+    "output_tokens": 96,
+    "api_call_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-27T16:26:45.827287Z",
+    "agent_lines": 0,
+    "human_added": 5121,
+    "human_modified": 402,
+    "human_removed": 0,
+    "total_committed": 5125,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-geneva-v1/425f9e08-7e1a-4e87-bd60-ef6123a1c4c5.jsonl"
+}

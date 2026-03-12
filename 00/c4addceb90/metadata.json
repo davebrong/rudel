@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "00c4addceb90",
+  "strategy": "manual-commit",
+  "branch": "evrendom/clickhouse-sql-hardening",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "package.json",
+    "scripts/check-clickhouse-guardrails.ts",
+    "turbo.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/00/c4addceb90/0/metadata.json",
+      "transcript": "/00/c4addceb90/0/full.jsonl",
+      "context": "/00/c4addceb90/0/context.md",
+      "content_hash": "/00/c4addceb90/0/content_hash.txt",
+      "prompt": "/00/c4addceb90/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 32676,
+    "cache_read_tokens": 309259,
+    "output_tokens": 2124,
+    "api_call_count": 12
+  }
+}

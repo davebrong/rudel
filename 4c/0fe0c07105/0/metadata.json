@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4c0fe0c07105",
+  "session_id": "7f6e870f-64aa-4faa-94a8-23d614618c86",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T14:52:07.366134Z",
+  "branch": "marc/invite-accept-flow",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/analytics/Breadcrumb.tsx",
+    "apps/web/src/components/analytics/Sidebar.tsx",
+    "apps/web/src/hooks/useUserInvitations.ts",
+    "apps/web/src/pages/AcceptInvitationPage.tsx",
+    "apps/web/src/pages/dashboard/InvitationsPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 83,
+    "cache_creation_tokens": 153544,
+    "cache_read_tokens": 3005606,
+    "output_tokens": 11887,
+    "api_call_count": 48
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T14:52:06.832877Z",
+    "agent_lines": 211,
+    "human_added": 136,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 347,
+    "agent_percentage": 60.80691642651297
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-santiago/7f6e870f-64aa-4faa-94a8-23d614618c86.jsonl"
+}

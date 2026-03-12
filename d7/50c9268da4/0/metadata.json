@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "d750c9268da4",
+  "session_id": "dcc4edbc-f6cd-48af-8738-db54c6476ff2",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-10T02:21:23.102961Z",
+  "branch": "last-fixes-launch",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/charts/TaskClassificationChart.tsx"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "69e7ef2d6666",
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 48154,
+    "cache_read_tokens": 561688,
+    "output_tokens": 5898,
+    "api_call_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-10T02:21:22.725293Z",
+    "agent_lines": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1,
+    "agent_percentage": 100
+  }
+}

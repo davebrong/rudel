@@ -1,0 +1,90 @@
+Implement the following plan:
+
+# Plan: Navigate by Display Name in Projects List
+
+## Context
+
+The Projects list page groups sessions by **display name** (last segment of `git_remote` or `project_path`, e.g. `"rudel"`) via `PROJECT_DISPLAY_EXPR` in ClickHouse. Each row shows this short name in the table.
+
+However, `handleRowClick` navigates using the raw `row.git_remote || row.project_path` — the full URL or absolute filesystem path — not the display name. This causes two problems:
+
+1. The URL contains a long opaque path that doesn't match what the user sees.
+2. The detail API's `buildProjectDisplaySubquery` resolves the display name from the full path, which is fragile and may explain the ongoing 500 errors (subquery over-complexity for certain data shapes).
+
+The fix is simple: **navigate with `row.repository`** (the display name already returned by `getProjectInvestment`). The API's `buildProjectDisplaySubquery` fallback already handles a plain display name correctly — when the input has no `/`, it returns the input as-is, and the main query becomes `WHERE PROJECT_DISPLAY_EXPR = 'rudel'`, which aggregates **all** sessions for that project regardless of how they were uploaded.
+
+## Changes
+
+### `apps/web/src/pages/dashboard/ProjectsListPage.tsx`
+
+Change `handleRowClick` (line 149–153) from:
+```typescript
+const key = row.git_remote || row.project_path;
+```
+to:
+```typescript
+const key = row.repository || row.git_remote || row.project_path;
+```
+
+`row.repository` is `PROJECT_DISPLAY_EXPR` (e.g. `"rudel"`), already in `ProjectInvestment` returned by `getProjectInvestment`. This is the only change needed.
+
+**Why this works end-to-end:**
+- URL becomes `/dashboard/projects/rudel` instead of `/dashboard/projects/%2FUsers%2Fmarc%2F...`
+- `ProjectDetailPage` decodes `"rudel"` and passes it as `projectPath` to all detail endpoints
+- `buildProjectDisplaySubquery("org", "rudel")`: no session has `project_path='rudel'`, so `count()=0`, fallback runs: `position('rudel', '/')=0` → returns `'rudel'` directly
+- Main query: `WHERE PROJECT_DISPLAY_EXPR = 'rudel'` — correctly aggregates ALL sessions whose display name is `"rudel"`, regardless of git_remote or project_path
+
+## Files
+
+- `apps/web/src/pages/dashboard/ProjectsListPage.tsx` — `handleRowClick` function
+
+## Verification
+
+1. Click a project row in the Projects list — URL should be `/dashboard/projects/rudel` (short name, not full path)
+2. Project detail page should load and show aggregated data for all sessions named "rudel"
+3. `bun run verify` passes
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/rafa/.claude/projects/-Users-rafa-Obsession-rudel/3ed5ef56-9d0b-4e63-8ce5-c2abbc23ae5b.jsonl
+
+---
+
+Can you show me the new query with values please
+
+---
+
+Give me the full query
+
+---
+
+What is the full query for project details now is it this one?
+
+---
+
+I am getting this in clickhouse PROJECT_KEY_EXPR
+
+---
+
+[Request interrupted by user]
+
+---
+
+I am getting this in clickhouse: Error
+Unknown expression or function identifier `PROJECT_KEY_EXPR` in scope (SELECT if(count() > 0, any(if(git_remote != '', arrayElement(splitByChar('/', git_remote), -1), arrayElement(splitByChar('/', project_path), -1))), if(position('rudel', '/') > 0, arrayElement(splitByChar('/', 'rudel'), -1), 'rudel')) AS project_display FROM rudel.session_analytics WHERE (organization_id = 'abc-user-id') AND ((project_path = 'rudel') OR (git_remote = 'rudel') OR (PROJECT_KEY_EXPR = 'rudel')) AND ((git_remote != '') OR (package_name != '') OR (project_path != ''))).
+
+---
+
+Ok I get this now: Error
+Aggregate function any(project_path) AS project_path is found in WHERE in query.
+
+---
+
+What's the new query? want to test it
+
+---
+
+Ok seems to work now.
+
+---
+
+[Request interrupted by user]

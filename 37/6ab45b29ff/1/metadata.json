@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "376ab45b29ff",
+  "session_id": "dca270ba-c1bd-461e-8301-c132f7601131",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T15:20:01.552515Z",
+  "branch": "marc/num-6702-security-replace-cli-loopback-query-string-token-handoff",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/auth.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/router.ts",
+    "apps/cli/src/__tests__/auth.e2e.test.ts",
+    "apps/cli/src/__tests__/helpers/bun-server.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/web/package.json",
+    "bun.lock",
+    "packages/sql-schema/db/migrations/0005_better-auth-api-key.sql",
+    "packages/sql-schema/db/migrations/meta/0005_snapshot.json",
+    "packages/sql-schema/db/migrations/meta/_journal.json",
+    "packages/sql-schema/src/auth-schema.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "6a1a616668ca",
+  "token_usage": {
+    "input_tokens": 154,
+    "cache_creation_tokens": 160005,
+    "cache_read_tokens": 11240571,
+    "output_tokens": 26406,
+    "api_call_count": 140
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T15:20:01.025104Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 1849,
+    "total_committed": 1125,
+    "agent_percentage": 0
+  }
+}

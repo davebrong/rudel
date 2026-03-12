@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "8a3bfae0d16b",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/wrangler-deploy",
+  "checkpoints_count": 7,
+  "files_touched": [
+    ".dev.vars.example",
+    "apps/api/package.json",
+    "apps/api/src/auth.ts",
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/db.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/router.ts",
+    "apps/api/src/worker.ts",
+    "package.json",
+    "packages/sql-schema/db/migrations/0000_curvy_siren.sql",
+    "packages/sql-schema/db/migrations/meta/0000_snapshot.json",
+    "packages/sql-schema/db/migrations/meta/_journal.json",
+    "packages/sql-schema/drizzle.config.ts",
+    "packages/sql-schema/package.json",
+    "packages/sql-schema/src/auth-schema.ts",
+    "packages/sql-schema/src/index.ts",
+    "packages/sql-schema/src/schema.ts",
+    "packages/sql-schema/tsconfig.json",
+    "wrangler.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8a/3bfae0d16b/0/metadata.json",
+      "transcript": "/8a/3bfae0d16b/0/full.jsonl",
+      "context": "/8a/3bfae0d16b/0/context.md",
+      "content_hash": "/8a/3bfae0d16b/0/content_hash.txt",
+      "prompt": "/8a/3bfae0d16b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 156,
+    "cache_creation_tokens": 237640,
+    "cache_read_tokens": 8871776,
+    "output_tokens": 1568,
+    "api_call_count": 125
+  }
+}

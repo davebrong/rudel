@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "27deba1f631c",
+  "session_id": "2c61754b-db95-42ff-9fa2-450e05706bf2",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-21T05:09:36.989258Z",
+  "branch": "KeKs0r/simplify-infra",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".env.example",
+    ".github/workflows/ci.yml",
+    "CLAUDE.md",
+    "apps/api/.env.example",
+    "apps/api/src/db.ts",
+    "docker-compose.yml",
+    "packages/sql-schema/src/migrate.ts",
+    "scripts/migrate-d1-to-pg.ts",
+    "turbo.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "734e7b72-d6f1-4ec7-9f1b-3646f79b664e",
+  "token_usage": {
+    "input_tokens": 504,
+    "cache_creation_tokens": 46537,
+    "cache_read_tokens": 854335,
+    "output_tokens": 161,
+    "api_call_count": 19
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-21T05:09:36.483968Z",
+    "agent_lines": 295,
+    "human_added": 535,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 830,
+    "agent_percentage": 35.54216867469879
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-lagos/2c61754b-db95-42ff-9fa2-450e05706bf2.jsonl"
+}

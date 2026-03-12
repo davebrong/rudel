@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "8d7e14f97e93",
+  "session_id": "3dd22036-95d3-407e-9af9-51035f5ad5e7",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T16:29:10.322877Z",
+  "branch": "marc/dev-name-resolution",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/skills/api-testing/SKILL.md",
+    "apps/api/package.json",
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/handlers/analytics/index.ts",
+    "apps/api/src/handlers/analytics/users.ts",
+    "apps/api/src/logging.ts",
+    "apps/api/src/services/developer.service.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/project.service.ts",
+    "apps/api/src/services/user.service.ts",
+    "apps/web/src/components/charts/DeveloperTrendChart.tsx",
+    "apps/web/src/components/charts/DimensionAnalysisChart.tsx",
+    "apps/web/src/components/charts/ErrorTrendChart.tsx",
+    "apps/web/src/components/charts/LearningsTrendChart.tsx",
+    "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "bun.lock",
+    "docs/deploy-column-migration.md",
+    "packages/api-routes/src/schemas/analytics.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "e2647d041017",
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 28229,
+    "cache_read_tokens": 164682,
+    "output_tokens": 974,
+    "api_call_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T16:29:10.312131Z",
+    "agent_lines": 213,
+    "human_added": 296,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 509,
+    "agent_percentage": 41.846758349705304
+  }
+}

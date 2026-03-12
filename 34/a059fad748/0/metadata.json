@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "34a059fad748",
+  "session_id": "1269ef49-b53c-4d84-afb3-6e2fd4fc8b2a",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T19:41:08.315756Z",
+  "branch": "marc/fix-workspace-grouping",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/cli/src/commands/enable.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "48b481fbadfa",
+  "token_usage": {
+    "input_tokens": 80,
+    "cache_creation_tokens": 189965,
+    "cache_read_tokens": 2823581,
+    "output_tokens": 10899,
+    "api_call_count": 43
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T19:41:08.110886Z",
+    "agent_lines": 56,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 56,
+    "agent_percentage": 100
+  }
+}

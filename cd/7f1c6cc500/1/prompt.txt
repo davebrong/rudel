@@ -1,0 +1,174 @@
+running the release script leads to error, why?\
+bun run release:cli
+$ bun run ./scripts/release-cli.ts
+Checking prerequisites...
+$ bun --version
+1.3.9
+$ git --version
+git version 2.50.1 (Apple Git-155)
+$ npm --version
+10.9.4
+$ git rev-parse --abbrev-ref HEAD
+main
+$ git status --porcelain
+$ npm whoami
+m0c
+Version: 0.1.8 (not yet published, skipping bump)
+Running quality gates (lint, typecheck, test, build)...
+$ bun run verify
+• Packages in scope: //, @rudel/agent-adapters, @rudel/api, @rudel/api-routes, @rudel/ch-schema, @rudel/sql-schema, @rudel/typescript-config, @rudel/web, rudel
+• Running lint, check-types, test, build in 9 packages
+• Remote caching disabled
+//:lint: cache hit, replaying logs 89020c08671cecff
+//:lint: 
+//:lint: $ biome check .
+//:lint: Checked 234 files in 97ms. No fixes applied.
+@rudel/api:test: cache hit, replaying logs c5bc844ff9875e37
+@rudel/api:test: $ bun test
+@rudel/api:test: bun test v1.3.9 (cf6cdbbb)
+@rudel/api:test: 
+@rudel/api:test: src/__tests__/ingest.test.ts:
+@rudel/api:test: (pass) extractTimestamps > returnmax timestamps from user and assistant lines [1.07ms]
+@rudel/api:test: (pass) extractTimestamps > ignores non-user/assistant lines [0.03ms]
+@rudel/api:test: (pass) extractTimestamps > returns null when no timestamps found [0.39ms]
+@rudel/api:test: (pass) extractTimestamps > skips lines without timestamp field [0.05ms]
+@rudel/api:test: 
+@rudel/api:test:  4 pass
+@rudel/api:test:  0 fail
+@rudel/api:test:  6 expect() calls
+@rudel/api:test: Ran 4 tests across 1 file. [146.00ms]
+rudel:test: cache hit, replaying logs d87090fe8be0a690
+rudel:test: $ bun test
+rudel:test: bun test v1.3.9 (cf6cdbbb)
+rudel:test: 
+rudel:test: src/__tests__/agents.test.ts:
+rudel:test: (pass) claudeCodeAdapter > name is Claude Code [0.10ms]
+rudel:test: (pass) claudeCodeAdapter > source is claude_code [1.12ms]
+rudel:test: (pass) claudeCodeAdapter > getSessionsBaseDir returns ~/.claude/projects [0.09ms]
+rudel:test: (pass) claudeCodeAdapter > findProjectSessions returns session files excluding subagents [1.32ms]
+rudel:test: (pass) claudeCodeAdapter > findProjectSessions returns empty array for nonexistent project [205.92ms]
+rudel:test: (pass) claudeCodeAdapter > isHookInstalled reflects hook state [0.43ms]
+rudel:test: (pass) claudeCodeAdapter > getHookConfigPath returns a path ending in settings.json [0.02ms]
+rudel:test: (pass) getAvailableAdapters > returns at least the Claude Code adapter [0.21ms]
+rudel:test: 
+rudel:test: src/__tests__/upload.integration.test.ts:
+rudel:test: (pass) session resolver > resolves session from a direct file path [1.19ms]
+rudel:test: (pass) session resolver > resolves session by ID from ~/.claude/projects/ [1.78ms]
+rudel:test: (pass) session resolver > rejects subagent file passed as path [0.79ms]
+rudel:test: (pass) session resolver > rejects subagent ID passed directly [0.05ms]
+rudel:test: (pass) session resolver > throws for nonexistent session ID [24.37ms]
+rudel:test: (pass) session resolver > throws for nonexistent file path [0.12ms]
+rudel:test: (pass) transcript reader > reads transcript and extracts subagent IDs [0.41ms]
+rudel:test: (pass) transcript reader > returns empty array when no subagents referenced [0.07ms]
+rudel:test: (pass) transcript reader > handles malformed JSONL lines gracefully [0.09ms]
+rudel:test: (pass) subagent reader > reads subagent files from session directory [0.74ms]
+rudel:test: (pass) subagent reader > reads subagent files from new subagents/ subdirectory [1.27ms]
+rudel:test: (pass) git info > extracts git info from current repo [27.18ms]
+rudel:test: (pass) git info > returns empty info for non-git directory [23.57ms]
+rudel:test: (pass) full upload pipeline (dry-run) > resolves session by path, reads transcript, extracts subagents, and builds request [2.58ms]
+rudel:test: (pass) full upload pipeline (dry-run) > full CLI dry-run with real session ID [134.20ms]
+rudel:test: (pass) full upload pipeline (dry-run) > full CLI dry-run with file path and subagent files [124.79ms]
+rudel:test: 
+rudel:test: src/__tests__/auth-verify.test.ts:
+rudel:test: (pass) verifyAuth > returns no_credentials when not logged in [0.45ms]
+rudel:test: (pass) verifyAuth > returns authenticated with user for valid token [897.00ms]
+rudel:test: (pass) verifyAuth > returns token_expired for invalid token and clears credentials [397.14ms]
+rudel:test: (pass) verifyAuth > returns network_error when server is unreachable [1.46ms]
+rudel:test: 
+rudel:test: src/__tests__/auth.e2e.test.ts:
+rudel:test: (pass) auth e2e > login: callback server receives token and stores credentials [13716.20ms]
+rudel:test: (pass) auth e2e > whoami: shows user info with valid credentials [2559.22ms]
+rudel:test: (pass) auth e2e > logout: clears credentials [65.23ms]
+rudel:test: (pass) auth e2e > whoami: shows not logged in after logout [53.01ms]
+rudel:test: 
+rudel:test: src/__tests__/api-upload.integration.test.ts:
+rudel:test: (pass) CLI upload to local API > uploads a session via uploadSession to the local API [2736.22ms]
+rudel:test: (pass) CLI upload to local API > full CLI upload via subprocess to local API [2594.02ms]
+rudel:test: (pass) CLI upload to local API > rejects unauthenticated requests [429.89ms]
+rudel:test: 
+rudel:test:  35 pass
+rudel:test:  0 fail
+rudel:test:  103 expect() calls
+rudel:test: Ran 35 tests across 5 files. [41.47s]
+@rudel/ch-schema:test: cache hit, replaying logs f2fc96724a668593
+@rudel/ch-schema:test: 
+@rudel/ch-schema:test: $ bun test
+@rudel/ch-schema:test: bun test v1.3.9 (cf6cdbbb)
+@rudel/ch-schema:test: 
+@rudel/ch-schema:test: src/__tests__/schemas.test.ts:
+@rudel/ch-schema:test: ✓ RudelClaudeSessionsRowSchema > parses a valid row [1.47ms]
+@rudel/ch-schema:test: ✓ RudelClaudeSessionsRowSchema > accepts null for nullable fields [0.17ms]
+@rudel/ch-schema:test: ✓ RudelClaudeSessionsRowSchema > rejects missing required fields [0.45ms]
+@rudel/ch-schema:test: ✓ RudelClaudeSessionsRowSchema > rejects wrong types [0.14ms]
+@rudel/ch-schema:test: 
+@rudel/ch-schema:test:  4 pass
+@rudel/ch-schema:test:  0 fail
+@rudel/ch-schema:test:  8 expect() calls
+@rudel/ch-schema:test: Ran 4 tests across 1 file. [17.00ms]
+@rudel/sql-sche-types: cache hit, replaying logs b6d2a71243287f9b
+@rudel/sql-schema:check-types: $ tsc --noEmit
+@rudel/ch-schema:check-types: cache hit, replaying logs e22a1673cc012b05
+@rudel/ch-schema:check-types: 
+@rudel/ch-schema:check-types: $ tsc --noEmit
+@rudel/web:check-types: cache hit, replaying logs 299424c390bbddca
+@rudel/web:check-types: $ tsc -b
+rudel:check-types: cache hit, replaying logs cbc165bbf712f81c
+rudel:check-types: 
+rudel:check-types: $ tsc --noEmit
+rudel:build: cache hit, replaying logs cb183e545964b1cd
+rudel:build: 
+rudel:build: $ bun build src/bin/cli.ts --outdir dist --target bun
+rudel:build: Bundled 103 modules in 24ms
+rudel:build: 
+rudel:build:   cli.js  0.50 MB  (entry point)
+rudel:build: 
+@rudel/api:check-types: cache hit, replaying logs fcc1864439f67e04
+@rudel/api:check-types: 
+@rudel/api:check-types: $ tsc --noEmit
+@rudel/web:build: cache hit, replaying logs 9f85cfbf17132c95
+@rudel/web:build: $ tsc -b && vite build
+@rudel/web:build: vite v7.3.1 building client environment for production...
+@rudel/web:build: transforming...
+@rudel/web:build: ✓ 4160 modules transformed.
+@rudel/web:build: rendering chunks...
+@rudel/web:build: computing gzip size...
+@rudel/web:build: dist/index.html                     0.90 kB │ gzip:   0.40 kB
+@rudel/web:build: dist/assets/index-Ct5n-DzE.css     70.64 kB │ gzip:  12.84 kB
+@rudel/web:build: dist/assets/index-DTEVqGXD.js   1,974.71 kB │ gzip: 619.60 kB
+@rudel/web:build: 
+@rudel/web:build: (!) Some chunks are larger than 500 kB after minification. Consider:
+@rudel/web:build: - Using dynamic import() to code-split the application
+@rudel/web:build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+@rudel/web:build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+@rudel/web:build: ✓ built in 4.11s
+
+ Tasks:    11 successful, 11 total
+Cached:    11 cached, 11 total
+  Time:    81ms >>> FULL TURBO
+
+$ doppler run --project rudel --config ci -- turbo run ltypes test build
+• turbo 2.8.10
+Enter npm OTP to publish:  723369
+Publishing rudel@0.1.8...
+$ bun publish --access public --otp 723369
+bun publish v1.3.9 (cf6cdbbb)
+
+packed 1.17KB package.json
+packed 2.28KB README.md
+packed 0.50MB dist/cli.js
+
+Total files: 3
+Shasum: 02f73de5f7d2c7292c14ca94ab8a6d7f38ec0e19
+Integrity: sha512-nk87NJWHCXOVH[...]eOrdV/4XbX73g==
+Unpacked size: 0.51MB
+Packed size: 101.1KB
+Tag: latest
+Access: public
+Registry: https://registry.npmjs.org/
+
+ + rudel@0.1.8
+[0.14ms] ".env"
+$ git tag 'rudel@0.1.8'
+fatal: tag 'rudel@0.1.8' already exists
+ERROR: Command failed (128): git tag 'rudel@0.1.8'
+error: script "release:cli" exited with code 1

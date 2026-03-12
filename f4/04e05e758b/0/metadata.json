@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f404e05e758b",
+  "session_id": "d443288a-e9c7-4d1f-9945-dec930d8b680",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T01:03:00.87513Z",
+  "branch": "marc/learnings-empty-state",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/web/src/pages/dashboard/LearningsPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "checkpoint_transcript_start": 135,
+  "transcript_lines_at_start": 135,
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 30063,
+    "cache_read_tokens": 1252242,
+    "output_tokens": 2742,
+    "api_call_count": 17
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T01:03:00.675476Z",
+    "agent_lines": 0,
+    "human_added": 8,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 8,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-edinburgh-v1/d443288a-e9c7-4d1f-9945-dec930d8b680.jsonl"
+}

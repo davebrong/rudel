@@ -1,0 +1,47 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "628527bd2595",
+  "strategy": "manual-commit",
+  "branch": "marc/project-identity",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/ingest.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/api/src/services/project.service.ts",
+    "apps/api/src/services/session-analytics.service.ts",
+    "apps/cli/src/__tests__/upload.integration.test.ts",
+    "apps/cli/src/commands/hooks/claude/session-end.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/lib/batch-uploader.ts",
+    "apps/cli/src/lib/git-info.ts",
+    "apps/cli/src/lib/project-scanner.ts",
+    "apps/cli/src/lib/remote-cache.ts",
+    "apps/cli/src/lib/types.ts",
+    "apps/web/src/pages/dashboard/ProjectsListPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx",
+    "packages/api-routes/src/index.ts",
+    "packages/api-routes/src/schemas/analytics.ts",
+    "packages/ch-schema/chx/migrations/20260302051814_auto.sql",
+    "packages/ch-schema/src/__tests__/ingest-clickhouse.integration.ts",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/db/schema/claude-sessions.ts",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/62/8527bd2595/0/metadata.json",
+      "transcript": "/62/8527bd2595/0/full.jsonl",
+      "context": "/62/8527bd2595/0/context.md",
+      "content_hash": "/62/8527bd2595/0/content_hash.txt",
+      "prompt": "/62/8527bd2595/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 115,
+    "cache_creation_tokens": 287355,
+    "cache_read_tokens": 10096573,
+    "output_tokens": 28784,
+    "api_call_count": 85
+  }
+}

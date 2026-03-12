@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "2bdf4351b673",
+  "session_id": "b695f99f-08db-45a0-a3fb-b6b26f0181ac",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T04:58:52.615581Z",
+  "branch": "marc/migrate-to-data-table",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 123,
+    "cache_creation_tokens": 389953,
+    "cache_read_tokens": 5321823,
+    "output_tokens": 25667,
+    "api_call_count": 55
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T04:58:50.64207Z",
+    "agent_lines": 586,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 586,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-bismarck/b695f99f-08db-45a0-a3fb-b6b26f0181ac.jsonl"
+}

@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4d9d2ed1860f",
+  "strategy": "manual-commit",
+  "branch": "marc/optimize-data-fetching",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/DeleteOrganizationDialog.tsx",
+    "apps/web/src/contexts/OrganizationContext.tsx",
+    "apps/web/src/hooks/useAccounts.ts",
+    "apps/web/src/hooks/useAnalyticsQuery.ts",
+    "apps/web/src/hooks/useFullOrganization.ts",
+    "apps/web/src/lib/query-client.ts",
+    "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/LearningsPage.tsx",
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx",
+    "apps/web/src/pages/dashboard/OverviewPage.tsx",
+    "apps/web/src/pages/dashboard/ProfilePage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectsListPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "apps/web/src/pages/dashboard/SessionDetailPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4d/9d2ed1860f/0/metadata.json",
+      "transcript": "/4d/9d2ed1860f/0/full.jsonl",
+      "context": "/4d/9d2ed1860f/0/context.md",
+      "content_hash": "/4d/9d2ed1860f/0/content_hash.txt",
+      "prompt": "/4d/9d2ed1860f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 150,
+    "cache_creation_tokens": 277346,
+    "cache_read_tokens": 6982697,
+    "output_tokens": 21089,
+    "api_call_count": 71
+  }
+}

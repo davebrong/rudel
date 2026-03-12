@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "7d0bb7b64d88",
+  "strategy": "manual-commit",
+  "branch": "marc/remove-init-clickhouse-sql",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "bun.lock",
+    "docker-compose.yml",
+    "package.json",
+    "packages/ch-schema/chx/meta/snapshot.json",
+    "packages/ch-schema/chx/migrations/20260311084657_auto.sql",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/src/db/schema/session-analytics.ts",
+    "packages/ch-schema/src/generated/chkit-ingest.ts",
+    "packages/ch-schema/src/generated/chkit-types.ts",
+    "scripts/dev-local.sh"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7d/0bb7b64d88/0/metadata.json",
+      "transcript": "/7d/0bb7b64d88/0/full.jsonl",
+      "context": "/7d/0bb7b64d88/0/context.md",
+      "content_hash": "/7d/0bb7b64d88/0/content_hash.txt",
+      "prompt": "/7d/0bb7b64d88/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 99,
+    "cache_creation_tokens": 320050,
+    "cache_read_tokens": 4884449,
+    "output_tokens": 15258,
+    "api_call_count": 77
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "45907daadc7c",
+  "strategy": "manual-commit",
+  "branch": "last-fixes-launch",
+  "checkpoints_count": 16,
+  "files_touched": [
+    "README.md",
+    "apps/api/src/services/error.service.ts",
+    "apps/api/src/services/overview.service.ts",
+    "apps/web/src/components/auth/login-form.tsx",
+    "apps/web/src/components/auth/signup-form.tsx",
+    "apps/web/src/components/charts/ChartLegend.tsx",
+    "apps/web/src/components/charts/DeveloperTrendChart.tsx",
+    "apps/web/src/components/charts/DimensionAnalysisChart.tsx",
+    "apps/web/src/components/charts/ErrorTrendChart.tsx",
+    "apps/web/src/components/charts/ModelTokensChart.tsx",
+    "apps/web/src/components/charts/ProjectTrendChart.tsx",
+    "apps/web/src/components/charts/UsageTrendChart.tsx",
+    "apps/web/src/components/conversation/ConversationMessage.tsx",
+    "apps/web/src/components/ui/InfoTooltip.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx",
+    "apps/web/src/pages/dashboard/SessionDetailPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx",
+    "packages/api-routes/src/schemas/analytics.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/45/907daadc7c/0/metadata.json",
+      "transcript": "/45/907daadc7c/0/full.jsonl",
+      "context": "/45/907daadc7c/0/context.md",
+      "content_hash": "/45/907daadc7c/0/content_hash.txt",
+      "prompt": "/45/907daadc7c/0/prompt.txt"
+    },
+    {
+      "metadata": "/45/907daadc7c/1/metadata.json",
+      "transcript": "/45/907daadc7c/1/full.jsonl",
+      "context": "/45/907daadc7c/1/context.md",
+      "content_hash": "/45/907daadc7c/1/content_hash.txt",
+      "prompt": "/45/907daadc7c/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 252,
+    "cache_creation_tokens": 287197,
+    "cache_read_tokens": 18105105,
+    "output_tokens": 76972,
+    "api_call_count": 206
+  }
+}

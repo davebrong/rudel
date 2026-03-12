@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "918204882279",
+  "session_id": "86eae9f6-4d9c-4412-aac8-af365adbc863",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:33:58.216312Z",
+  "branch": "marc/cli-clack-prompts-ux",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/src/app.ts",
+    "apps/cli/src/commands/disable.ts",
+    "apps/cli/src/commands/enable.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/commands/logout.ts",
+    "apps/cli/src/commands/set-org.ts",
+    "apps/cli/src/commands/whoami.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 42,
+    "cache_creation_tokens": 137663,
+    "cache_read_tokens": 1534866,
+    "output_tokens": 10585,
+    "api_call_count": 27
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:33:57.268206Z",
+    "agent_lines": 142,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 142,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-stuttgart/86eae9f6-4d9c-4412-aac8-af365adbc863.jsonl"
+}

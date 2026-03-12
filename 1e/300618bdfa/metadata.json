@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "1e300618bdfa",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/start-dev-servers",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/analytics/Sidebar.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1e/300618bdfa/0/metadata.json",
+      "transcript": "/1e/300618bdfa/0/full.jsonl",
+      "context": "/1e/300618bdfa/0/context.md",
+      "content_hash": "/1e/300618bdfa/0/content_hash.txt",
+      "prompt": "/1e/300618bdfa/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 9,
+    "cache_creation_tokens": 18650,
+    "cache_read_tokens": 448048,
+    "output_tokens": 101,
+    "api_call_count": 7
+  }
+}

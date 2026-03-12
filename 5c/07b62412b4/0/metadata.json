@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "5c07b62412b4",
+  "session_id": "8b9bce41-eac4-4f55-8f60-56fcb6a69136",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T00:41:32.529394Z",
+  "branch": "marc/fix-org-invite-ui",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 77,
+    "cache_creation_tokens": 93511,
+    "cache_read_tokens": 628150,
+    "output_tokens": 5392,
+    "api_call_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T00:41:32.374968Z",
+    "agent_lines": 4,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 4,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-tehran/8b9bce41-eac4-4f55-8f60-56fcb6a69136.jsonl"
+}

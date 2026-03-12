@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "ce400ff74c3d",
+  "session_id": "5beaa8db-74b5-4864-9fd7-09ffa04e4425",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T16:56:14.950433Z",
+  "branch": "marc/fix-oauth-redirect",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/index.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 68,
+    "cache_creation_tokens": 86276,
+    "cache_read_tokens": 657395,
+    "output_tokens": 7477,
+    "api_call_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T16:56:14.762017Z",
+    "agent_lines": 9,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 9,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-asuncion/5beaa8db-74b5-4864-9fd7-09ffa04e4425.jsonl"
+}

@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "376ab45b29ff",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6702-security-replace-cli-loopback-query-string-token-handoff",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/src/auth.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/router.ts",
+    "apps/cli/src/__tests__/auth.e2e.test.ts",
+    "apps/cli/src/__tests__/helpers/bun-server.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/web/package.json",
+    "bun.lock",
+    "packages/sql-schema/db/migrations/0005_better-auth-api-key.sql",
+    "packages/sql-schema/db/migrations/meta/0005_snapshot.json",
+    "packages/sql-schema/db/migrations/meta/_journal.json",
+    "packages/sql-schema/src/auth-schema.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/37/6ab45b29ff/0/metadata.json",
+      "transcript": "/37/6ab45b29ff/0/full.jsonl",
+      "context": "/37/6ab45b29ff/0/context.md",
+      "content_hash": "/37/6ab45b29ff/0/content_hash.txt",
+      "prompt": "/37/6ab45b29ff/0/prompt.txt"
+    },
+    {
+      "metadata": "/37/6ab45b29ff/1/metadata.json",
+      "transcript": "/37/6ab45b29ff/1/full.jsonl",
+      "context": "/37/6ab45b29ff/1/context.md",
+      "content_hash": "/37/6ab45b29ff/1/content_hash.txt",
+      "prompt": "/37/6ab45b29ff/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 177,
+    "cache_creation_tokens": 190880,
+    "cache_read_tokens": 11676327,
+    "output_tokens": 29653,
+    "api_call_count": 157
+  }
+}

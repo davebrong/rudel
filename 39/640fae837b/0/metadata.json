@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "39640fae837b",
+  "session_id": "14a60161-6c10-46b6-a9fe-9fcb9605ac75",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T04:34:44.533422Z",
+  "branch": "marc/num-6532-make-rudel-multitenant-team",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/analytics/Sidebar.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "ab5ecdc0-ff66-4488-885c-2dd90266db45",
+  "checkpoint_transcript_start": 102,
+  "transcript_lines_at_start": 102,
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 22295,
+    "cache_read_tokens": 1405472,
+    "output_tokens": 204,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T04:34:44.277494Z",
+    "agent_lines": 45,
+    "human_added": 481,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 526,
+    "agent_percentage": 8.555133079847907
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-wellington/14a60161-6c10-46b6-a9fe-9fcb9605ac75.jsonl"
+}

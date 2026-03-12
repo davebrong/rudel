@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "fd2a5442f00b",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/cli-readme",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/README.md",
+    "apps/cli/package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fd/2a5442f00b/0/metadata.json",
+      "transcript": "/fd/2a5442f00b/0/full.jsonl",
+      "context": "/fd/2a5442f00b/0/context.md",
+      "content_hash": "/fd/2a5442f00b/0/content_hash.txt",
+      "prompt": "/fd/2a5442f00b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 45444,
+    "cache_read_tokens": 355486,
+    "output_tokens": 188,
+    "api_call_count": 14
+  }
+}

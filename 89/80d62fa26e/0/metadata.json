@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.3",
+  "checkpoint_id": "8980d62fa26e",
+  "session_id": "a8bb74d1-f47f-4196-9a22-b827ad56c66f",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-05T12:55:00.157154Z",
+  "branch": "launch-readiness-app",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/learnings/feedback/2026-02-25-offer-single-or-batch-upload.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "1b4cb9be-4f8e-42c6-8237-42e8f4198b99",
+  "token_usage": {
+    "input_tokens": 267,
+    "cache_creation_tokens": 115393,
+    "cache_read_tokens": 840215,
+    "output_tokens": 6341,
+    "api_call_count": 25
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-05T12:55:00.081914Z",
+    "agent_lines": 0,
+    "human_added": 11500,
+    "human_modified": 30,
+    "human_removed": 0,
+    "total_committed": 11530,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-rafa-Obsession-rudel/a8bb74d1-f47f-4196-9a22-b827ad56c66f.jsonl"
+}

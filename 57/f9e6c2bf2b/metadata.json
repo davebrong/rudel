@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "57f9e6c2bf2b",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6491-build-single-session-view",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/sessions/conversation/AssistantConversationContent.tsx",
+    "apps/web/src/components/sessions/conversation/ConversationList.tsx",
+    "apps/web/src/components/sessions/conversation/SummaryGroup.tsx",
+    "apps/web/src/components/sessions/conversation/TaskOutputContent.tsx",
+    "apps/web/src/components/sessions/conversation/TodoWriteContent.tsx",
+    "apps/web/src/pages/dashboard/SessionDetailPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/57/f9e6c2bf2b/0/metadata.json",
+      "transcript": "/57/f9e6c2bf2b/0/full.jsonl",
+      "context": "/57/f9e6c2bf2b/0/context.md",
+      "content_hash": "/57/f9e6c2bf2b/0/content_hash.txt",
+      "prompt": "/57/f9e6c2bf2b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 25,
+    "cache_creation_tokens": 84137,
+    "cache_read_tokens": 1909080,
+    "output_tokens": 295,
+    "api_call_count": 23
+  }
+}

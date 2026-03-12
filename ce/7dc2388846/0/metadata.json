@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "ce7dc2388846",
+  "session_id": "a7f45002-66ed-4a0e-b4c7-8f64c6b978e5",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-19T10:33:11.151507Z",
+  "branch": "KeKs0r/cli-publish-check",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/src/__tests__/api-upload.integration.test.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "4989aec6-7de2-4d1d-8118-a97dcede7c91",
+  "checkpoint_transcript_start": 497,
+  "transcript_lines_at_start": 497,
+  "token_usage": {
+    "input_tokens": 26,
+    "cache_creation_tokens": 80508,
+    "cache_read_tokens": 2207751,
+    "output_tokens": 379,
+    "api_call_count": 24
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-19T10:33:10.68107Z",
+    "agent_lines": 37,
+    "human_added": 20,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 57,
+    "agent_percentage": 64.91228070175438
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-albuquerque/a7f45002-66ed-4a0e-b4c7-8f64c6b978e5.jsonl"
+}

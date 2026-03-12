@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "5de67da1e00b",
+  "session_id": "71f90811-958f-4a6b-a9b8-fdc73360f116",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T04:33:58.912992Z",
+  "branch": "marc/add-codec-support",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/ingest-codex.ts",
+    "packages/ch-schema/chx/migrations/20260302042004_auto.sql",
+    "packages/ch-schema/src/db/schema/codex-sessions.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 5,
+    "cache_creation_tokens": 46086,
+    "cache_read_tokens": 102698,
+    "output_tokens": 4997,
+    "api_call_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T04:33:58.726383Z",
+    "agent_lines": 335,
+    "human_added": 1107,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1442,
+    "agent_percentage": 23.231622746185852
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-porto-v1/71f90811-958f-4a6b-a9b8-fdc73360f116.jsonl"
+}

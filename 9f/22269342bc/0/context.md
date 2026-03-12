@@ -1,0 +1,16 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+I just added the skill to the query, the CLI ClickHouse query skill which expects some credentials in the environment. Maybe extend it or specify for this repo in Claude.md that we can use Doppler to inject those into the CLI.As well as that there are two Doppler environments, one is basically the deployed production version and the other one is the CI version which you're also going to use for local tests. But when we run the app locally, we want to connect to the production database.
+
+### Prompt 2
+
+update chcli, i think i just updated it to also take _RUL
+
+### Prompt 3
+
+actually those skill updates, should have probably happend at the source, can you give me a good prompt (including double checks) to run on the source repo ( `@obsessiondb/chcli`)
+

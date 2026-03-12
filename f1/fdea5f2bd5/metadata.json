@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f1fdea5f2bd5",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6533-rudel-github-login",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".dev.vars.example",
+    ".env.example",
+    ".gitignore",
+    "scripts/migrate-d1-to-pg.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f1/fdea5f2bd5/0/metadata.json",
+      "transcript": "/f1/fdea5f2bd5/0/full.jsonl",
+      "context": "/f1/fdea5f2bd5/0/context.md",
+      "content_hash": "/f1/fdea5f2bd5/0/content_hash.txt",
+      "prompt": "/f1/fdea5f2bd5/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 93,
+    "cache_creation_tokens": 93007,
+    "cache_read_tokens": 1615427,
+    "output_tokens": 364,
+    "api_call_count": 38
+  }
+}

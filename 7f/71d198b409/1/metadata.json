@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "7f71d198b409",
+  "session_id": "c53340f6-9e8a-4410-b6ef-920bb26b2b12",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:27:44.623778Z",
+  "branch": "marc/org-deletion",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/__tests__/router-auth.test.ts",
+    "apps/api/src/router.ts",
+    "apps/api/src/services/org-session.service.ts",
+    "apps/web/src/components/DeleteOrganizationDialog.tsx",
+    "apps/web/src/components/ui/dialog.tsx",
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx",
+    "packages/api-routes/src/index.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 100,
+    "cache_creation_tokens": 169023,
+    "cache_read_tokens": 4395230,
+    "output_tokens": 15484,
+    "api_call_count": 69
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:27:44.36825Z",
+    "agent_lines": 559,
+    "human_added": 59,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 618,
+    "agent_percentage": 90.45307443365695
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-lima/c53340f6-9e8a-4410-b6ef-920bb26b2b12.jsonl"
+}

@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "30a43d7f64ec",
+  "strategy": "manual-commit",
+  "branch": "improve-setup-hint",
+  "checkpoints_count": 6,
+  "files_touched": [
+    ".claude/learnings/feedback/2026-03-03-func-order-missing-in-skill.md",
+    ".claude/learnings/feedback/2026-03-03-skill-not-loaded-before-ts.md",
+    "apps/web/src/components/analytics/CliSetupHint.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/30/a43d7f64ec/0/metadata.json",
+      "transcript": "/30/a43d7f64ec/0/full.jsonl",
+      "context": "/30/a43d7f64ec/0/context.md",
+      "content_hash": "/30/a43d7f64ec/0/content_hash.txt",
+      "prompt": "/30/a43d7f64ec/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 34,
+    "cache_creation_tokens": 53225,
+    "cache_read_tokens": 966761,
+    "output_tokens": 6134,
+    "api_call_count": 22
+  }
+}

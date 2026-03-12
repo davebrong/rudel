@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "759e1df9eeaf",
+  "session_id": "c77fd7c1-f042-496e-9d94-a20b73918daa",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T01:20:19.612823Z",
+  "branch": "marc/cache-bun-deps-ci",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/actions/setup/action.yml",
+    ".github/workflows/ci.yml"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 83,
+    "cache_creation_tokens": 64807,
+    "cache_read_tokens": 600530,
+    "output_tokens": 4030,
+    "api_call_count": 16
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T01:20:19.475161Z",
+    "agent_lines": 22,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 22,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-abu-dhabi/c77fd7c1-f042-496e-9d94-a20b73918daa.jsonl"
+}

@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "31249f538387",
+  "session_id": "95c457d0-3307-4374-b089-2dae1e8233c8",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T03:05:48.579265Z",
+  "branch": "rudel-streamline-release",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/cli/package.json",
+    "apps/cli/src/app.ts",
+    "release-please-config.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "47c0e040-bcdc-4317-89b8-6a9c1514f743",
+  "token_usage": {
+    "input_tokens": 35,
+    "cache_creation_tokens": 32312,
+    "cache_read_tokens": 970707,
+    "output_tokens": 3402,
+    "api_call_count": 25
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T03:05:48.555918Z",
+    "agent_lines": 1,
+    "human_added": 0,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 2,
+    "agent_percentage": 50
+  },
+  "transcript_path": ".claude/projects/-Users-marc-Workspace-rudel/95c457d0-3307-4374-b089-2dae1e8233c8.jsonl"
+}

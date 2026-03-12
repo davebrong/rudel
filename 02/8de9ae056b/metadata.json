@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "028de9ae056b",
+  "strategy": "manual-commit",
+  "branch": "marc/num-6488-authenticate-cli-and-ingest-endpoint",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/index.ts",
+    "apps/cli/src/__tests__/auth.e2e.test.ts",
+    "apps/cli/src/app.ts",
+    "apps/cli/src/commands/login.ts",
+    "apps/cli/src/commands/logout.ts",
+    "apps/cli/src/commands/upload.ts",
+    "apps/cli/src/commands/whoami.ts",
+    "apps/cli/src/lib/credentials.ts",
+    "apps/cli/src/lib/uploader.ts",
+    "apps/web/src/App.tsx",
+    "apps/web/src/components/auth/login-form.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/02/8de9ae056b/0/metadata.json",
+      "transcript": "/02/8de9ae056b/0/full.jsonl",
+      "context": "/02/8de9ae056b/0/context.md",
+      "content_hash": "/02/8de9ae056b/0/content_hash.txt",
+      "prompt": "/02/8de9ae056b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 120,
+    "cache_creation_tokens": 124491,
+    "cache_read_tokens": 9354454,
+    "output_tokens": 1132,
+    "api_call_count": 117
+  }
+}

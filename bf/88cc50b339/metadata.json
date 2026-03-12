@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "bf88cc50b339",
+  "strategy": "manual-commit",
+  "branch": "marc/slack-signup-notify",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".env.example",
+    "apps/api/.env.example",
+    "apps/api/src/auth.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/slack.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/bf/88cc50b339/0/metadata.json",
+      "transcript": "/bf/88cc50b339/0/full.jsonl",
+      "context": "/bf/88cc50b339/0/context.md",
+      "content_hash": "/bf/88cc50b339/0/content_hash.txt",
+      "prompt": "/bf/88cc50b339/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 27,
+    "cache_creation_tokens": 53615,
+    "cache_read_tokens": 1228319,
+    "output_tokens": 7003,
+    "api_call_count": 24
+  }
+}

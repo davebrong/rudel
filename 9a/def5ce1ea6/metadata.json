@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "9adef5ce1ea6",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-oauth-redirect",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/actions/setup/action.yml",
+    "apps/api/src/__tests__/ingest.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/9a/def5ce1ea6/0/metadata.json",
+      "transcript": "/9a/def5ce1ea6/0/full.jsonl",
+      "context": "/9a/def5ce1ea6/0/context.md",
+      "content_hash": "/9a/def5ce1ea6/0/content_hash.txt",
+      "prompt": "/9a/def5ce1ea6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 32,
+    "cache_creation_tokens": 28605,
+    "cache_read_tokens": 3697710,
+    "output_tokens": 9408,
+    "api_call_count": 26
+  }
+}

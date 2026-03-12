@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "51c5708f0568",
+  "strategy": "manual-commit",
+  "branch": "KeKs0r/add-ch-schema",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".context/chx-fix-workspace-publish.md",
+    ".context/manual-release.ts",
+    "package.json",
+    "packages/ch-schema/chx/meta/journal.json",
+    "packages/ch-schema/chx/meta/snapshot.json",
+    "packages/ch-schema/chx/migrations/20260213092427_auto.sql",
+    "packages/ch-schema/clickhouse.config.ts",
+    "packages/ch-schema/package.json",
+    "packages/ch-schema/src/__tests__/schemas.test.ts",
+    "packages/ch-schema/src/db/schema/claude-analytics.ts",
+    "packages/ch-schema/src/db/schema/flick.ts",
+    "packages/ch-schema/src/generated/chx-types.ts",
+    "packages/ch-schema/src/index.ts",
+    "packages/ch-schema/tsconfig.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/51/c5708f0568/0/metadata.json",
+      "transcript": "/51/c5708f0568/0/full.jsonl",
+      "context": "/51/c5708f0568/0/context.md",
+      "content_hash": "/51/c5708f0568/0/content_hash.txt",
+      "prompt": "/51/c5708f0568/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 90,
+    "cache_creation_tokens": 280038,
+    "cache_read_tokens": 7084238,
+    "output_tokens": 7764,
+    "api_call_count": 75
+  }
+}

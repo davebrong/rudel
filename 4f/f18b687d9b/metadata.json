@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4ff18b687d9b",
+  "strategy": "manual-commit",
+  "branch": "marc/cli-enable-verify-upload",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4f/f18b687d9b/0/metadata.json",
+      "transcript": "/4f/f18b687d9b/0/full.jsonl",
+      "context": "/4f/f18b687d9b/0/context.md",
+      "content_hash": "/4f/f18b687d9b/0/content_hash.txt",
+      "prompt": "/4f/f18b687d9b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 11,
+    "cache_creation_tokens": 5933,
+    "cache_read_tokens": 672534,
+    "output_tokens": 1735,
+    "api_call_count": 9
+  }
+}

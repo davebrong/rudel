@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "8a3bfae0d16b",
+  "session_id": "1851d563-fe53-4369-ad9b-c079222c29c1",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-18T06:55:49.041368Z",
+  "branch": "KeKs0r/wrangler-deploy",
+  "checkpoints_count": 7,
+  "files_touched": [
+    ".dev.vars.example",
+    "apps/api/package.json",
+    "apps/api/src/auth.ts",
+    "apps/api/src/clickhouse.ts",
+    "apps/api/src/db.ts",
+    "apps/api/src/index.ts",
+    "apps/api/src/router.ts",
+    "apps/api/src/worker.ts",
+    "package.json",
+    "packages/sql-schema/db/migrations/0000_curvy_siren.sql",
+    "packages/sql-schema/db/migrations/meta/0000_snapshot.json",
+    "packages/sql-schema/db/migrations/meta/_journal.json",
+    "packages/sql-schema/drizzle.config.ts",
+    "packages/sql-schema/package.json",
+    "packages/sql-schema/src/auth-schema.ts",
+    "packages/sql-schema/src/index.ts",
+    "packages/sql-schema/src/schema.ts",
+    "packages/sql-schema/tsconfig.json",
+    "wrangler.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 156,
+    "cache_creation_tokens": 237640,
+    "cache_read_tokens": 8871776,
+    "output_tokens": 1568,
+    "api_call_count": 125
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-18T06:55:48.531609Z",
+    "agent_lines": 866,
+    "human_added": 2464,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 3330,
+    "agent_percentage": 26.006006006006004
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-tripoli/1851d563-fe53-4369-ad9b-c079222c29c1.jsonl"
+}

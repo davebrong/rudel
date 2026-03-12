@@ -1,0 +1,322 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/marc/conductor/workspaces/rudel/seoul directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is main. Use this for actions like creating new PRs, bisecting, etc., unless you're told otherwise.
+
+If the user asks you to work on several unrelated tasks in parallel, you can suggest they start new workspaces.
+If the user asks for help with Conductor, ask them to email [humans@conductor.build](mailto:humans@conductor.build) or
+click on the comment icon in the bottom left to send feedback.
+</system_instruction>
+
+
+<system-instruction>
+Use `git branch -m` to rename the branch.
+
+Do this immediately, before using any skills or any other tools. Do not check the current branch name, just rename it.
+
+Choosing a branch name: use concrete, specific language, avoid abstract nouns, and be concise (<30 characters). Use the prefix "KeKs0r/" before the name.
+
+</system-instruction>
+
+update chkit in ch-schema package to the latest version. keep in mind that the typegen plugin was renamed to codegen, and it now allows to also generate ingestion functions. please enable this functionality and generate a ingestion function for the defined schema
+
+---
+
+isnt beta.4 the newest version?
+
+---
+
+okay i just released a new version that should have fixed this. updata to beta.4
+
+---
+
+great what was it that we originally wanted to do here?
+
+---
+
+yes do it,  we want to get those ingestions functions
+
+---
+
+1. give me a good prompt, to run in the chx repo, to reproduce the error, by creating a test case and then fixing it in that repository
+
+---
+
+now create an integration test here for the ingestion function. we will have the clickhouse credentials to run on ci. so commit and push to CI to verify
+
+---
+
+Base directory for this skill: /Users/marc/.claude/plugins/cache/numiadata-ai-tools/code/1.0.8/skills/environment-variables
+
+# Environment Variables Management
+
+## Source of Truth: Doppler
+
+All environment variables are stored in Doppler. Never hardcode secrets or commit them to git.
+
+## Five Integration Points
+
+When adding a new environment variable:
+
+### 1. Doppler
+
+Add to the appropriate Doppler project and environment.
+
+### 2. GitHub CI Workflow
+
+Map from GitHub Secrets in `.github/workflows/ci.yml`:
+
+```yaml
+jobs:
+  test:
+    env:
+      CLICKHOUSE_URL: ${{ secrets.CLICKHOUSE_URL }}
+      API_KEY: ${{ secrets.API_KEY }}
+```
+
+Secrets must exist in repository settings → Secrets → Actions first.
+
+### 3. Package-Specific turbo.json
+
+**CRITICAL**: Add to package-specific `turbo.json`, NOT root.
+
+```json
+{
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "passThroughEnv": ["CLICKHOUSE_URL", "API_KEY"]
+    }
+  }
+}
+```
+
+### 4. Miniflare Bindings (Cloudflare Workers Tests)
+
+Map and validate in `vitest.config.ts`:
+
+```ts
+import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
+import { ok } from "node:assert";
+
+export default defineWorkersConfig(() => {
+  const clickhouseUrl = process.env.CLICKHOUSE_URL;
+  ok(clickhouseUrl, "CLICKHOUSE_URL not defined");
+
+  const apiKey = process.env.API_KEY;
+  ok(apiKey, "API_KEY not defined");
+
+  return {
+    test: {
+      poolOptions: {
+        workers: {
+          miniflare: {
+            bindings: {
+              CLICKHOUSE_URL: clickhouseUrl,
+              API_KEY: apiKey,
+            },
+          },
+        },
+      },
+    },
+  };
+});
+```
+
+**Remember**: Workers access via `env.VAR_NAME`, not `process.env.VAR_NAME`.
+
+### 5. Cloudflare Sync Scripts
+
+Two approaches exist:
+
+**A) JSON Export (exports all secrets)**
+
+```json
+"env:sync": "doppler secrets -p app -c prd --json | jq -c 'with_entries(.value = .value.computed)' > secrets.json && wrangler secret bulk < secrets.json && rm secrets.json"
+```
+
+**B) Template Substitution (requires secrets.json)**
+
+```json
+"env:sync": "doppler -p app -c prd secrets substitute secrets.json | wrangler secret bulk --env production"
+```
+
+**CRITICAL for Template Approach:**
+Add new variables to `secrets.json`:
+
+```json
+{
+  "CLICKHOUSE_URL": "{{.CLICKHOUSE_URL}}",
+  "API_KEY": "{{.API_KEY}}"
+}
+```
+
+Check which approach: Look for `secrets.json` file and inspect `env:sync` script in `package.json`.
+
+## Checklist: Adding New Environment Variable
+
+- [ ] Add to Doppler for all environments
+- [ ] Add to GitHub Secrets (if used in CI)
+- [ ] Add to `.github/workflows/ci.yml` (if used in CI)
+- [ ] Add to package-specific `turbo.json` → `passThroughEnv`
+- [ ] Add to `vitest.config.ts` miniflare bindings with `ok()` validation (if used in tests)
+- [ ] Add to `secrets.json` template (if using substitution approach)
+- [ ] Run `env:sync` and `env:sync:stg` (if available)
+- [ ] Run `types` or `wrangler:types` script (if exists in package.json)
+- [ ] Validate tests pass locally and in CI
+
+## Debugging Missing Env Vars
+
+Check in order:
+
+1. **Doppler**: `doppler secrets get VAR_NAME`
+2. **Package turbo.json**: `cat packages/your-package/turbo.json | grep -A 10 passThroughEnv`
+3. **Miniflare bindings**: `cat vitest.config.ts | grep -A 20 miniflare`
+4. **Template file** (if substitution): `cat secrets.json | grep VAR_NAME`
+5. **GitHub Secrets**: Repository settings → Secrets → Actions
+
+## Common Mistakes
+
+❌ Adding to root `turbo.json` instead of package-specific
+❌ Using `process.env` in Worker code (use `env.VAR_NAME`)
+❌ Forgetting to add to `secrets.json` when using template substitution
+❌ Not running `env:sync` after Doppler changes
+❌ Not running type generation after adding Worker env vars
+
+## Quick Commands
+
+Check which package manager is used (bun/pnpm), then run:
+
+```bash
+# Sync to Cloudflare
+{bun|pnpm} env:sync           # Production
+{bun|pnpm} env:sync:stg       # Staging (if available)
+
+# Regenerate types (if script exists)
+{bun|pnpm} types
+{bun|pnpm} wrangler:types
+{bun|pnpm} codegen
+
+
+```
+
+---
+
+Base directory for this skill: /Users/marc/.claude/plugins/cache/numiadata-ai-tools/code/1.0.8/skills/testing-vitest
+
+# Testing Standards (Vitest)
+
+## Framework
+- Use `vitest` (not jest or bun test)
+- Use `@cloudflare/vitest-pool-workers` for Cloudflare Workers
+- **CRITICAL**: Always use `pnpm test`, NEVER standalone test runners
+
+## CRITICAL Rules
+
+### 1. Never Use Try-Catch in Positive Tests
+```ts
+// ❌ Bad - Hides real errors
+it('should create user', async () => {
+  try {
+    const user = await createUser(userData)
+    expect(user.id).toBeTruthy()
+  } catch (error) {
+    console.error('Unexpected error:', error)
+  }
+})
+
+// ✅ Good - Let test framework handle errors
+it('should create user', async () => {
+  const user = await createUser(userData)
+  expect(user.id).toBeTruthy()
+})
+
+// ✅ Good - Only for testing specific errors
+it('should throw error', async () => {
+  await expect(createUser(invalid)).rejects.toThrow('Invalid email')
+})
+```
+
+### 2. Never Use Early Returns
+```ts
+// ❌ Bad - Silently skips test
+it('should test API', async () => {
+  if (!hasValidCredentials) return
+  const result = await apiCall()
+})
+
+// ✅ Good - Fail when preconditions missing
+it('should test API', async () => {
+  expect(hasValidCredentials).toBe(true)
+  const result = await apiCall()
+})
+```
+
+### 3. Never Skip Tests for Missing Env Vars
+```ts
+// ❌ Bad
+describe.skipIf(!process.env.CLICKHOUSE_URL)('Database Tests', () => {})
+
+// ✅ Good - Let tests fail if env not configured
+describe('Database Tests', () => {
+  const env = DatabaseEnvSchema.parse(process.env)
+  const client = createClientFromEnv(env)
+})
+```
+
+### 4. Initialize Inline, Not in beforeEach
+```ts
+// ❌ Bad - Unnecessary beforeEach
+describe('Tests', () => {
+  let queryBuilder: QueryBuilder
+  beforeEach(() => {
+    queryBuilder = new QueryBuilder(schema)
+  })
+})
+
+// ✅ Good - Inline initialization
+describe('Tests', () => {
+  const queryBuilder = new QueryBuilder(schema)
+})
+
+// ✅ Good - Use beforeEach only for async cleanup
+beforeEach(async () => {
+  await client.query('DELETE FROM test_table')
+})
+```
+
+## Best Practices
+
+### Use assert() for Type Narrowing
+```ts
+// ✅ Good - Provides type narrowing
+assert(checkoutRecord)
+```
+
+### Use vi.waitFor() for Async Tests
+```ts
+await vi.waitFor(
+  async () => {
+    const result = await clickhouse.query('...')
+    expect(records).toHaveLength(2)
+  },
+  { timeout: 5000, interval: 500 }
+)
+```
+
+### Don't Assert Env Vars in Tests
+Already validated in `vitest.config.ts`. Trust the config.
+
+### Automatic State Reset (Cloudflare Workers)
+Vitest automatically resets D1, KV, R2, Durable Objects between tests.
+
+Only clean up external services (ClickHouse, external APIs).
+
+## Test Scripts Organization
+Place test scripts, utilities, one-off scripts in `repl/` folder at package root.
+
+## Environment Variables
+When adding new env vars for tests, update:
+1. Package's `turbo.json` → `passThroughEnv` array
+2. `.github/workflows/ci.yml` → `env` section

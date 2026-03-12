@@ -1,0 +1,15 @@
+I have an emtpy org, and on the overview page, its empty (without sessions I should see an hint for empty sessions.\
+and in the logs i see this which does not tell me what exactly the error is\
+07:14:43.245 WRN logtape·meta Context-local storage is not configured.  Specify contextLocalStorage option in the configure() function.
+07:14:43.247 WRN logtape·meta Context-local storage is not configured.  Specify contextLocalStorage option in the configure() function.
+07:14:43.247 WRN logtape·meta Context-local storage is not configured.  Specify contextLocalStorage option in the configure() function.
+07:14:43.247 WRN logtape·meta Context-local storage is not configured.  Specify contextLocalStorage option in the configure() function.
+07:14:43.270 INF rudel·api·http POST /rpc/analytics/overview/insights 200 150ms
+07:14:43.270 INF rudel·api·http POST /rpc/analytics/overview/usageTrend 200 25ms
+07:14:43.273 INF rudel·api·http POST /rpc/analytics/overview/modelTokensTrend 200 26ms
+07:14:43.273 ERR rudel·api·http RPC error on /rpc/analytics/overview/kpis: 500 {"json":{"defined":false,"code":"INTERNAL_SERVER_ERROR","status":500,"message":"Internal server error"}}
+07:14:43.273 INF rudel·api�c/analytics/overview/kpis 500 26ms
+07:14:43.288 INF rudel·api·http POST /rpc/analytics/overview/insights 200 41ms
+07:14:44.279 WRN logtape·meta Context-local storage is not configured.  Specify contextLocalStorage option in the configure() function.
+07:14:44.295 ERR rudel·api·http RPC error on /rpc/analytics/overview/kpis: 500 {"json":{"defined":false,"code":"INTERNAL_SERVER_ERROR","status":500,"message":"Internal server error"}}
+07:14:44.295 INF rudel·api·http POST /rpc/analytics/overview/kpis 500 16ms

@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "61e281b490d0",
+  "session_id": "75f9c1ce-6f0a-4fd3-80c1-4c7644316edf",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T10:32:48.353917Z",
+  "branch": "marc/ci-frozen-lockfile",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 75,
+    "cache_creation_tokens": 61378,
+    "cache_read_tokens": 471860,
+    "output_tokens": 1820,
+    "api_call_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T10:32:48.264628Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "agent_percentage": 0
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-kathmandu/75f9c1ce-6f0a-4fd3-80c1-4c7644316edf.jsonl"
+}

@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4ff18b687d9b",
+  "session_id": "b0451141-5cdc-40df-b8a1-ea91a892f36b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-01T16:55:48.067024Z",
+  "branch": "marc/cli-enable-verify-upload",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "9100c960-27c3-4d37-a35a-61ccba9b792d",
+  "checkpoint_transcript_start": 688,
+  "transcript_lines_at_start": 688,
+  "token_usage": {
+    "input_tokens": 11,
+    "cache_creation_tokens": 5933,
+    "cache_read_tokens": 672534,
+    "output_tokens": 1735,
+    "api_call_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-01T16:55:47.370542Z",
+    "agent_lines": 3,
+    "human_added": 268,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 271,
+    "agent_percentage": 1.107011070110701
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-chennai/b0451141-5cdc-40df-b8a1-ea91a892f36b.jsonl"
+}

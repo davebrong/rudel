@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "074ad2dd5ff4",
+  "session_id": "7465ba38-f31b-4534-8ba8-5dc60c168caa",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-03T13:46:29.709675Z",
+  "branch": "marc/api-testing-skill",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".claude/skills/api-testing/SKILL.md"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "71bc2f67d999",
+  "initial_attribution": {
+    "calculated_at": "2026-03-03T13:46:29.709183Z",
+    "agent_lines": 202,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 202,
+    "agent_percentage": 100
+  }
+}

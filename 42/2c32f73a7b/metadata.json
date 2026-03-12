@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "422c32f73a7b",
+  "strategy": "manual-commit",
+  "branch": "evrendom/clickhouse-sql-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/api/src/rate-limit.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/42/2c32f73a7b/0/metadata.json",
+      "transcript": "/42/2c32f73a7b/0/full.jsonl",
+      "context": "/42/2c32f73a7b/0/context.md",
+      "content_hash": "/42/2c32f73a7b/0/content_hash.txt",
+      "prompt": "/42/2c32f73a7b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 8165,
+    "cache_read_tokens": 348628,
+    "output_tokens": 1899,
+    "api_call_count": 10
+  }
+}

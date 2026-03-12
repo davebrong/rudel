@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "f057167a3d4c",
+  "strategy": "manual-commit",
+  "branch": "marc/fix-cli-workspace-protocol",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/cli/package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f0/57167a3d4c/0/metadata.json",
+      "transcript": "/f0/57167a3d4c/0/full.jsonl",
+      "context": "/f0/57167a3d4c/0/context.md",
+      "content_hash": "/f0/57167a3d4c/0/content_hash.txt",
+      "prompt": "/f0/57167a3d4c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 74,
+    "cache_creation_tokens": 73681,
+    "cache_read_tokens": 644503,
+    "output_tokens": 4521,
+    "api_call_count": 16
+  }
+}

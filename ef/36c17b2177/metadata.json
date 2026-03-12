@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "ef36c17b2177",
+  "strategy": "manual-commit",
+  "branch": "marc/add-team-switcher",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/ci.yml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ef/36c17b2177/0/metadata.json",
+      "transcript": "/ef/36c17b2177/0/full.jsonl",
+      "context": "/ef/36c17b2177/0/context.md",
+      "content_hash": "/ef/36c17b2177/0/content_hash.txt",
+      "prompt": "/ef/36c17b2177/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 29678,
+    "cache_read_tokens": 411139,
+    "output_tokens": 1007,
+    "api_call_count": 8
+  }
+}

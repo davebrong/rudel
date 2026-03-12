@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "4ca7b429f4ae",
+  "session_id": "7e55fec6-85c6-4936-b488-5aa4f477156b",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-21T03:29:55.871772Z",
+  "branch": "KeKs0r/fix-auth-origin",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/ch-schema/src/__tests__/ingest.test.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "de0e6178-d132-4aa4-9b37-c0fa63ca5f98",
+  "checkpoint_transcript_start": 334,
+  "transcript_lines_at_start": 334,
+  "token_usage": {
+    "input_tokens": 11,
+    "cache_creation_tokens": 9403,
+    "cache_read_tokens": 633598,
+    "output_tokens": 137,
+    "api_call_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-21T03:29:55.591993Z",
+    "agent_lines": 12,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 12,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-marc-conductor-workspaces-rudel-brasilia/7e55fec6-85c6-4936-b488-5aa4f477156b.jsonl"
+}
