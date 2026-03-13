@@ -133,6 +133,17 @@ export function OrganizationPage() {
 		invalidate();
 	};
 
+	const handleUpdateRole = async (
+		memberId: string,
+		role: "member" | "admin",
+	) => {
+		await authClient.organization.updateMemberRole({
+			memberId,
+			role,
+		});
+		invalidate();
+	};
+
 	if (!activeOrg) {
 		return (
 			<div className="px-8 py-6">
@@ -346,12 +357,27 @@ export function OrganizationPage() {
 										</div>
 									</div>
 									<div className="flex items-center gap-2">
-										<Badge
-											variant={m.role === "owner" ? "default" : "secondary"}
-										>
-											{m.role}
-										</Badge>
-										{m.role !== "owner" && (
+										{m.role === "owner" ? (
+											<Badge variant="default">owner</Badge>
+										) : canEdit ? (
+											<Select
+												value={m.role}
+												onValueChange={(value) =>
+													handleUpdateRole(m.id, value as "member" | "admin")
+												}
+											>
+												<SelectTrigger className="h-7 w-auto text-xs">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="member">member</SelectItem>
+													<SelectItem value="admin">admin</SelectItem>
+												</SelectContent>
+											</Select>
+										) : (
+											<Badge variant="secondary">{m.role}</Badge>
+										)}
+										{canEdit && m.role !== "owner" && (
 											<Button
 												variant="outline"
 												size="xs"
