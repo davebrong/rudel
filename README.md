@@ -1,70 +1,130 @@
-# Rudel
+# Rudel (Private Fork)
 
-**Try the hosted version for free at [rudel.ai](https://rudel.ai)**
+Analytics for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) sessions — token usage, session duration, activity patterns, model usage, and more.
 
-Analytics for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Rudel gives you a dashboard with insights on your coding sessions — token usage, session duration, activity patterns, model usage, and more.
+This is a private fork of [obsessiondb/rudel](https://github.com/obsessiondb/rudel) for self-hosted deployment.
 
-## Prerequisites
+## Server Deployment
 
-- [Bun](https://bun.sh) runtime installed
-
-## Getting Started
-
-1. Create an account at [app.rudel.ai](https://app.rudel.ai)
-2. Install the CLI and connect it to your account:
+### 1. Clone and configure
 
 ```bash
-npm install -g rudel
-
-rudel login     # authenticate via your browser
-rudel enable    # auto-upload sessions when Claude Code exits
+git clone https://github.com/davebrong/rudel.git
+cd rudel
+cp .env.example .env
 ```
 
-3. Invite teammates (optional): go to **Settings → Organization** in the dashboard, enter their email, and share the generated invite link with them.
+Edit `.env`:
 
-That's it. Your Claude Code sessions will now be uploaded automatically.
+```env
+BETTER_AUTH_SECRET=<generate with: openssl rand -base64 32>
+APP_URL=https://your-domain.com
+```
 
-Already have past sessions? Upload them in one go:
+### 2. Start everything
 
 ```bash
-rudel upload    # interactive picker for batch upload
+docker compose up -d
 ```
 
-See the [CLI documentation](apps/cli/README.md) for all available commands.
+This starts Postgres, ClickHouse, runs migrations automatically, then starts the app on port 3150. Put a reverse proxy (nginx, Caddy, etc.) in front to handle HTTPS on port 443 → localhost:3150.
 
-## How It Works
+### 3. Verify
 
-1. You install the CLI and run `rudel enable`
-2. This registers a [Claude Code hook](https://docs.anthropic.com/en/docs/claude-code/hooks) that runs when a session ends
-3. The hook uploads the session transcript to Rudel
-4. Transcripts are stored in ClickHouse and processed into analytics
+```bash
+curl http://localhost:3150/health
+```
 
-## What Data Is Collected
+### Google OAuth (optional)
 
-Each uploaded session includes:
+To let users sign in with Google:
 
-- Session ID & timestamps (start, last interaction)
-- User ID & organization ID
-- Project path & package name
-- Git context (repository, branch, SHA, remote)
-- Session transcript (full prompt & response content)
-- Sub-agent usage
+1. Create an OAuth 2.0 Client in [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Set the redirect URI to `https://your-domain.com/api/auth/callback/google`
+3. Add to `.env`:
 
-## Security & Privacy Disclaimer
+```env
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+```
 
-Rudel is designed to ingest full coding-agent session data for analytics. That means uploaded transcripts and related metadata may contain sensitive material, including source code, prompts, tool output, file contents, command output, URLs, and secrets that appeared during a session.
+Then restart: `docker compose up -d`
 
-Only enable Rudel on projects and environments where you are comfortable uploading that data. If you use the hosted service at `app.rudel.ai`, we do not have access to personal data contained in uploaded transcripts and cannot read that data. Review the [Rudel Privacy Policy](https://rudel.ai/privacy-policy) before enabling uploads for yourself or your team.
+### Rebuild after code changes
 
-## Development
+```bash
+docker compose up -d --build
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, development commands, and PR guidelines.
+### Reset (wipe all data)
 
-For self-hosting your own instance, see [docs/self-hosting.md](docs/self-hosting.md).
+```bash
+docker compose down -v
+docker compose up -d
+```
 
-## Security
+## Developer Setup
 
-To report a vulnerability, see [SECURITY.md](SECURITY.md). Do not open public issues for security concerns.
+Each developer runs these commands once on their machine.
+
+### 1. Install the CLI
+
+```bash
+npm install -g github:davebrong/rudel-cli
+```
+
+### 2. Log in
+
+```bash
+rudel login --api-base https://your-domain.com --web-url https://your-domain.com
+```
+
+This opens your browser to sign in. The CLI receives a token automatically.
+
+### 3. Enable auto-upload
+
+```bash
+rudel enable
+```
+
+This registers a Claude Code hook that uploads session transcripts automatically when a session ends. Nothing else runs on the developer's machine.
+
+### 4. Verify
+
+```bash
+rudel whoami
+```
+
+### Upload past sessions (optional)
+
+```bash
+rudel upload --endpoint https://your-domain.com/rpc
+```
+
+**Important:** `rudel upload` without `--endpoint` sends data to the official `app.rudel.ai`, not your private instance. Always pass `--endpoint`. The auto-upload hook from `rudel enable` uses the correct URL automatically.
+
+## Architecture
+
+```
+docker compose up -d
+  ├── postgres        — Auth database (users, sessions, API keys)
+  ├── clickhouse      — Analytics database (session transcripts)
+  ├── migrate-pg      — Runs Postgres migrations, then exits
+  ├── migrate-ch      — Runs ClickHouse migrations, then exits
+  └── app             — API + Web UI on port 3150
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `BETTER_AUTH_SECRET` | Yes | Auth secret (`openssl rand -base64 32`) |
+| `APP_URL` | Yes | Public URL of the deployed app |
+| `TRUSTED_ORIGINS` | No | Comma-separated extra trusted origins |
+| `RATE_LIMIT_INGEST_MAX` | No | Max uploads per user per hour (default: 120) |
+| `RATE_LIMIT_INGEST_WINDOW` | No | Rate limit window in seconds (default: 3600) |
+| `GOOGLE_CLIENT_ID` | No | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | No | Google OAuth client secret |
 
 ## License
 
