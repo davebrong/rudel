@@ -15,6 +15,8 @@ interface Organization {
 	name: string;
 	slug: string;
 	logo?: string | null | undefined;
+	/** Internal: user ID for scoping localStorage cache */
+	_userId?: string;
 }
 
 interface OrganizationContextType {
@@ -58,15 +60,18 @@ const OrganizationContext = createContext<OrganizationContextType | undefined>(
 );
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
+	const { data: session } = authClient.useSession();
 	const { data: activeOrg, isPending: activeLoading } =
 		authClient.useActiveOrganization();
 	const { data: activeMember } = authClient.useActiveMember();
 	const [switching, setSwitching] = useState(false);
-	const [cachedOrg] = useState(getCachedOrg);
 	const [orgs, setOrgs] = useState<Organization[]>([]);
 	const [listLoading, setListLoading] = useState(true);
 	const [isSuperadmin, setIsSuperadmin] = useState(false);
-	const autoSetFailed = useRef(false);
+	const autoSetAttempted = useRef(false);
+
+	const currentUserId = session?.user?.id ?? null;
+	const [cachedOrg, setCachedOrgState] = useState(getCachedOrg);
 
 	// Fetch org list and superadmin status from our custom RPCs
 	const fetchOrgs = useCallback(async () => {
@@ -89,22 +94,34 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		fetchOrgs();
 	}, [fetchOrgs]);
 
-	// Reset auto-set failure flag when org list changes (e.g., after create/delete)
+	// Reset auto-set flag when org list changes (e.g., after create/delete)
 	useEffect(() => {
-		autoSetFailed.current = false;
+		autoSetAttempted.current = false;
 	}, [orgs]);
 
-	// Persist active org to localStorage whenever it changes
+	// Persist active org + user ID to localStorage whenever it changes
 	useEffect(() => {
-		if (activeOrg) {
+		if (activeOrg && currentUserId) {
 			setCachedOrg({
 				id: activeOrg.id,
 				name: activeOrg.name,
 				slug: activeOrg.slug,
 				logo: activeOrg.logo,
+				_userId: currentUserId,
 			});
 		}
-	}, [activeOrg]);
+	}, [activeOrg, currentUserId]);
+
+	// Clear cache when user changes (e.g., sign out + sign in as different user)
+	useEffect(() => {
+		if (currentUserId) {
+			const cached = getCachedOrg();
+			if (cached && cached._userId && cached._userId !== currentUserId) {
+				setCachedOrg(null);
+				setCachedOrgState(null);
+			}
+		}
+	}, [currentUserId]);
 
 	// Try setActive; if it fails (e.g. superadmin not a member), update session directly
 	const setActiveWithFallback = async (orgId: string) => {
@@ -126,7 +143,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		}
 	};
 
-	// Auto-set active org if none is set but user has orgs
+	// Auto-set active org if none is set but user has orgs (runs once per org list change)
 	useEffect(() => {
 		if (
 			!activeLoading &&
@@ -135,14 +152,11 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			orgs &&
 			orgs.length > 0 &&
 			!switching &&
-			!autoSetFailed.current
+			!autoSetAttempted.current
 		) {
+			autoSetAttempted.current = true;
 			setSwitching(true);
-			setActiveWithFallback(orgs[0].id)
-				.catch(() => {
-					autoSetFailed.current = true;
-				})
-				.finally(() => setSwitching(false));
+			setActiveWithFallback(orgs[0].id).finally(() => setSwitching(false));
 		}
 	}, [activeOrg, orgs, activeLoading, listLoading, switching]);
 
