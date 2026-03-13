@@ -17,12 +17,13 @@ type AuthUser = AuthSession["user"];
 
 const socialProviders: Record<
 	string,
-	{ clientId: string; clientSecret: string }
+	{ clientId: string; clientSecret: string; hd?: string }
 > = {};
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 	socialProviders.google = {
 		clientId: process.env.GOOGLE_CLIENT_ID,
 		clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+		...(process.env.GOOGLE_HD ? { hd: process.env.GOOGLE_HD } : {}),
 	};
 }
 if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
