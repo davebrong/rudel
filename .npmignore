@@ -1,0 +1,2 @@
+# Override .gitignore for npm — include the built CLI
+node_modules/
