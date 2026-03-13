@@ -38,21 +38,21 @@ export function CliSetupHint() {
 				<div className="w-full max-w-md text-left space-y-4">
 					<CommandBlock
 						label="1. Install the CLI globally"
-						command="npm install -g rudel"
+						command="npm install -g github:davebrong/rudel-cli"
 					/>
 					<CommandBlock
 						label="2. Log in to your account"
-						command="rudel login"
+						command={`rudel login --api-base ${window.location.origin} --web-url ${window.location.origin}`}
 					/>
 					<CommandBlock
 						label="3. Enable auto-upload in your repository"
 						command="rudel enable"
-						hint="Sessions will appear here automatically after your next Claude Code session ends. The enable command will also ask you if you want to upload previous sessions"
+						hint="Sessions will appear here automatically after your next Claude Code session ends. The enable command will also ask you if you want to upload previous sessions."
 					/>
 					<CommandBlock
 						label="4. Or upload sessions manually"
-						command="rudel upload"
-						hint="Upload previous sessions at any time."
+						command={`rudel upload --endpoint ${window.location.origin}/rpc`}
+						hint="Upload previous sessions at any time. The --endpoint flag is required for manual uploads."
 					/>
 				</div>
 			</div>
