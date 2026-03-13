@@ -11,6 +11,7 @@ import {
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
@@ -229,15 +230,13 @@ export function ProjectsListPage() {
 			</div>
 
 			{trendData && trendData.length > 0 && (
-				<AnalyticsCard className="mb-8">
-					<h2 className="text-xl font-bold text-heading mb-4">
-						Project Trends
-					</h2>
-					<p className="text-sm text-muted mb-6">
-						Activity metrics over time split by project (top 10)
-					</p>
+				<ChartCard
+					title="Project Trends"
+					description="Activity metrics over time split by project (top 10)"
+					className="mb-8"
+				>
 					<ProjectTrendChart data={trendData} />
-				</AnalyticsCard>
+				</ChartCard>
 			)}
 
 			<AnalyticsCard>

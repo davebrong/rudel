@@ -1,6 +1,7 @@
 import { BookOpen, FolderKanban, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { MultiSelect } from "@/components/analytics/MultiSelect";
 import { PageHeader } from "@/components/analytics/PageHeader";
@@ -186,20 +187,18 @@ export function LearningsPage() {
 
 					{/* Learnings Trend Chart */}
 					{trendData && trendData.length > 0 && (
-						<AnalyticsCard className="mb-6">
-							<h2 className="text-xl font-bold text-heading mb-4">
-								Learnings Over Time
-							</h2>
-							<p className="text-sm text-muted mb-6">
-								Feedback activity over time split by developer
-							</p>
+						<ChartCard
+							title="Learnings Over Time"
+							description="Feedback activity over time split by developer"
+							className="mb-6"
+						>
 							<LearningsTrendChart
 								data={trendData}
 								splitBy={splitBy}
 								onSplitByChange={setSplitBy}
 								userMap={userMap}
 							/>
-						</AnalyticsCard>
+						</ChartCard>
 					)}
 
 					{/* Timeline */}

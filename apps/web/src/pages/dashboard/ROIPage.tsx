@@ -22,6 +22,7 @@ import {
 	YAxis,
 } from "recharts";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
@@ -452,17 +453,12 @@ export function ROIPage() {
 					{/* Trends Charts */}
 					{trends && trends.length > 0 && (
 						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-							<AnalyticsCard>
-								<div className="mb-4">
-									<div className="flex items-center gap-1.5">
-										<h3 className="text-lg font-semibold text-heading">
-											Weekly Cost Trend
-										</h3>
-										{pricingTooltip}
-									</div>
-									<p className="text-sm text-muted mt-1">
-										Total spend over time
-									</p>
+							<ChartCard
+								title="Weekly Cost Trend"
+								description="Total spend over time"
+							>
+								<div className="flex items-center gap-1.5 mb-4">
+									{pricingTooltip}
 								</div>
 								<ResponsiveContainer width="100%" height={300}>
 									<LineChart data={trends}>
@@ -508,37 +504,32 @@ export function ROIPage() {
 										/>
 									</LineChart>
 								</ResponsiveContainer>
-							</AnalyticsCard>
+							</ChartCard>
 
-							<AnalyticsCard>
-								<div className="mb-4">
-									<div className="flex items-center gap-1.5">
-										<h3 className="text-lg font-semibold text-heading">
-											Weekly Productivity Score
-										</h3>
-										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<HelpCircle className="h-4 w-4 text-muted cursor-help shrink-0" />
-												</TooltipTrigger>
-												<TooltipContent className="max-w-xs">
-													<p className="font-medium mb-1">
-														Productivity Score formula:
-													</p>
-													<p className="font-mono text-xs">
-														(commits ÷ total spend) × 100
-													</p>
-													<p className="text-xs text-muted mt-1">
-														Higher is better — more commits delivered per dollar
-														spent on Claude.
-													</p>
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
-									</div>
-									<p className="text-sm text-muted mt-1">
-										Commits per dollar x 100
-									</p>
+							<ChartCard
+								title="Weekly Productivity Score"
+								description="Commits per dollar x 100"
+							>
+								<div className="flex items-center gap-1.5 mb-4">
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<HelpCircle className="h-4 w-4 text-muted cursor-help shrink-0" />
+											</TooltipTrigger>
+											<TooltipContent className="max-w-xs">
+												<p className="font-medium mb-1">
+													Productivity Score formula:
+												</p>
+												<p className="font-mono text-xs">
+													(commits ÷ total spend) × 100
+												</p>
+												<p className="text-xs text-muted mt-1">
+													Higher is better — more commits delivered per dollar
+													spent on Claude.
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
 								</div>
 								<ResponsiveContainer width="100%" height={300}>
 									<LineChart data={trends}>
@@ -577,7 +568,7 @@ export function ROIPage() {
 										/>
 									</LineChart>
 								</ResponsiveContainer>
-							</AnalyticsCard>
+							</ChartCard>
 						</div>
 					)}
 

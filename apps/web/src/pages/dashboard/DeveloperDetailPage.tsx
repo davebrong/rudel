@@ -16,6 +16,7 @@ import {
 	YAxis,
 } from "recharts";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { PageHeader } from "@/components/analytics/PageHeader";
 import { StatCard } from "@/components/analytics/StatCard";
@@ -383,15 +384,15 @@ export function DeveloperDetailPage() {
 
 			{/* Activity Timeline */}
 			{chartData.length > 0 && (
-				<AnalyticsCard className="mb-8">
-					<div className="flex justify-between items-start mb-4">
-						<div>
-							<h2 className="text-xl font-bold text-heading">
-								Daily Activity{" "}
-								<span className={`ml-2 ${trendColorClass}`}>{trendIcon}</span>
-							</h2>
-						</div>
-						{timeline && timeline.length >= 14 && (
+				<ChartCard
+					title="Daily Activity"
+					titleSuffix={
+						<span className={`ml-2 ${trendColorClass}`}>{trendIcon}</span>
+					}
+					className="mb-8"
+				>
+					{timeline && timeline.length >= 14 && (
+						<div className="flex justify-end mb-4">
 							<div className="bg-surface px-4 py-2 rounded-lg">
 								<p className="text-xs text-muted">Week-over-Week</p>
 								<p
@@ -400,8 +401,8 @@ export function DeveloperDetailPage() {
 									{formatWoWChange(wowChange)}
 								</p>
 							</div>
-						)}
-					</div>
+						</div>
+					)}
 					<ResponsiveContainer width="100%" height={300}>
 						<LineChart data={chartData}>
 							<CartesianGrid
@@ -460,7 +461,7 @@ export function DeveloperDetailPage() {
 							/>
 						</LineChart>
 					</ResponsiveContainer>
-				</AnalyticsCard>
+				</ChartCard>
 			)}
 
 			{/* Feature Adoption */}
@@ -504,10 +505,7 @@ export function DeveloperDetailPage() {
 
 			{/* Projects */}
 			{projectChartData.length > 0 && (
-				<AnalyticsCard className="mb-8">
-					<h2 className="text-xl font-bold text-heading mb-6">
-						Projects Worked On
-					</h2>
+				<ChartCard title="Projects Worked On" className="mb-8">
 					<ResponsiveContainer width="100%" height={350}>
 						<BarChart data={projectChartData}>
 							<CartesianGrid
@@ -550,7 +548,7 @@ export function DeveloperDetailPage() {
 							/>
 						</BarChart>
 					</ResponsiveContainer>
-				</AnalyticsCard>
+				</ChartCard>
 			)}
 
 			{/* Errors */}

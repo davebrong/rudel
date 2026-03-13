@@ -7,6 +7,7 @@ import { Activity, Clock, Timer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnalyticsCard } from "@/components/analytics/AnalyticsCard";
+import { ChartCard } from "@/components/analytics/ChartCard";
 import { DatePicker } from "@/components/analytics/DatePicker";
 import { MultiSelect } from "@/components/analytics/MultiSelect";
 import { PageHeader } from "@/components/analytics/PageHeader";
@@ -293,14 +294,11 @@ export function SessionsListPage() {
 			)}
 
 			{/* Dimension Analysis */}
-			<AnalyticsCard className="mb-8">
-				<h3 className="text-lg font-semibold mb-4">
-					Multi-Dimensional Analysis
-				</h3>
-				<p className="text-sm text-muted mb-6">
-					Analyze sessions across different dimensions and metrics.
-				</p>
-
+			<ChartCard
+				title="Multi-Dimensional Analysis"
+				description="Analyze sessions across different dimensions and metrics."
+				className="mb-8"
+			>
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 					<div>
 						<label
@@ -417,7 +415,7 @@ export function SessionsListPage() {
 						userMap={userMap}
 					/>
 				)}
-			</AnalyticsCard>
+			</ChartCard>
 
 			{/* Sessions Table */}
 			<AnalyticsCard>
