@@ -18,7 +18,9 @@
 		"infra:up": "docker compose up -d",
 		"infra:down": "docker compose down",
 		"chkit:link": "bun scripts/chkit-link.ts link",
-		"chkit:unlink": "bun scripts/chkit-link.ts unlink"
+		"chkit:unlink": "bun scripts/chkit-link.ts unlink",
+		"prepare": "true",
+		"preinstall": "true"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.0",
