@@ -45,3 +45,4 @@ coverage/
 
 # Agent (conductor)
 .context
+\!/apps/cli/dist/
