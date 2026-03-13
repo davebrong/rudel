@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "8a5c7eef799b",
+  "strategy": "manual-commit",
+  "branch": "alvaro/num-6742-rudel-add-social-media-share-buttons",
+  "checkpoints_count": 12,
+  "files_touched": [
+    "apps/web/src/components/analytics/ChartCard.tsx",
+    "apps/web/src/layouts/DashboardLayout.tsx",
+    "apps/web/src/lib/screenshot.ts",
+    "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/LearningsPage.tsx",
+    "apps/web/src/pages/dashboard/OverviewPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectsListPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8a/5c7eef799b/0/metadata.json",
+      "transcript": "/8a/5c7eef799b/0/full.jsonl",
+      "context": "/8a/5c7eef799b/0/context.md",
+      "content_hash": "/8a/5c7eef799b/0/content_hash.txt",
+      "prompt": "/8a/5c7eef799b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 78,
+    "cache_creation_tokens": 36724,
+    "cache_read_tokens": 5933929,
+    "output_tokens": 10886,
+    "api_call_count": 49
+  }
+}

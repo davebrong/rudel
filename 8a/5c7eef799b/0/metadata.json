@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "8a5c7eef799b",
+  "session_id": "8e0bd61c-0332-4bb5-b76c-7a342db7d775",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-12T19:22:00.786988Z",
+  "branch": "alvaro/num-6742-rudel-add-social-media-share-buttons",
+  "checkpoints_count": 12,
+  "files_touched": [
+    "apps/web/src/components/analytics/ChartCard.tsx",
+    "apps/web/src/layouts/DashboardLayout.tsx",
+    "apps/web/src/lib/screenshot.ts",
+    "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
+    "apps/web/src/pages/dashboard/DevelopersListPage.tsx",
+    "apps/web/src/pages/dashboard/ErrorsPage.tsx",
+    "apps/web/src/pages/dashboard/LearningsPage.tsx",
+    "apps/web/src/pages/dashboard/OverviewPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectDetailPage.tsx",
+    "apps/web/src/pages/dashboard/ProjectsListPage.tsx",
+    "apps/web/src/pages/dashboard/ROIPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "08ffdc4f-ab2f-4487-9aae-6595234fbbc0",
+  "checkpoint_transcript_start": 266,
+  "transcript_lines_at_start": 266,
+  "token_usage": {
+    "input_tokens": 78,
+    "cache_creation_tokens": 36724,
+    "cache_read_tokens": 5933929,
+    "output_tokens": 10886,
+    "api_call_count": 49
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-12T19:21:59.798765Z",
+    "agent_lines": 23,
+    "human_added": 238,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 265,
+    "agent_percentage": 8.679245283018867
+  },
+  "transcript_path": ".claude/projects/-Users-alvaro-Workspace-obsessiondb-rudel/8e0bd61c-0332-4bb5-b76c-7a342db7d775.jsonl"
+}

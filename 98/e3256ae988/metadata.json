@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "98e3256ae988",
+  "strategy": "manual-commit",
+  "branch": "alvaro/num-6742-rudel-add-social-media-share-buttons",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "apps/web/src/components/analytics/ChartCard.tsx",
+    "apps/web/src/lib/screenshot.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/98/e3256ae988/0/metadata.json",
+      "transcript": "/98/e3256ae988/0/full.jsonl",
+      "context": "/98/e3256ae988/0/context.md",
+      "content_hash": "/98/e3256ae988/0/content_hash.txt",
+      "prompt": "/98/e3256ae988/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 37,
+    "cache_creation_tokens": 13852,
+    "cache_read_tokens": 2908503,
+    "output_tokens": 5290,
+    "api_call_count": 21
+  }
+}
