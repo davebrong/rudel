@@ -45,4 +45,6 @@ coverage/
 
 # Agent (conductor)
 .context
-\!/apps/cli/dist/
+
+# CLI build output (needed for npm install -g from GitHub)
+!/apps/cli/dist/
