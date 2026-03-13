@@ -2,7 +2,6 @@ import { useTheme } from "next-themes";
 import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LoginForm } from "./components/auth/login-form";
-import { SignupForm } from "./components/auth/signup-form";
 import { Button } from "./components/ui/button";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { authClient } from "./lib/auth-client";
@@ -22,7 +21,6 @@ import { ROIPage } from "./pages/dashboard/ROIPage";
 import { SessionDetailPage } from "./pages/dashboard/SessionDetailPage";
 import { SessionsListPage } from "./pages/dashboard/SessionsListPage";
 
-type Page = "login" | "signup";
 
 function getDeviceUserCode(): string | null {
 	const params = new URLSearchParams(window.location.search);
@@ -39,7 +37,6 @@ function getValidRedirect(): string | null {
 
 function App() {
 	const { data: session, isPending } = authClient.useSession();
-	const [page, setPage] = useState<Page>("login");
 	const [deviceProcessing, setDeviceProcessing] = useState(false);
 	const [deviceApproved, setDeviceApproved] = useState(false);
 	const [deviceDenied, setDeviceDenied] = useState(false);
@@ -128,11 +125,7 @@ function App() {
 			return (
 				<div className="flex min-h-screen flex-col items-center justify-center gap-6">
 					<img src={logoSrc} alt="Rudel" className="h-10 w-10" />
-					{page === "login" ? (
-						<LoginForm onSwitchToSignup={() => setPage("signup")} />
-					) : (
-						<SignupForm onSwitchToLogin={() => setPage("login")} />
-					)}
+					<LoginForm />
 				</div>
 			);
 		}
@@ -169,11 +162,7 @@ function App() {
 		return (
 			<div className="flex min-h-screen flex-col items-center justify-center gap-6">
 				<img src={logoSrc} alt="Rudel" className="h-10 w-10" />
-				{page === "login" ? (
-					<LoginForm onSwitchToSignup={() => setPage("signup")} />
-				) : (
-					<SignupForm onSwitchToLogin={() => setPage("login")} />
-				)}
+				<LoginForm />
 			</div>
 		);
 	}

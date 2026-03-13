@@ -33,7 +33,7 @@ export function createAuth(db: object, config: AuthConfig) {
 			schema,
 		}),
 		emailAndPassword: {
-			enabled: true,
+			enabled: false,
 		},
 		socialProviders: config.socialProviders,
 		plugins: [

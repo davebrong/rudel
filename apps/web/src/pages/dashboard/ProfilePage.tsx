@@ -1,4 +1,4 @@
-import { Github, Loader2, LogOut, Mail, User } from "lucide-react";
+import { Loader2, LogOut, Mail, User } from "lucide-react";
 import { useState } from "react";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
@@ -8,7 +8,6 @@ import { authClient, signOut } from "../../lib/auth-client";
 
 const providers = [
 	{ id: "google", label: "Google", icon: Mail },
-	{ id: "github", label: "GitHub", icon: Github },
 ] as const;
 
 export function ProfilePage() {
@@ -62,20 +61,6 @@ export function ProfilePage() {
 						<p className="text-sm text-muted">Loading accounts...</p>
 					) : (
 						<div className="flex flex-col gap-3">
-							{linkedProviders.has("credential") && (
-								<div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-									<div className="flex items-center gap-3">
-										<Mail className="h-4 w-4 text-muted" />
-										<span className="text-sm font-medium text-subheading">
-											Email & Password
-										</span>
-									</div>
-									<span className="text-xs font-medium text-status-success-icon">
-										Connected
-									</span>
-								</div>
-							)}
-
 							{providers.map((provider) => {
 								const isLinked = linkedProviders.has(provider.id);
 								const Icon = provider.icon;

@@ -26,12 +26,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 		...(process.env.GOOGLE_HD ? { hd: process.env.GOOGLE_HD } : {}),
 	};
 }
-if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-	socialProviders.github = {
-		clientId: process.env.GITHUB_CLIENT_ID,
-		clientSecret: process.env.GITHUB_CLIENT_SECRET,
-	};
-}
 
 const appURL = process.env.APP_URL ?? "http://localhost:4010";
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? "http://localhost:4011";
