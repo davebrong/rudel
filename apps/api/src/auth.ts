@@ -11,7 +11,7 @@ const logger = getLogger(["rudel", "api", "auth"]);
 export interface AuthConfig {
 	appURL: string;
 	secret?: string;
-	socialProviders?: Record<string, { clientId: string; clientSecret: string }>;
+	socialProviders?: Record<string, { clientId: string; clientSecret: string; hd?: string }>;
 	trustedOrigins?: string[];
 	cliDeviceVerificationUrl?: string;
 	slackWebhookUrl?: string;
