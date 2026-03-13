@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "8ec28b5da391",
+  "strategy": "manual-commit",
+  "branch": "marc/session-access-control",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/web/src/pages/dashboard/OrganizationPage.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8e/c28b5da391/0/metadata.json",
+      "transcript": "/8e/c28b5da391/0/full.jsonl",
+      "context": "/8e/c28b5da391/0/context.md",
+      "content_hash": "/8e/c28b5da391/0/content_hash.txt",
+      "prompt": "/8e/c28b5da391/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 365,
+    "cache_creation_tokens": 41466,
+    "cache_read_tokens": 346312,
+    "output_tokens": 2385,
+    "api_call_count": 11
+  }
+}
