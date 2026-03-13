@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "5542bbee2ba1",
+  "session_id": "aee120ff-455f-47aa-a94b-650635eacc79",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-13T13:16:15.67915Z",
+  "branch": "marc/session-access-control",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/handlers/analytics/sessions.ts",
+    "apps/api/src/middleware.ts",
+    "apps/web/src/components/learnings/TimelineItem.tsx",
+    "apps/web/src/contexts/OrganizationContext.tsx",
+    "apps/web/src/hooks/useCanViewSession.ts",
+    "apps/web/src/pages/dashboard/DeveloperDetailPage.tsx",
+    "apps/web/src/pages/dashboard/SessionDetailPage.tsx",
+    "apps/web/src/pages/dashboard/SessionsListPage.tsx",
+    "bun.lock"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "b164c3e2727b",
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 96483,
+    "cache_read_tokens": 3645977,
+    "output_tokens": 14981,
+    "api_call_count": 58
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-13T13:16:15.458901Z",
+    "agent_lines": 93,
+    "human_added": 25,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 118,
+    "agent_percentage": 78.8135593220339
+  }
+}
