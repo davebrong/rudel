@@ -26,6 +26,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
+import { useCanViewSession } from "@/hooks/useCanViewSession";
 import { useUserMap } from "@/hooks/useUserMap";
 import { calculateCost, formatUsername } from "@/lib/format";
 import { orpc } from "@/lib/orpc";
@@ -84,6 +85,7 @@ export function SessionsListPage() {
 	);
 
 	const { userMap } = useUserMap();
+	const canViewSession = useCanViewSession();
 
 	const { data: dimensionData, isLoading: dimensionLoading } =
 		useAnalyticsQuery(
@@ -456,6 +458,7 @@ export function SessionsListPage() {
 					onRowClick={(row) =>
 						navigate(`/dashboard/sessions/${row.session_id}`)
 					}
+					isRowClickable={(row) => canViewSession(row.user_id)}
 				/>
 			</AnalyticsCard>
 		</div>

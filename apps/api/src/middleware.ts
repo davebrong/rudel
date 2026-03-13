@@ -39,25 +39,26 @@ export const orgMiddleware = os.middleware(async ({ context, next }) => {
 		});
 	}
 
-	// When the active org is not the user's personal workspace, verify membership
-	if (organizationId !== context.user.id) {
-		const membership = await db
-			.select({ id: member.id })
-			.from(member)
-			.where(
-				and(
-					eq(member.organizationId, organizationId),
-					eq(member.userId, context.user.id),
-				),
-			)
-			.limit(1);
+	const membership = await db
+		.select({ id: member.id, role: member.role })
+		.from(member)
+		.where(
+			and(
+				eq(member.organizationId, organizationId),
+				eq(member.userId, context.user.id),
+			),
+		)
+		.limit(1);
 
-		if (membership.length === 0) {
-			throw new ORPCError("FORBIDDEN", {
-				message: "Not a member of the active organization",
-			});
-		}
+	const row = membership[0];
+	if (!row) {
+		throw new ORPCError("FORBIDDEN", {
+			message: "Not a member of the active organization",
+		});
 	}
+
+	const userRole = (row.role as "owner" | "admin" | "member") ?? "member";
+	const isOrgAdmin = userRole === "owner" || userRole === "admin";
 
 	return next({
 		context: {
@@ -65,6 +66,8 @@ export const orgMiddleware = os.middleware(async ({ context, next }) => {
 			session: context.session,
 			apiKeyId: context.apiKeyId,
 			organizationId,
+			userRole,
+			isOrgAdmin,
 		},
 	});
 });
