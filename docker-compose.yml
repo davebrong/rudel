@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - "5532:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -18,7 +18,7 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     ports:
-      - "8123:8123"
+      - "8223:8123"
     environment:
       CLICKHOUSE_PASSWORD: clickhouse
     volumes:
@@ -28,6 +28,53 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  migrate-pg:
+    build: .
+    command: ["bun", "run", "--cwd", "packages/sql-schema", "migrate"]
+    environment:
+      PG_CONNECTION_STRING: postgres://postgres:postgres@postgres:5432/rudel
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  migrate-ch:
+    build: .
+    command: ["bun", "--bun", "--cwd", "packages/ch-schema", "chkit", "migrate", "--apply"]
+    environment:
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_DB: default
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build: .
+    ports:
+      - "8762:3000"
+    environment:
+      PG_CONNECTION_STRING: postgres://postgres:postgres@postgres:5432/rudel
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USERNAME: default
+      CLICKHOUSE_PASSWORD: clickhouse
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      ALLOWED_ORIGIN: ${APP_URL:-http://localhost:3000}
+      RATE_LIMIT_INGEST_MAX: ${RATE_LIMIT_INGEST_MAX:-120}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      migrate-pg:
+        condition: service_completed_successfully
+      migrate-ch:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:
