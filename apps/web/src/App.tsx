@@ -124,7 +124,7 @@ function App() {
 		if (!session) {
 			return (
 				<div className="flex min-h-screen flex-col items-center justify-center gap-6">
-					<img src={logoSrc} alt="Rudel" className="h-10 w-10" />
+					<img src={logoSrc} alt="Level Agency Agentic Stats" className="h-10 w-10" />
 					<LoginForm />
 				</div>
 			);
@@ -161,7 +161,7 @@ function App() {
 	if (!session) {
 		return (
 			<div className="flex min-h-screen flex-col items-center justify-center gap-6">
-				<img src={logoSrc} alt="Rudel" className="h-10 w-10" />
+				<img src={logoSrc} alt="Level Agency Agentic Stats" className="h-10 w-10" />
 				<LoginForm />
 			</div>
 		);

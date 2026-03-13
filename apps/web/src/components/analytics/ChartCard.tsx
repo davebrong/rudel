@@ -50,7 +50,7 @@ export function ChartCard({
 			);
 		}
 		await new Promise((resolve) => setTimeout(resolve, 2000));
-		shareToX("Check out my coding agents analytics, made with rudel.ai");
+		shareToX("Check out my coding agents analytics");
 	};
 
 	const handleCopyAsImage = async () => {
@@ -69,7 +69,7 @@ export function ChartCard({
 		if (!blob) return;
 		const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
 		const slug = title.toLowerCase().replace(/\s+/g, "-");
-		downloadAsImage(blob, `rudel-${slug}-${timestamp}.png`);
+		downloadAsImage(blob, `agentic-stats-${slug}-${timestamp}.png`);
 		toast.success("Chart downloaded");
 	};
 
@@ -131,10 +131,10 @@ export function ChartCard({
 					aria-hidden="true"
 				>
 					<span className="text-foreground text-2xl font-bold opacity-[0.08]">
-						rudel.ai
+						Level Agency
 					</span>
 					<span className="text-foreground text-[0.65rem] opacity-[0.12] -mt-1">
-						powered by ObsessionDB
+						Agentic Stats
 					</span>
 				</div>
 			</div>
