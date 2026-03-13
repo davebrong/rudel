@@ -15,6 +15,7 @@ export interface AuthConfig {
 	trustedOrigins?: string[];
 	cliDeviceVerificationUrl?: string;
 	slackWebhookUrl?: string;
+	allowedEmailDomains?: string[];
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- drizzleAdapter accepts { [key: string]: any }
@@ -67,6 +68,25 @@ export function createAuth(db: object, config: AuthConfig) {
 		databaseHooks: {
 			user: {
 				create: {
+					before: async (user) => {
+						if (
+							config.allowedEmailDomains &&
+							config.allowedEmailDomains.length > 0
+						) {
+							const domain = user.email.split("@")[1]?.toLowerCase();
+							if (
+								!domain ||
+								!config.allowedEmailDomains.includes(domain)
+							) {
+								logger.warn(
+									"Signup blocked for {email}: domain not allowed",
+									{ email: user.email },
+								);
+								return false;
+							}
+						}
+						return undefined;
+					},
 					after: async (user, ctx) => {
 						try {
 							const adapter = ctx?.context?.adapter;

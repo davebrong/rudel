@@ -46,6 +46,9 @@ const auth = createAuth(db, {
 	cliDeviceVerificationUrl:
 		process.env.CLI_DEVICE_VERIFICATION_URL ?? `${ALLOWED_ORIGIN}/device`,
 	slackWebhookUrl: process.env.SLACK_WEBHOOK_URL,
+	allowedEmailDomains: process.env.ALLOWED_EMAIL_DOMAINS
+		? process.env.ALLOWED_EMAIL_DOMAINS.split(",").map((d) => d.trim().toLowerCase())
+		: undefined,
 });
 
 const rpcHandler = new RPCHandler(router, {
