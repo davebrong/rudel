@@ -26,12 +26,11 @@
 		"typescript": "5.9.2"
 	},
 	"bin": {
-		"rudel": "apps/cli/dist/cli.js"
+		"rudel": "cli.js"
 	},
 	"files": [
-		"apps/cli/dist/cli.js"
+		"cli.js"
 	],
-	"bundleDependencies": [],
 	"engines": {
 		"node": ">=18"
 	},
