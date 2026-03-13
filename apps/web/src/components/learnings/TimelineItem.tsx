@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useCanViewSession } from "@/hooks/useCanViewSession";
 import { formatUsername } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +58,8 @@ const typeBadgeVariant: Record<
 
 export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 	const [isExpanded, setIsExpanded] = useState(false);
+	const canViewSession = useCanViewSession();
+	const canView = canViewSession(learning.user_id);
 
 	const formattedDate = format(new Date(learning.created_at), "MMM dd, yyyy");
 	const formattedTime = format(new Date(learning.created_at), "h:mm a");
@@ -146,13 +149,15 @@ export function TimelineItem({ learning, userMap }: TimelineItemProps) {
 						</div>
 
 						{/* Link to session */}
-						<Link
-							to={sessionLink}
-							className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-md transition-colors"
-						>
-							<span>View Session</span>
-							<ExternalLink className="w-3 h-3" />
-						</Link>
+						{canView ? (
+							<Link
+								to={sessionLink}
+								className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-md transition-colors"
+							>
+								<span>View Session</span>
+								<ExternalLink className="w-3 h-3" />
+							</Link>
+						) : null}
 					</div>
 				</CardHeader>
 

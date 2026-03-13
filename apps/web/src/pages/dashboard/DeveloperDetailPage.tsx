@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { useDateRange } from "@/contexts/DateRangeContext";
 import { useAnalyticsQuery } from "@/hooks/useAnalyticsQuery";
+import { useCanViewSession } from "@/hooks/useCanViewSession";
 import { useChartTheme } from "@/hooks/useChartTheme";
 import { useUserMap } from "@/hooks/useUserMap";
 import {
@@ -64,6 +65,7 @@ function resolveProjectName(row: {
 export function DeveloperDetailPage() {
 	const { userId } = useParams<{ userId: string }>();
 	const navigate = useNavigate();
+	const canViewSession = useCanViewSession();
 	const { startDate, endDate, setStartDate, setEndDate, calculateDays } =
 		useDateRange();
 	const chartTheme = useChartTheme();
@@ -606,8 +608,10 @@ export function DeveloperDetailPage() {
 					columns={sessionColumns}
 					data={sessions ?? []}
 					defaultSorting={[{ id: "date", desc: true }]}
-					onRowClick={(row) =>
-						navigate(`/dashboard/sessions/${row.session_id}`)
+					onRowClick={
+						userId && canViewSession(userId)
+							? (row) => navigate(`/dashboard/sessions/${row.session_id}`)
+							: undefined
 					}
 				/>
 			</AnalyticsCard>

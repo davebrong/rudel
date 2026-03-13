@@ -33,6 +33,7 @@ interface DataTableProps<TData, TValue> {
 	defaultPageSize?: number;
 	pageSizeOptions?: number[];
 	onRowClick?: (row: TData) => void;
+	isRowClickable?: (row: TData) => boolean;
 }
 
 function DataTable<TData, TValue>({
@@ -42,6 +43,7 @@ function DataTable<TData, TValue>({
 	defaultPageSize = 10,
 	pageSizeOptions = [10, 20, 50],
 	onRowClick,
+	isRowClickable,
 }: DataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = useState<SortingState>(defaultSorting);
 
@@ -100,21 +102,28 @@ function DataTable<TData, TValue>({
 				</TableHeader>
 				<TableBody className="bg-input">
 					{table.getRowModel().rows.length > 0 ? (
-						table.getRowModel().rows.map((row) => (
-							<TableRow
-								key={row.id}
-								onClick={
-									onRowClick ? () => onRowClick(row.original) : undefined
-								}
-								className={onRowClick ? "hover:bg-hover cursor-pointer" : ""}
-							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id} className="px-6 py-4 text-sm">
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
-								))}
-							</TableRow>
-						))
+						table.getRowModel().rows.map((row) => {
+							const clickable =
+								onRowClick && (!isRowClickable || isRowClickable(row.original));
+							return (
+								<TableRow
+									key={row.id}
+									onClick={
+										clickable ? () => onRowClick(row.original) : undefined
+									}
+									className={clickable ? "hover:bg-hover cursor-pointer" : ""}
+								>
+									{row.getVisibleCells().map((cell) => (
+										<TableCell key={cell.id} className="px-6 py-4 text-sm">
+											{flexRender(
+												cell.column.columnDef.cell,
+												cell.getContext(),
+											)}
+										</TableCell>
+									))}
+								</TableRow>
+							);
+						})
 					) : (
 						<TableRow>
 							<TableCell

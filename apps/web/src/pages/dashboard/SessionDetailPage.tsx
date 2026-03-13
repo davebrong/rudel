@@ -72,7 +72,11 @@ export function SessionDetailPage() {
 		setTimeout(() => setScrollToIndex(null), 100);
 	}, []);
 
-	const { data: session, isLoading } = useQuery(
+	const {
+		data: session,
+		isLoading,
+		error,
+	} = useQuery(
 		orpc.analytics.sessions.detail.queryOptions({
 			input: { sessionId: sessionId as string },
 		}),
@@ -93,6 +97,26 @@ export function SessionDetailPage() {
 					<div className="h-8 bg-hover rounded w-1/3" />
 					<div className="h-4 bg-hover rounded w-1/2" />
 					<div className="h-4 bg-hover rounded w-2/3" />
+				</div>
+			</div>
+		);
+	}
+
+	const isForbidden =
+		error &&
+		"code" in (error as unknown as Record<string, unknown>) &&
+		(error as unknown as Record<string, unknown>).code === "FORBIDDEN";
+
+	if (isForbidden) {
+		return (
+			<div className="flex items-center justify-center h-full">
+				<div className="text-center">
+					<p className="text-status-error-icon text-lg font-semibold mb-2">
+						Access Denied
+					</p>
+					<p className="text-muted">
+						You can only view your own session transcripts.
+					</p>
 				</div>
 			</div>
 		);
