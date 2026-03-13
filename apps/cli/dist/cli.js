@@ -11550,7 +11550,8 @@ var UserSchema = exports_external.object({
   email: exports_external.string(),
   name: exports_external.string(),
   image: exports_external.string().nullable(),
-  activeOrganizationId: exports_external.string().nullable()
+  activeOrganizationId: exports_external.string().nullable(),
+  isSuperadmin: exports_external.boolean()
 });
 var CliUserSchema = exports_external.object({
   id: exports_external.string(),
@@ -11605,6 +11606,7 @@ var contract = {
   ingestSession: oc.input(IngestSessionInputSchema).output(IngestSessionOutputSchema),
   getOrganizationSessionCount: oc.input(exports_external.object({ organizationId: exports_external.string() })).output(exports_external.object({ count: exports_external.number() })),
   deleteOrganization: oc.input(exports_external.object({ organizationId: exports_external.string() })).output(exports_external.object({ success: exports_external.literal(true) })),
+  superadminSetActive: oc.input(exports_external.object({ organizationId: exports_external.string() })).output(exports_external.object({ success: exports_external.literal(true) })),
   analytics: {
     overview: {
       kpis: oc.input(DateRangeInputSchema).output(OverviewKPIsSchema),

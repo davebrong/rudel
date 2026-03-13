@@ -32,7 +32,7 @@ import { useFullOrganization } from "../../hooks/useFullOrganization";
 import { authClient } from "../../lib/auth-client";
 
 export function OrganizationPage() {
-	const { activeOrg, organizations, switchOrg } = useOrganization();
+	const { activeOrg, organizations, switchOrg, refetchOrgs } = useOrganization();
 	const { data: session } = authClient.useSession();
 	const navigate = useNavigate();
 	const {
@@ -462,6 +462,7 @@ export function OrganizationPage() {
 					organization={activeOrg}
 					onDeleted={async () => {
 						setDeleteDialogOpen(false);
+						await refetchOrgs();
 						const other = organizations.find((o) => o.id !== activeOrg.id);
 						if (other) {
 							await switchOrg(other.id);

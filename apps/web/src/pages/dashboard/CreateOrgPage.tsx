@@ -20,7 +20,7 @@ function slugify(name: string): string {
 
 export function CreateOrgPage() {
 	const navigate = useNavigate();
-	const { switchOrg } = useOrganization();
+	const { switchOrg, refetchOrgs } = useOrganization();
 	const [name, setName] = useState("");
 	const [slug, setSlug] = useState("");
 	const [slugManual, setSlugManual] = useState(false);
@@ -53,6 +53,7 @@ export function CreateOrgPage() {
 		}
 
 		if (res.data) {
+			await refetchOrgs();
 			await switchOrg(res.data.id);
 			navigate("/dashboard");
 		}

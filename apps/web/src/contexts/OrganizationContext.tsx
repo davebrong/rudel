@@ -1,11 +1,14 @@
 import {
 	createContext,
 	type ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
+	useRef,
 	useState,
 } from "react";
 import { authClient } from "../lib/auth-client";
+import { client } from "../lib/orpc";
 
 interface Organization {
 	id: string;
@@ -18,6 +21,7 @@ interface OrganizationContextType {
 	activeOrg: Organization | null;
 	organizations: readonly Organization[];
 	switchOrg: (orgId: string) => Promise<void>;
+	refetchOrgs: () => Promise<void>;
 	isLoading: boolean;
 	/** Whether the current user is an owner or admin of the active org */
 	isOrgAdmin: boolean;
@@ -56,11 +60,39 @@ const OrganizationContext = createContext<OrganizationContextType | undefined>(
 export function OrganizationProvider({ children }: { children: ReactNode }) {
 	const { data: activeOrg, isPending: activeLoading } =
 		authClient.useActiveOrganization();
-	const { data: orgs, isPending: listLoading } =
-		authClient.useListOrganizations();
 	const { data: activeMember } = authClient.useActiveMember();
 	const [switching, setSwitching] = useState(false);
 	const [cachedOrg] = useState(getCachedOrg);
+	const [orgs, setOrgs] = useState<Organization[]>([]);
+	const [listLoading, setListLoading] = useState(true);
+	const [isSuperadmin, setIsSuperadmin] = useState(false);
+	const autoSetFailed = useRef(false);
+
+	// Fetch org list and superadmin status from our custom RPCs
+	const fetchOrgs = useCallback(async () => {
+		try {
+			setListLoading(true);
+			const [orgList, meData] = await Promise.all([
+				client.listMyOrganizations(),
+				client.me(),
+			]);
+			setOrgs(orgList);
+			setIsSuperadmin(meData.isSuperadmin);
+		} catch {
+			// Failed to fetch orgs
+		} finally {
+			setListLoading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchOrgs();
+	}, [fetchOrgs]);
+
+	// Reset auto-set failure flag when org list changes (e.g., after create/delete)
+	useEffect(() => {
+		autoSetFailed.current = false;
+	}, [orgs]);
 
 	// Persist active org to localStorage whenever it changes
 	useEffect(() => {
@@ -74,6 +106,26 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		}
 	}, [activeOrg]);
 
+	// Try setActive; if it fails (e.g. superadmin not a member), update session directly
+	const setActiveWithFallback = async (orgId: string) => {
+		try {
+			await authClient.organization.setActive({ organizationId: orgId });
+		} catch {
+			// Likely 403 — superadmin not a member, set active org directly via DB
+			try {
+				await client.superadminSetActive({ organizationId: orgId });
+				// Force better-auth client to refetch session state
+				for (const key of Object.keys(authClient.$store.atoms)) {
+					if (key.startsWith("$")) {
+						authClient.$store.notify(key);
+					}
+				}
+			} catch {
+				throw new Error("Failed to switch organization");
+			}
+		}
+	};
+
 	// Auto-set active org if none is set but user has orgs
 	useEffect(() => {
 		if (
@@ -82,11 +134,14 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			!activeOrg &&
 			orgs &&
 			orgs.length > 0 &&
-			!switching
+			!switching &&
+			!autoSetFailed.current
 		) {
 			setSwitching(true);
-			authClient.organization
-				.setActive({ organizationId: orgs[0].id })
+			setActiveWithFallback(orgs[0].id)
+				.catch(() => {
+					autoSetFailed.current = true;
+				})
 				.finally(() => setSwitching(false));
 		}
 	}, [activeOrg, orgs, activeLoading, listLoading, switching]);
@@ -94,7 +149,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 	const switchOrg = async (orgId: string) => {
 		setSwitching(true);
 		try {
-			await authClient.organization.setActive({ organizationId: orgId });
+			await setActiveWithFallback(orgId);
 		} finally {
 			setSwitching(false);
 		}
@@ -103,11 +158,14 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 	// Use cached org as optimistic value while better-auth is still loading
 	const resolvedOrg = activeOrg ?? (activeLoading ? cachedOrg : null);
 
-	// Personal workspace (no active org) means you're the owner.
-	// For real orgs, check the member role.
+	// Superadmins always have admin access. Personal workspace (no active org)
+	// means you're the owner. For real orgs, check the member role.
 	const memberRole = activeMember?.role;
 	const isOrgAdmin =
-		!resolvedOrg || memberRole === "owner" || memberRole === "admin";
+		isSuperadmin ||
+		!resolvedOrg ||
+		memberRole === "owner" ||
+		memberRole === "admin";
 
 	return (
 		<OrganizationContext.Provider
@@ -115,6 +173,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 				activeOrg: resolvedOrg,
 				organizations: orgs ?? [],
 				switchOrg,
+				refetchOrgs: fetchOrgs,
 				isLoading: activeLoading || listLoading || switching,
 				isOrgAdmin,
 			}}

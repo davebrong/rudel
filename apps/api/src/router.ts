@@ -3,6 +3,7 @@ import { getAdapter } from "@rudel/agent-adapters";
 import { apikey, member, organization, session } from "@rudel/sql-schema";
 import { and, eq } from "drizzle-orm";
 import { getClickhouse } from "./clickhouse.js";
+import { superadminConfig } from "./config.js";
 import { db } from "./db.js";
 import { analyticsRouter } from "./handlers/analytics/index.js";
 import { authMiddleware, ingestAuthMiddleware, os } from "./middleware.js";
@@ -29,6 +30,7 @@ const me = os.me.use(authMiddleware).handler(({ context }) => {
 			((context.session as Record<string, unknown>).activeOrganizationId as
 				| string
 				| null) ?? null,
+		isSuperadmin: superadminConfig.isSuperadmin(context.user.email),
 	};
 });
 
@@ -45,6 +47,25 @@ const cliAuthStatus = os.cli.authStatus
 const listMyOrganizations = os.listMyOrganizations
 	.use(authMiddleware)
 	.handler(async ({ context }) => {
+		// Superadmins see all organizations
+		if (superadminConfig.isSuperadmin(context.user.email)) {
+			const allOrgs = await db
+				.select({
+					id: organization.id,
+					name: organization.name,
+					slug: organization.slug,
+					logo: organization.logo,
+				})
+				.from(organization);
+
+			return allOrgs.map((o) => ({
+				id: o.id,
+				name: o.name,
+				slug: o.slug,
+				logo: o.logo ?? null,
+			}));
+		}
+
 		const memberships = await db
 			.select({
 				id: organization.id,
@@ -80,7 +101,7 @@ const ingestSessionHandler = os.ingestSession
 		const orgId = input.organizationId ?? activeOrgId ?? context.user.id;
 
 		// Verify membership for any org that isn't the user's personal workspace
-		if (orgId !== context.user.id) {
+		if (orgId !== context.user.id && !superadminConfig.isSuperadmin(context.user.email)) {
 			const membership = await db
 				.select({ id: member.id })
 				.from(member)
@@ -136,21 +157,23 @@ const revokeCliToken = os.cli.revokeToken
 const getOrganizationSessionCount = os.getOrganizationSessionCount
 	.use(authMiddleware)
 	.handler(async ({ input, context }) => {
-		const membership = await db
-			.select({ id: member.id })
-			.from(member)
-			.where(
-				and(
-					eq(member.organizationId, input.organizationId),
-					eq(member.userId, context.user.id),
-				),
-			)
-			.limit(1);
+		if (!superadminConfig.isSuperadmin(context.user.email)) {
+			const membership = await db
+				.select({ id: member.id })
+				.from(member)
+				.where(
+					and(
+						eq(member.organizationId, input.organizationId),
+						eq(member.userId, context.user.id),
+					),
+				)
+				.limit(1);
 
-		if (membership.length === 0) {
-			throw new ORPCError("FORBIDDEN", {
-				message: "Not a member of this organization",
-			});
+			if (membership.length === 0) {
+				throw new ORPCError("FORBIDDEN", {
+					message: "Not a member of this organization",
+				});
+			}
 		}
 
 		const count = await getOrgSessionCount(input.organizationId);
@@ -164,41 +187,45 @@ const deleteOrganization = os.deleteOrganization
 		const userId = context.user.id;
 		console.log(`[deleteOrganization] user=${userId} org=${orgId}`);
 
-		// Check user has more than one org
-		const memberships = await db
-			.select({ organizationId: member.organizationId })
-			.from(member)
-			.where(eq(member.userId, userId));
+		const isSuperadmin = superadminConfig.isSuperadmin(context.user.email);
 
-		if (memberships.length <= 1) {
-			console.log(
-				`[deleteOrganization] rejected: user=${userId} has only ${memberships.length} org(s)`,
-			);
-			throw new ORPCError("BAD_REQUEST", {
-				message: "Cannot delete your only organization",
-			});
-		}
+		if (!isSuperadmin) {
+			// Check user has more than one org
+			const memberships = await db
+				.select({ organizationId: member.organizationId })
+				.from(member)
+				.where(eq(member.userId, userId));
 
-		// Verify user is owner of the target org
-		const ownership = await db
-			.select({ id: member.id })
-			.from(member)
-			.where(
-				and(
-					eq(member.organizationId, orgId),
-					eq(member.userId, userId),
-					eq(member.role, "owner"),
-				),
-			)
-			.limit(1);
+			if (memberships.length <= 1) {
+				console.log(
+					`[deleteOrganization] rejected: user=${userId} has only ${memberships.length} org(s)`,
+				);
+				throw new ORPCError("BAD_REQUEST", {
+					message: "Cannot delete your only organization",
+				});
+			}
 
-		if (ownership.length === 0) {
-			console.log(
-				`[deleteOrganization] rejected: user=${userId} is not owner of org=${orgId}`,
-			);
-			throw new ORPCError("FORBIDDEN", {
-				message: "Only the organization owner can delete it",
-			});
+			// Verify user is owner of the target org
+			const ownership = await db
+				.select({ id: member.id })
+				.from(member)
+				.where(
+					and(
+						eq(member.organizationId, orgId),
+						eq(member.userId, userId),
+						eq(member.role, "owner"),
+					),
+				)
+				.limit(1);
+
+			if (ownership.length === 0) {
+				console.log(
+					`[deleteOrganization] rejected: user=${userId} is not owner of org=${orgId}`,
+				);
+				throw new ORPCError("FORBIDDEN", {
+					message: "Only the organization owner can delete it",
+				});
+			}
 		}
 
 		try {
@@ -227,6 +254,37 @@ const deleteOrganization = os.deleteOrganization
 		}
 	});
 
+const superadminSetActive = os.superadminSetActive
+	.use(authMiddleware)
+	.handler(async ({ input, context }) => {
+		if (!superadminConfig.isSuperadmin(context.user.email)) {
+			throw new ORPCError("FORBIDDEN", {
+				message: "Not a superadmin",
+			});
+		}
+
+		// Verify the org exists
+		const org = await db
+			.select({ id: organization.id })
+			.from(organization)
+			.where(eq(organization.id, input.organizationId))
+			.limit(1);
+
+		if (org.length === 0) {
+			throw new ORPCError("NOT_FOUND", {
+				message: "Organization not found",
+			});
+		}
+
+		// Directly update activeOrganizationId on the session (bypasses better-auth membership check)
+		await db
+			.update(session)
+			.set({ activeOrganizationId: input.organizationId })
+			.where(eq(session.id, context.session.id));
+
+		return { success: true as const };
+	});
+
 export const router = os.router({
 	health,
 	me,
@@ -238,5 +296,6 @@ export const router = os.router({
 	ingestSession: ingestSessionHandler,
 	getOrganizationSessionCount,
 	deleteOrganization,
+	superadminSetActive,
 	analytics: analyticsRouter,
 });

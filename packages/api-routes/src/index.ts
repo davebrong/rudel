@@ -62,6 +62,7 @@ export const UserSchema = z.object({
 	name: z.string(),
 	image: z.string().nullable(),
 	activeOrganizationId: z.string().nullable(),
+	isSuperadmin: z.boolean(),
 });
 
 export const CliUserSchema = z.object({
@@ -137,6 +138,9 @@ export const contract = {
 		.input(z.object({ organizationId: z.string() }))
 		.output(z.object({ count: z.number() })),
 	deleteOrganization: oc
+		.input(z.object({ organizationId: z.string() }))
+		.output(z.object({ success: z.literal(true) })),
+	superadminSetActive: oc
 		.input(z.object({ organizationId: z.string() }))
 		.output(z.object({ success: z.literal(true) })),
 	analytics: {

@@ -3,6 +3,7 @@ import { contract } from "@rudel/api-routes";
 import { member } from "@rudel/sql-schema";
 import { and, eq } from "drizzle-orm";
 import type { Session } from "./auth.js";
+import { superadminConfig } from "./config.js";
 import { db } from "./db.js";
 
 export interface AppContext {
@@ -36,6 +37,20 @@ export const orgMiddleware = os.middleware(async ({ context, next }) => {
 	if (!organizationId || typeof organizationId !== "string") {
 		throw new ORPCError("BAD_REQUEST", {
 			message: "No active organization",
+		});
+	}
+
+	// Superadmins bypass membership check
+	if (superadminConfig.isSuperadmin(context.user.email)) {
+		return next({
+			context: {
+				user: context.user,
+				session: context.session,
+				apiKeyId: context.apiKeyId,
+				organizationId,
+				userRole: "owner" as const,
+				isOrgAdmin: true,
+			},
 		});
 	}
 
