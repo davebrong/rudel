@@ -195,8 +195,8 @@ export async function syncChatwootUser(user: {
 			avatar_url: user.avatarUrl?.trim() || undefined,
 			company_name: user.organizationName?.trim() || undefined,
 			description: user.organizationName?.trim()
-				? `Rudel dashboard user from ${user.organizationName}`
-				: "Rudel dashboard user",
+				? `Agentic Stats user from ${user.organizationName}`
+				: "Agentic Stats user",
 		};
 
 		if (!contact.email && !contact.name && !contact.avatar_url) {

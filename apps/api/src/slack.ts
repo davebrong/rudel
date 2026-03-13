@@ -28,7 +28,7 @@ export async function notifySignup(
 ): Promise<void> {
 	try {
 		const lines = [
-			`*New signup* on Rudel AI`,
+			`*New signup* on Level Agency Agentic Stats`,
 			`*Name:* ${user.name}`,
 			`*Email:* ${user.email}`,
 		];

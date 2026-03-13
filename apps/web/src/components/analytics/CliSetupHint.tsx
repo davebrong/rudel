@@ -32,7 +32,7 @@ export function CliSetupHint() {
 					No sessions yet
 				</h3>
 				<p className="text-sm text-muted-foreground max-w-lg mb-6">
-					Install the Rudel CLI and enable automatic uploads to start tracking
+					Install the CLI and enable automatic uploads to start tracking
 					your team's Claude Code sessions.
 				</p>
 				<div className="w-full max-w-md text-left space-y-4">
