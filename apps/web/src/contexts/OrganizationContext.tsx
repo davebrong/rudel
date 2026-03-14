@@ -9,6 +9,7 @@ import {
 } from "react";
 import { authClient } from "../lib/auth-client";
 import { client } from "../lib/orpc";
+import { queryClient } from "../lib/query-client";
 
 interface Organization {
 	id: string;
@@ -150,6 +151,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 				setSuperadminActiveOrg(org);
 			}
 			authClient.$store.notify("$sessionSignal");
+			// Invalidate all org-scoped queries so they refetch with the new org
+			await queryClient.invalidateQueries({ queryKey: ["org"] });
 			return;
 		}
 
