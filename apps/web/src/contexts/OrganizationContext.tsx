@@ -125,20 +125,15 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 
 	// Try setActive; if it fails (e.g. superadmin not a member), update session directly
 	const setActiveWithFallback = async (orgId: string) => {
-		try {
-			await authClient.organization.setActive({ organizationId: orgId });
-		} catch {
+		const result = await authClient.organization.setActive({ organizationId: orgId });
+		if (result.error) {
 			// Likely 403 — superadmin not a member, set active org directly via DB
-			try {
-				await client.superadminSetActive({ organizationId: orgId });
-				// Force better-auth client to refetch session state
-				for (const key of Object.keys(authClient.$store.atoms)) {
-					if (key.startsWith("$")) {
-						authClient.$store.notify(key);
-					}
+			await client.superadminSetActive({ organizationId: orgId });
+			// Force better-auth client to refetch session state
+			for (const key of Object.keys(authClient.$store.atoms)) {
+				if (key.startsWith("$")) {
+					authClient.$store.notify(key);
 				}
-			} catch {
-				throw new Error("Failed to switch organization");
 			}
 		}
 	};
