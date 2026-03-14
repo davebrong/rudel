@@ -151,7 +151,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			return;
 		}
 
-		// Likely 403 — superadmin not a member, set active org directly via DB
+		// 403 — superadmin not a member, set active org directly via DB
 		await client.superadminSetActive({ organizationId: orgId });
 
 		// Resolve org data from our local list so we don't depend on
@@ -161,15 +161,35 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			setSuperadminActiveOrg(org);
 		}
 
-		// Force better-auth client to refetch session state
-		for (const key of Object.keys(authClient.$store.atoms)) {
-			if (key.startsWith("$")) {
-				authClient.$store.notify(key);
-			}
-		}
+		// Only refetch the session atom so the API middleware picks up the
+		// new activeOrganizationId. Do NOT notify org-related atoms —
+		// better-auth's org endpoints enforce membership and will 403/400,
+		// which we bypass by using superadminActiveOrg local state instead.
+		authClient.$store.notify("$sessionSignal");
 	};
 
-	// Auto-set active org if none is set but user has orgs (runs once per org list change)
+	// On page reload, restore superadmin override from localStorage cache.
+	// better-auth's useActiveOrganization will 403 for non-member orgs,
+	// so we need to re-establish the local override from the cached org.
+	useEffect(() => {
+		if (
+			isSuperadmin &&
+			!activeLoading &&
+			!listLoading &&
+			!activeOrg &&
+			!superadminActiveOrg &&
+			cachedOrg &&
+			orgs.length > 0
+		) {
+			const match = orgs.find((o) => o.id === cachedOrg.id);
+			if (match) {
+				setSuperadminActiveOrg(match);
+			}
+		}
+	}, [isSuperadmin, activeOrg, superadminActiveOrg, cachedOrg, activeLoading, listLoading, orgs]);
+
+	// Auto-set active org if none is set but user has orgs (runs once per org list change).
+	// Skip if superadmin has a cached org that will be restored by the effect above.
 	useEffect(() => {
 		if (
 			!activeLoading &&
@@ -179,13 +199,14 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			orgs &&
 			orgs.length > 0 &&
 			!switching &&
-			!autoSetAttempted.current
+			!autoSetAttempted.current &&
+			!(isSuperadmin && cachedOrg && orgs.some((o) => o.id === cachedOrg.id))
 		) {
 			autoSetAttempted.current = true;
 			setSwitching(true);
 			setActiveWithFallback(orgs[0].id).finally(() => setSwitching(false));
 		}
-	}, [activeOrg, superadminActiveOrg, orgs, activeLoading, listLoading, switching]);
+	}, [activeOrg, superadminActiveOrg, orgs, activeLoading, listLoading, switching, isSuperadmin, cachedOrg]);
 
 	const switchOrg = async (orgId: string) => {
 		setSwitching(true);
