@@ -139,33 +139,22 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		}
 	}, [currentUserId]);
 
-	// Try setActive; if it fails (e.g. superadmin not a member), update session directly
-	const setActiveWithFallback = async (orgId: string) => {
-		// Clear superadmin override — if normal setActive works, we don't need it
-		setSuperadminActiveOrg(null);
-
-		const result = await authClient.organization.setActive({
-			organizationId: orgId,
-		});
-		if (!result.error) {
+	// Switch active org. Superadmins bypass better-auth entirely because
+	// its set-active endpoint clears activeOrganizationId on 403 (non-member),
+	// which corrupts the session cookie and breaks all subsequent switches.
+	const setActiveOrg = async (orgId: string) => {
+		if (isSuperadmin) {
+			await client.superadminSetActive({ organizationId: orgId });
+			const org = orgs.find((o) => o.id === orgId);
+			if (org) {
+				setSuperadminActiveOrg(org);
+			}
+			authClient.$store.notify("$sessionSignal");
 			return;
 		}
 
-		// 403 — superadmin not a member, set active org directly via DB
-		await client.superadminSetActive({ organizationId: orgId });
-
-		// Resolve org data from our local list so we don't depend on
-		// better-auth's hooks (which will 403 for non-member orgs)
-		const org = orgs.find((o) => o.id === orgId);
-		if (org) {
-			setSuperadminActiveOrg(org);
-		}
-
-		// Only refetch the session atom so the API middleware picks up the
-		// new activeOrganizationId. Do NOT notify org-related atoms —
-		// better-auth's org endpoints enforce membership and will 403/400,
-		// which we bypass by using superadminActiveOrg local state instead.
-		authClient.$store.notify("$sessionSignal");
+		setSuperadminActiveOrg(null);
+		await authClient.organization.setActive({ organizationId: orgId });
 	};
 
 	// On page reload, restore superadmin override from localStorage cache.
@@ -204,14 +193,14 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		) {
 			autoSetAttempted.current = true;
 			setSwitching(true);
-			setActiveWithFallback(orgs[0].id).finally(() => setSwitching(false));
+			setActiveOrg(orgs[0].id).finally(() => setSwitching(false));
 		}
 	}, [activeOrg, superadminActiveOrg, orgs, activeLoading, listLoading, switching, isSuperadmin, cachedOrg]);
 
 	const switchOrg = async (orgId: string) => {
 		setSwitching(true);
 		try {
-			await setActiveWithFallback(orgId);
+			await setActiveOrg(orgId);
 		} finally {
 			setSwitching(false);
 		}
