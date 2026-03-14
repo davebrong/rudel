@@ -18,6 +18,8 @@ export BETTER_AUTH_SECRET=local-dev-secret-that-is-at-least-32-chars-long
 export CLICKHOUSE_URL=http://localhost:8123
 export CLICKHOUSE_PASSWORD=clickhouse
 export APP_URL=http://localhost:4011
+export ENABLE_EMAIL_PASSWORD=true
+export VITE_ENABLE_EMAIL_PASSWORD=true
 
 # Run API and Web in parallel, kill both on Ctrl+C
 bun --watch apps/api/src/index.ts &

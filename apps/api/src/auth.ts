@@ -16,6 +16,7 @@ export interface AuthConfig {
 	cliDeviceVerificationUrl?: string;
 	slackWebhookUrl?: string;
 	allowedEmailDomains?: string[];
+	enableEmailPassword?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- drizzleAdapter accepts { [key: string]: any }
@@ -33,7 +34,7 @@ export function createAuth(db: object, config: AuthConfig) {
 			schema,
 		}),
 		emailAndPassword: {
-			enabled: false,
+			enabled: config.enableEmailPassword ?? false,
 		},
 		socialProviders: config.socialProviders,
 		plugins: [

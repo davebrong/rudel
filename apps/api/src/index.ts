@@ -44,6 +44,7 @@ const auth = createAuth(db, {
 	allowedEmailDomains: process.env.ALLOWED_EMAIL_DOMAINS
 		? process.env.ALLOWED_EMAIL_DOMAINS.split(",").map((d) => d.trim().toLowerCase())
 		: undefined,
+	enableEmailPassword: process.env.ENABLE_EMAIL_PASSWORD === "true",
 });
 
 const rpcHandler = new RPCHandler(router, {
