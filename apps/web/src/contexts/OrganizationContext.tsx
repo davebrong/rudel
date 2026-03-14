@@ -16,8 +16,6 @@ interface Organization {
 	name: string;
 	slug: string;
 	logo?: string | null | undefined;
-	/** Internal: user ID for scoping localStorage cache */
-	_userId?: string;
 }
 
 interface OrganizationContextType {
@@ -26,34 +24,7 @@ interface OrganizationContextType {
 	switchOrg: (orgId: string) => Promise<void>;
 	refetchOrgs: () => Promise<void>;
 	isLoading: boolean;
-	/** Whether the current user is an owner or admin of the active org */
 	isOrgAdmin: boolean;
-}
-
-const ACTIVE_ORG_CACHE_KEY = "rudel:activeOrg";
-
-function getCachedOrg(): Organization | null {
-	try {
-		const raw = localStorage.getItem(ACTIVE_ORG_CACHE_KEY);
-		if (!raw) return null;
-		const parsed = JSON.parse(raw);
-		if (parsed && typeof parsed.id === "string") return parsed;
-	} catch {
-		// Corrupted cache, ignore
-	}
-	return null;
-}
-
-function setCachedOrg(org: Organization | null) {
-	try {
-		if (org) {
-			localStorage.setItem(ACTIVE_ORG_CACHE_KEY, JSON.stringify(org));
-		} else {
-			localStorage.removeItem(ACTIVE_ORG_CACHE_KEY);
-		}
-	} catch {
-		// Storage full or unavailable, ignore
-	}
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(
@@ -62,23 +33,20 @@ const OrganizationContext = createContext<OrganizationContextType | undefined>(
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
 	const { data: session } = authClient.useSession();
-	const { data: activeOrg, isPending: activeLoading } =
+	const { data: betterAuthOrg, isPending: betterAuthLoading } =
 		authClient.useActiveOrganization();
 	const { data: activeMember } = authClient.useActiveMember();
-	const [switching, setSwitching] = useState(false);
+
 	const [orgs, setOrgs] = useState<Organization[]>([]);
 	const [listLoading, setListLoading] = useState(true);
 	const [isSuperadmin, setIsSuperadmin] = useState(false);
-	const autoSetAttempted = useRef(false);
-	// Superadmin override: better-auth's useActiveOrganization returns null
-	// for orgs where the superadmin isn't a member. Track it locally instead.
-	const [superadminActiveOrg, setSuperadminActiveOrg] =
-		useState<Organization | null>(null);
+	const [switching, setSwitching] = useState(false);
+	// For superadmins, better-auth's hooks 403 on non-member orgs.
+	// Track active org locally instead.
+	const [superadminOrg, setSuperadminOrg] = useState<Organization | null>(null);
+	const autoSwitched = useRef(false);
 
-	const currentUserId = session?.user?.id ?? null;
-	const [cachedOrg, setCachedOrgState] = useState(getCachedOrg);
-
-	// Fetch org list and superadmin status from our custom RPCs
+	// Fetch org list and superadmin flag
 	const fetchOrgs = useCallback(async () => {
 		try {
 			setListLoading(true);
@@ -89,7 +57,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			setOrgs(orgList);
 			setIsSuperadmin(meData.isSuperadmin);
 		} catch {
-			// Failed to fetch orgs
+			// ignore
 		} finally {
 			setListLoading(false);
 		}
@@ -99,139 +67,90 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		fetchOrgs();
 	}, [fetchOrgs]);
 
-	// Reset auto-set flag when org list changes (e.g., after create/delete)
-	useEffect(() => {
-		autoSetAttempted.current = false;
-	}, [orgs]);
+	// Switch org
+	const switchOrg = useCallback(
+		async (orgId: string) => {
+			const targetOrg = orgs.find((o) => o.id === orgId);
+			if (!targetOrg) return;
 
-	// Persist active org + user ID to localStorage whenever it changes
-	useEffect(() => {
-		if (activeOrg && currentUserId) {
-			setCachedOrg({
-				id: activeOrg.id,
-				name: activeOrg.name,
-				slug: activeOrg.slug,
-				logo: activeOrg.logo,
-				_userId: currentUserId,
-			});
-		}
-	}, [activeOrg, currentUserId]);
-
-	// Also persist superadmin override org to localStorage
-	useEffect(() => {
-		if (superadminActiveOrg && currentUserId) {
-			setCachedOrg({
-				...superadminActiveOrg,
-				_userId: currentUserId,
-			});
-			setCachedOrgState(superadminActiveOrg);
-		}
-	}, [superadminActiveOrg, currentUserId]);
-
-	// Clear cache when user changes (e.g., sign out + sign in as different user)
-	useEffect(() => {
-		if (currentUserId) {
-			const cached = getCachedOrg();
-			if (cached && cached._userId && cached._userId !== currentUserId) {
-				setCachedOrg(null);
-				setCachedOrgState(null);
-				setSuperadminActiveOrg(null);
-			}
-		}
-	}, [currentUserId]);
-
-	// Switch active org. Superadmins bypass better-auth entirely because
-	// its set-active endpoint clears activeOrganizationId on 403 (non-member),
-	// which corrupts the session cookie and breaks all subsequent switches.
-	const setActiveOrg = async (orgId: string) => {
-		if (isSuperadmin) {
-			await client.superadminSetActive({ organizationId: orgId });
-			const org = orgs.find((o) => o.id === orgId);
-			if (org) {
-				setSuperadminActiveOrg(org);
-			}
-			authClient.$store.notify("$sessionSignal");
-			// Remove all cached org-scoped query data so React Query fetches
-			// fresh when components re-render with the new org id.
-			queryClient.removeQueries({ queryKey: ["org"] });
-			return;
-		}
-
-		setSuperadminActiveOrg(null);
-		await authClient.organization.setActive({ organizationId: orgId });
-	};
-
-	// On page reload, restore superadmin override from localStorage cache.
-	// better-auth's useActiveOrganization will 403 for non-member orgs,
-	// so we need to re-establish the local override from the cached org.
-	useEffect(() => {
-		if (
-			isSuperadmin &&
-			!activeLoading &&
-			!listLoading &&
-			!activeOrg &&
-			!superadminActiveOrg &&
-			cachedOrg &&
-			orgs.length > 0
-		) {
-			const match = orgs.find((o) => o.id === cachedOrg.id);
-			if (match) {
-				setSuperadminActiveOrg(match);
-			}
-		}
-	}, [isSuperadmin, activeOrg, superadminActiveOrg, cachedOrg, activeLoading, listLoading, orgs]);
-
-	// Auto-set active org if none is set but user has orgs (runs once per org list change).
-	// Skip if superadmin has a cached org that will be restored by the effect above.
-	useEffect(() => {
-		if (
-			!activeLoading &&
-			!listLoading &&
-			!activeOrg &&
-			!superadminActiveOrg &&
-			orgs &&
-			orgs.length > 0 &&
-			!switching &&
-			!autoSetAttempted.current &&
-			!(isSuperadmin && cachedOrg && orgs.some((o) => o.id === cachedOrg.id))
-		) {
-			autoSetAttempted.current = true;
 			setSwitching(true);
-			setActiveOrg(orgs[0].id).finally(() => setSwitching(false));
+			try {
+				if (isSuperadmin) {
+					// Bypass better-auth entirely — its set-active endpoint clears
+					// activeOrganizationId on 403, corrupting the session.
+					await client.superadminSetActive({ organizationId: orgId });
+					setSuperadminOrg(targetOrg);
+					authClient.$store.notify("$sessionSignal");
+					queryClient.removeQueries({ queryKey: ["org"] });
+				} else {
+					setSuperadminOrg(null);
+					await authClient.organization.setActive({
+						organizationId: orgId,
+					});
+				}
+			} finally {
+				setSwitching(false);
+			}
+		},
+		[isSuperadmin, orgs],
+	);
+
+	// Auto-select first org when none is active (once per session)
+	useEffect(() => {
+		if (betterAuthLoading || listLoading || autoSwitched.current) return;
+		if (orgs.length === 0) return;
+
+		// Already have an active org from either source
+		if (betterAuthOrg || superadminOrg) return;
+
+		// For superadmins, check if the session already has an activeOrganizationId
+		// (e.g. after page reload). Restore from the org list.
+		if (isSuperadmin) {
+			const meData = session?.session as
+				| Record<string, unknown>
+				| undefined;
+			const sessionOrgId = meData?.activeOrganizationId;
+			if (typeof sessionOrgId === "string") {
+				const match = orgs.find((o) => o.id === sessionOrgId);
+				if (match) {
+					setSuperadminOrg(match);
+					return;
+				}
+			}
 		}
-	}, [activeOrg, superadminActiveOrg, orgs, activeLoading, listLoading, switching, isSuperadmin, cachedOrg]);
 
-	const switchOrg = async (orgId: string) => {
-		setSwitching(true);
-		try {
-			await setActiveOrg(orgId);
-		} finally {
-			setSwitching(false);
-		}
-	};
+		// No active org at all — auto-select first
+		autoSwitched.current = true;
+		switchOrg(orgs[0].id);
+	}, [
+		betterAuthOrg,
+		betterAuthLoading,
+		superadminOrg,
+		listLoading,
+		orgs,
+		isSuperadmin,
+		session,
+		switchOrg,
+	]);
 
-	// Use cached org as optimistic value while better-auth is still loading.
-	// Prefer better-auth's activeOrg, then superadmin override, then cache.
-	const resolvedOrg =
-		activeOrg ?? superadminActiveOrg ?? (activeLoading ? cachedOrg : null);
+	// Resolved org: prefer better-auth for regular users, superadminOrg for superadmins
+	const activeOrg = betterAuthOrg ?? superadminOrg ?? null;
 
-	// Superadmins always have admin access. Personal workspace (no active org)
-	// means you're the owner. For real orgs, check the member role.
 	const memberRole = activeMember?.role;
 	const isOrgAdmin =
 		isSuperadmin ||
-		!resolvedOrg ||
+		!activeOrg ||
 		memberRole === "owner" ||
 		memberRole === "admin";
 
 	return (
 		<OrganizationContext.Provider
 			value={{
-				activeOrg: resolvedOrg,
-				organizations: orgs ?? [],
+				activeOrg,
+				organizations: orgs,
 				switchOrg,
 				refetchOrgs: fetchOrgs,
-				isLoading: activeLoading || listLoading || switching,
+				isLoading: betterAuthLoading || listLoading || switching,
 				isOrgAdmin,
 			}}
 		>

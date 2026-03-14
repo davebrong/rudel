@@ -28,20 +28,18 @@ export function useFullOrganization(orgId: string | undefined) {
 	const { data, isLoading } = useQuery({
 		queryKey,
 		queryFn: async () => {
-			// Try our own RPC first (works for superadmins viewing non-member orgs).
-			// Falls back to better-auth's endpoint for regular members.
+			// Try our own RPC (works for superadmins on any org, 403 for non-members)
 			try {
-				const result = await client.getOrganizationMembers({
+				return (await client.getOrganizationMembers({
 					organizationId: orgId as string,
-				});
-				return result as FullOrg;
+				})) as FullOrg;
 			} catch {
-				// Not a superadmin or RPC failed — use better-auth
-				const res = await authClient.organization.getFullOrganization({
-					query: { organizationId: orgId as string },
-				});
-				return (res.data as unknown as FullOrg) ?? null;
+				// Fall back to better-auth (works for regular members)
 			}
+			const res = await authClient.organization.getFullOrganization({
+				query: { organizationId: orgId as string },
+			});
+			return (res.data as unknown as FullOrg) ?? null;
 		},
 		enabled: !!orgId,
 	});
