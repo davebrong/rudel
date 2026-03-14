@@ -73,6 +73,7 @@ services:
       GOOGLE_HD: ${GOOGLE_HD:-}
       ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS:-}
       ENABLE_EMAIL_PASSWORD: ${ENABLE_EMAIL_PASSWORD:-false}
+      SUPERADMIN_EMAILS: ${SUPERADMIN_EMAILS:-}
     depends_on:
       postgres:
         condition: service_healthy
