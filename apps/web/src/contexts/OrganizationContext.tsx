@@ -133,8 +133,12 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		switchOrg,
 	]);
 
-	// Resolved org: prefer better-auth for regular users, superadminOrg for superadmins
-	const activeOrg = betterAuthOrg ?? superadminOrg ?? null;
+	// For superadmins, always use our local state (better-auth's hooks 403 on
+	// non-member orgs, and hold stale data when switching away from a member org).
+	// For regular users, use better-auth's hook.
+	const activeOrg = isSuperadmin
+		? superadminOrg ?? betterAuthOrg ?? null
+		: betterAuthOrg ?? null;
 
 	const memberRole = activeMember?.role;
 	const isOrgAdmin =
