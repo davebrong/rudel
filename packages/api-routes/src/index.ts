@@ -143,6 +143,36 @@ export const contract = {
 	superadminSetActive: oc
 		.input(z.object({ organizationId: z.string() }))
 		.output(z.object({ success: z.literal(true) })),
+	getOrganizationMembers: oc
+		.input(z.object({ organizationId: z.string() }))
+		.output(
+			z.object({
+				id: z.string(),
+				name: z.string(),
+				slug: z.string(),
+				members: z.array(
+					z.object({
+						id: z.string(),
+						userId: z.string(),
+						role: z.string(),
+						user: z.object({
+							id: z.string(),
+							name: z.string(),
+							email: z.string(),
+							image: z.string().nullable(),
+						}),
+					}),
+				),
+				invitations: z.array(
+					z.object({
+						id: z.string(),
+						email: z.string(),
+						role: z.string().nullable(),
+						status: z.string(),
+					}),
+				),
+			}),
+		),
 	analytics: {
 		overview: {
 			kpis: oc.input(DateRangeInputSchema).output(OverviewKPIsSchema),

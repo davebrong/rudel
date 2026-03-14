@@ -1,6 +1,13 @@
 import { ORPCError } from "@orpc/server";
 import { getAdapter } from "@rudel/agent-adapters";
-import { apikey, member, organization, session } from "@rudel/sql-schema";
+import {
+	apikey,
+	invitation,
+	member,
+	organization,
+	session,
+	user as userTable,
+} from "@rudel/sql-schema";
 import { and, eq } from "drizzle-orm";
 import { getClickhouse } from "./clickhouse.js";
 import { superadminConfig } from "./config.js";
@@ -285,6 +292,72 @@ const superadminSetActive = os.superadminSetActive
 		return { success: true as const };
 	});
 
+const getOrganizationMembers = os.getOrganizationMembers
+	.use(authMiddleware)
+	.handler(async ({ input, context }) => {
+		// Only superadmins can fetch arbitrary org members
+		if (!superadminConfig.isSuperadmin(context.user.email)) {
+			throw new ORPCError("FORBIDDEN", { message: "Not a superadmin" });
+		}
+
+		const [org] = await db
+			.select({
+				id: organization.id,
+				name: organization.name,
+				slug: organization.slug,
+			})
+			.from(organization)
+			.where(eq(organization.id, input.organizationId))
+			.limit(1);
+		if (!org) {
+			throw new ORPCError("NOT_FOUND", { message: "Organization not found" });
+		}
+
+		const members = await db
+			.select({
+				id: member.id,
+				userId: member.userId,
+				role: member.role,
+				userName: userTable.name,
+				userEmail: userTable.email,
+				userImage: userTable.image,
+			})
+			.from(member)
+			.innerJoin(userTable, eq(member.userId, userTable.id))
+			.where(eq(member.organizationId, input.organizationId));
+
+		const invitations = await db
+			.select({
+				id: invitation.id,
+				email: invitation.email,
+				role: invitation.role,
+				status: invitation.status,
+			})
+			.from(invitation)
+			.where(eq(invitation.organizationId, input.organizationId));
+
+		return {
+			...org,
+			members: members.map((m) => ({
+				id: m.id,
+				userId: m.userId,
+				role: m.role,
+				user: {
+					id: m.userId,
+					name: m.userName,
+					email: m.userEmail,
+					image: m.userImage,
+				},
+			})),
+			invitations: invitations.map((i) => ({
+				id: i.id,
+				email: i.email,
+				role: i.role ?? null,
+				status: i.status,
+			})),
+		};
+	});
+
 export const router = os.router({
 	health,
 	me,
@@ -297,5 +370,6 @@ export const router = os.router({
 	getOrganizationSessionCount,
 	deleteOrganization,
 	superadminSetActive,
+	getOrganizationMembers,
 	analytics: analyticsRouter,
 });

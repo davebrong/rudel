@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
+import { client } from "@/lib/orpc";
 
 interface FullOrg {
 	id: string;
@@ -27,10 +28,20 @@ export function useFullOrganization(orgId: string | undefined) {
 	const { data, isLoading } = useQuery({
 		queryKey,
 		queryFn: async () => {
-			const res = await authClient.organization.getFullOrganization({
-				query: { organizationId: orgId as string },
-			});
-			return (res.data as unknown as FullOrg) ?? null;
+			// Try our own RPC first (works for superadmins viewing non-member orgs).
+			// Falls back to better-auth's endpoint for regular members.
+			try {
+				const result = await client.getOrganizationMembers({
+					organizationId: orgId as string,
+				});
+				return result as FullOrg;
+			} catch {
+				// Not a superadmin or RPC failed — use better-auth
+				const res = await authClient.organization.getFullOrganization({
+					query: { organizationId: orgId as string },
+				});
+				return (res.data as unknown as FullOrg) ?? null;
+			}
 		},
 		enabled: !!orgId,
 	});
