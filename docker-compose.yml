@@ -52,7 +52,10 @@ services:
     restart: "no"
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_ENABLE_EMAIL_PASSWORD: ${ENABLE_EMAIL_PASSWORD:-false}
     ports:
       - "3150:3000"
     environment:
@@ -69,6 +72,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GOOGLE_HD: ${GOOGLE_HD:-}
       ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS:-}
+      ENABLE_EMAIL_PASSWORD: ${ENABLE_EMAIL_PASSWORD:-false}
     depends_on:
       postgres:
         condition: service_healthy

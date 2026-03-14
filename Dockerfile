@@ -22,6 +22,7 @@ COPY turbo.json turbo.json
 ARG VITE_CHATWOOT_BASE_URL=""
 ARG VITE_CHATWOOT_WEBSITE_TOKEN=""
 ARG VITE_CHATWOOT_ENABLED="true"
+ARG VITE_ENABLE_EMAIL_PASSWORD="false"
 
 # Build web app and place output where the API serves static files
 RUN bun run --cwd apps/web build
