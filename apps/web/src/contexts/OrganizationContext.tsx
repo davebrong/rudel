@@ -69,6 +69,10 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 	const [listLoading, setListLoading] = useState(true);
 	const [isSuperadmin, setIsSuperadmin] = useState(false);
 	const autoSetAttempted = useRef(false);
+	// Superadmin override: better-auth's useActiveOrganization returns null
+	// for orgs where the superadmin isn't a member. Track it locally instead.
+	const [superadminActiveOrg, setSuperadminActiveOrg] =
+		useState<Organization | null>(null);
 
 	const currentUserId = session?.user?.id ?? null;
 	const [cachedOrg, setCachedOrgState] = useState(getCachedOrg);
@@ -112,6 +116,17 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		}
 	}, [activeOrg, currentUserId]);
 
+	// Also persist superadmin override org to localStorage
+	useEffect(() => {
+		if (superadminActiveOrg && currentUserId) {
+			setCachedOrg({
+				...superadminActiveOrg,
+				_userId: currentUserId,
+			});
+			setCachedOrgState(superadminActiveOrg);
+		}
+	}, [superadminActiveOrg, currentUserId]);
+
 	// Clear cache when user changes (e.g., sign out + sign in as different user)
 	useEffect(() => {
 		if (currentUserId) {
@@ -119,21 +134,37 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			if (cached && cached._userId && cached._userId !== currentUserId) {
 				setCachedOrg(null);
 				setCachedOrgState(null);
+				setSuperadminActiveOrg(null);
 			}
 		}
 	}, [currentUserId]);
 
 	// Try setActive; if it fails (e.g. superadmin not a member), update session directly
 	const setActiveWithFallback = async (orgId: string) => {
-		const result = await authClient.organization.setActive({ organizationId: orgId });
-		if (result.error) {
-			// Likely 403 — superadmin not a member, set active org directly via DB
-			await client.superadminSetActive({ organizationId: orgId });
-			// Force better-auth client to refetch session state
-			for (const key of Object.keys(authClient.$store.atoms)) {
-				if (key.startsWith("$")) {
-					authClient.$store.notify(key);
-				}
+		// Clear superadmin override — if normal setActive works, we don't need it
+		setSuperadminActiveOrg(null);
+
+		const result = await authClient.organization.setActive({
+			organizationId: orgId,
+		});
+		if (!result.error) {
+			return;
+		}
+
+		// Likely 403 — superadmin not a member, set active org directly via DB
+		await client.superadminSetActive({ organizationId: orgId });
+
+		// Resolve org data from our local list so we don't depend on
+		// better-auth's hooks (which will 403 for non-member orgs)
+		const org = orgs.find((o) => o.id === orgId);
+		if (org) {
+			setSuperadminActiveOrg(org);
+		}
+
+		// Force better-auth client to refetch session state
+		for (const key of Object.keys(authClient.$store.atoms)) {
+			if (key.startsWith("$")) {
+				authClient.$store.notify(key);
 			}
 		}
 	};
@@ -144,6 +175,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			!activeLoading &&
 			!listLoading &&
 			!activeOrg &&
+			!superadminActiveOrg &&
 			orgs &&
 			orgs.length > 0 &&
 			!switching &&
@@ -153,7 +185,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 			setSwitching(true);
 			setActiveWithFallback(orgs[0].id).finally(() => setSwitching(false));
 		}
-	}, [activeOrg, orgs, activeLoading, listLoading, switching]);
+	}, [activeOrg, superadminActiveOrg, orgs, activeLoading, listLoading, switching]);
 
 	const switchOrg = async (orgId: string) => {
 		setSwitching(true);
@@ -164,8 +196,10 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 		}
 	};
 
-	// Use cached org as optimistic value while better-auth is still loading
-	const resolvedOrg = activeOrg ?? (activeLoading ? cachedOrg : null);
+	// Use cached org as optimistic value while better-auth is still loading.
+	// Prefer better-auth's activeOrg, then superadmin override, then cache.
+	const resolvedOrg =
+		activeOrg ?? superadminActiveOrg ?? (activeLoading ? cachedOrg : null);
 
 	// Superadmins always have admin access. Personal workspace (no active org)
 	// means you're the owner. For real orgs, check the member role.
