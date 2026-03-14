@@ -151,8 +151,9 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 				setSuperadminActiveOrg(org);
 			}
 			authClient.$store.notify("$sessionSignal");
-			// Invalidate all org-scoped queries so they refetch with the new org
-			await queryClient.invalidateQueries({ queryKey: ["org"] });
+			// Remove all cached org-scoped query data so React Query fetches
+			// fresh when components re-render with the new org id.
+			queryClient.removeQueries({ queryKey: ["org"] });
 			return;
 		}
 
