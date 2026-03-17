@@ -1,4 +1,4 @@
-import { Loader2, LogOut, Mail, User } from "lucide-react";
+import { Loader2, LogOut, Mail, Terminal, User } from "lucide-react";
 import { useState } from "react";
 import { AnalyticsCard } from "../../components/analytics/AnalyticsCard";
 import { PageHeader } from "../../components/analytics/PageHeader";
@@ -106,6 +106,48 @@ export function ProfilePage() {
 					)}
 				</AnalyticsCard>
 			</div>
+
+			<AnalyticsCard>
+				<div className="flex items-center gap-3 mb-4">
+					<Terminal className="h-5 w-5 text-muted" />
+					<h2 className="text-lg font-semibold text-heading">
+						CLI Setup
+					</h2>
+				</div>
+				<p className="text-sm text-muted mb-4">
+					Install and configure the CLI to upload Claude Code sessions.
+				</p>
+				<div className="space-y-3">
+					{[
+						{
+							label: "1. Install or update the CLI",
+							command:
+								"npm install -g github:davebrong/rudel-cli --force",
+						},
+						{
+							label: "2. Log in to your account",
+							command: "rudel login",
+						},
+						{
+							label: "3. Enable auto-upload in your repository",
+							command: "rudel enable",
+						},
+						{
+							label: "4. Or upload sessions manually",
+							command: "rudel upload",
+						},
+					].map((step) => (
+						<div key={step.label}>
+							<p className="text-xs font-medium text-muted mb-1.5">
+								{step.label}
+							</p>
+							<pre className="bg-background rounded-md border border-border px-4 py-3 text-sm font-mono text-foreground">
+								{step.command}
+							</pre>
+						</div>
+					))}
+				</div>
+			</AnalyticsCard>
 		</div>
 	);
 }
