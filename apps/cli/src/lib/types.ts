@@ -24,4 +24,4 @@ export interface UploadResult {
 	attempts?: number;
 }
 
-export const DEFAULT_ENDPOINT = "https://app.rudel.ai/rpc";
+export const DEFAULT_ENDPOINT = "https://agentic-stats.aidme.ai/rpc";

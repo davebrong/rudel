@@ -4,8 +4,8 @@ import { buildCommand } from "@stricli/core";
 import { createApiClient } from "../lib/api-client.js";
 import { loadCredentials, saveCredentials } from "../lib/credentials.js";
 
-const DEFAULT_API_BASE = "https://app.rudel.ai";
-const DEFAULT_WEB_URL = "https://app.rudel.ai";
+const DEFAULT_API_BASE = "https://agentic-stats.aidme.ai";
+const DEFAULT_WEB_URL = "https://agentic-stats.aidme.ai";
 const DEVICE_CLIENT_ID = "rudel-cli";
 const POLL_SAFETY_TIMEOUT_MS = 120_000;
 

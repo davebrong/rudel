@@ -1,6 +1,6 @@
 # rudel
 
-CLI for uploading [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session transcripts to [Rudel](https://app.rudel.ai) for analytics.
+CLI for uploading [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session transcripts to [Rudel](https://agentic-stats.aidme.ai) for analytics.
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@ CLI for uploading [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 
 ## Installation
 
 ```bash
-npm install -g rudel
+npm install -g github:davebrong/rudel-cli
 ```
 
 ## Quick Start
@@ -28,7 +28,7 @@ rudel enable
 
 ### `rudel login`
 
-Authenticate with Rudel. Opens your browser to [app.rudel.ai](https://app.rudel.ai) where you sign in, then the CLI receives a token automatically.
+Authenticate with Rudel. Opens your browser to [agentic-stats.aidme.ai](https://agentic-stats.aidme.ai) where you sign in, then the CLI receives a token automatically.
 
 ### `rudel enable`
 
@@ -82,5 +82,5 @@ Each uploaded session includes:
 
 ## Links
 
-- **Web App**: [app.rudel.ai](https://app.rudel.ai)
-- **Issues**: [GitHub Issues](https://github.com/obsessiondb/rudel/issues)
+- **Web App**: [agentic-stats.aidme.ai](https://agentic-stats.aidme.ai)
+- **Issues**: [GitHub Issues](https://github.com/davebrong/rudel-cli/issues)

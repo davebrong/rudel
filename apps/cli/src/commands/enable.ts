@@ -40,7 +40,7 @@ async function runEnable(): Promise<void> {
 
 	if (orgs.length === 0) {
 		p.log.error("No organizations found.");
-		p.outro("Create one at app.rudel.ai first.");
+		p.outro("Create one at agentic-stats.aidme.ai first.");
 		process.exitCode = 1;
 		return;
 	}

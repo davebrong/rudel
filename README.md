@@ -101,7 +101,7 @@ rudel whoami
 rudel upload --endpoint https://your-domain.com/rpc
 ```
 
-**Important:** `rudel upload` without `--endpoint` sends data to the official `app.rudel.ai`, not your private instance. Always pass `--endpoint`. The auto-upload hook from `rudel enable` uses the correct URL automatically.
+**Important:** `rudel upload` without `--endpoint` sends data to `agentic-stats.aidme.ai`. If you're self-hosting, always pass `--endpoint`. The auto-upload hook from `rudel enable` uses the correct URL automatically.
 
 ## Architecture
 

@@ -4,7 +4,7 @@ A platform for ingesting, storing, and analyzing Claude Code session transcripts
 
 **Stack**: Bun, Turborepo, Biome, TypeScript
 **Deployment**: Bun server + Postgres (Neon) + ClickHouse
-**Domain**: `app.rudel.ai`
+**Domain**: `agentic-stats.aidme.ai`
 
 ## Monorepo Structure
 
@@ -93,7 +93,7 @@ Manage containers separately: `bun run infra:up` / `bun run infra:down`. To wipe
 
 ### 2. Dev (production databases)
 
-> **Note**: This mode is used by the core team to develop against the hosted `app.rudel.ai` production data. If you're self-hosting or contributing, use **Standalone** above — it's the fully functional default.
+> **Note**: This mode is used by the core team to develop against the hosted `agentic-stats.aidme.ai` production data. If you're self-hosting or contributing, use **Standalone** above — it's the fully functional default.
 
 Connects to production Neon Postgres and ObsessionDB ClickHouse via the `prd_local` Doppler config. Runs API + web locally but with real data. Requires Doppler access.
 
@@ -323,7 +323,7 @@ The CLI (`rudel` on npm) uses Release Please for automated versioning and change
 1. PRs must have conventional commit titles (`feat:`, `fix:`, `chore:`, etc.) — enforced by `.github/workflows/pr-title.yml`
 2. When PRs merge to `main`, Release Please creates/updates a Release PR that accumulates changelog entries and version bumps
 3. Merging the Release PR creates a GitHub Release + tag, and bumps `package.json` + `src/app.ts` versions
-4. After the Release PR merges, publish to npm manually: `bun run --cwd apps/cli build && cd apps/cli && npm publish` (requires OTP)
+4. After the Release PR merges, build and push to the distribution repo: `bun run --cwd apps/cli build`, then copy `apps/cli/dist/cli.js` to the `davebrong/rudel-cli` repo and push. Users install via `npm install -g github:davebrong/rudel-cli`.
 
 **Configuration files:**
 

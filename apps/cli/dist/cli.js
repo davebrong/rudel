@@ -1907,18 +1907,17 @@ async function run(app, inputs, context) {
 // package.json
 var package_default = {
   name: "rudel",
-  version: "0.1.11",
+  version: "0.1.12",
   type: "module",
-  description: "CLI for the Coding Agent Analytics Platform rudel.ai",
+  description: "CLI for the Coding Agent Analytics Platform agentic-stats.aidme.ai",
   license: "MIT",
-  homepage: "https://app.rudel.ai",
+  homepage: "https://agentic-stats.aidme.ai",
   repository: {
     type: "git",
-    url: "https://github.com/obsessiondb/rudel.git",
-    directory: "apps/cli"
+    url: "https://github.com/davebrong/rudel-cli.git"
   },
   bugs: {
-    url: "https://github.com/obsessiondb/rudel/issues"
+    url: "https://github.com/davebrong/rudel-cli/issues"
   },
   keywords: [
     "claude",
@@ -11607,6 +11606,28 @@ var contract = {
   getOrganizationSessionCount: oc.input(exports_external.object({ organizationId: exports_external.string() })).output(exports_external.object({ count: exports_external.number() })),
   deleteOrganization: oc.input(exports_external.object({ organizationId: exports_external.string() })).output(exports_external.object({ success: exports_external.literal(true) })),
   superadminSetActive: oc.input(exports_external.object({ organizationId: exports_external.string() })).output(exports_external.object({ success: exports_external.literal(true) })),
+  getOrganizationMembers: oc.input(exports_external.object({ organizationId: exports_external.string() })).output(exports_external.object({
+    id: exports_external.string(),
+    name: exports_external.string(),
+    slug: exports_external.string(),
+    members: exports_external.array(exports_external.object({
+      id: exports_external.string(),
+      userId: exports_external.string(),
+      role: exports_external.string(),
+      user: exports_external.object({
+        id: exports_external.string(),
+        name: exports_external.string(),
+        email: exports_external.string(),
+        image: exports_external.string().nullable()
+      })
+    })),
+    invitations: exports_external.array(exports_external.object({
+      id: exports_external.string(),
+      email: exports_external.string(),
+      role: exports_external.string().nullable(),
+      status: exports_external.string()
+    }))
+  })),
   analytics: {
     overview: {
       kpis: oc.input(DateRangeInputSchema).output(OverviewKPIsSchema),
@@ -11952,7 +11973,7 @@ async function runEnable() {
   }
   if (orgs.length === 0) {
     R2.error("No organizations found.");
-    Gt("Create one at app.rudel.ai first.");
+    Gt("Create one at agentic-stats.aidme.ai first.");
     process.exitCode = 1;
     return;
   }
@@ -14189,8 +14210,8 @@ var hooksRouteMap = buildRouteMap({
 
 // src/commands/login.ts
 import { spawn } from "node:child_process";
-var DEFAULT_API_BASE = "https://app.rudel.ai";
-var DEFAULT_WEB_URL = "https://app.rudel.ai";
+var DEFAULT_API_BASE = "https://agentic-stats.aidme.ai";
+var DEFAULT_WEB_URL = "https://agentic-stats.aidme.ai";
 var DEVICE_CLIENT_ID = "rudel-cli";
 var POLL_SAFETY_TIMEOUT_MS = 120000;
 async function sleep(ms) {
@@ -14438,7 +14459,7 @@ async function runSetOrg() {
   }
   if (orgs.length === 0) {
     R2.error("No organizations found.");
-    Gt("Create one at app.rudel.ai first.");
+    Gt("Create one at agentic-stats.aidme.ai first.");
     process.exitCode = 1;
     return;
   }
@@ -14483,7 +14504,7 @@ var SESSION_TAGS = [
   "tests",
   "other"
 ];
-var DEFAULT_ENDPOINT = "https://app.rudel.ai/rpc";
+var DEFAULT_ENDPOINT = "https://agentic-stats.aidme.ai/rpc";
 
 // src/lib/classifier.ts
 var SYSTEM_PROMPT = `You are a session classifier. Analyze the Claude Code session transcript and classify it into exactly ONE of these categories:

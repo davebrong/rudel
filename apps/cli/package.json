@@ -1,17 +1,16 @@
 {
 	"name": "rudel",
-	"version": "0.1.11",
+	"version": "0.1.12",
 	"type": "module",
-	"description": "CLI for the Coding Agent Analytics Platform rudel.ai",
+	"description": "CLI for the Coding Agent Analytics Platform agentic-stats.aidme.ai",
 	"license": "MIT",
-	"homepage": "https://app.rudel.ai",
+	"homepage": "https://agentic-stats.aidme.ai",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/obsessiondb/rudel.git",
-		"directory": "apps/cli"
+		"url": "https://github.com/davebrong/rudel-cli.git"
 	},
 	"bugs": {
-		"url": "https://github.com/obsessiondb/rudel/issues"
+		"url": "https://github.com/davebrong/rudel-cli/issues"
 	},
 	"keywords": [
 		"claude",

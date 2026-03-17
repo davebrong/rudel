@@ -42,7 +42,7 @@ export function CliSetupHint() {
 					/>
 					<CommandBlock
 						label="2. Log in to your account"
-						command={`rudel login --api-base ${window.location.origin} --web-url ${window.location.origin}`}
+						command="rudel login"
 					/>
 					<CommandBlock
 						label="3. Enable auto-upload in your repository"
@@ -51,8 +51,8 @@ export function CliSetupHint() {
 					/>
 					<CommandBlock
 						label="4. Or upload sessions manually"
-						command={`rudel upload --endpoint ${window.location.origin}/rpc`}
-						hint="Upload previous sessions at any time. The --endpoint flag is required for manual uploads."
+						command="rudel upload"
+						hint="Upload previous sessions at any time."
 					/>
 				</div>
 			</div>
